@@ -1,0 +1,5 @@
+neo4j==6.3.0
+
+#redis
+#redisgraph
+#psycopg2-binary
