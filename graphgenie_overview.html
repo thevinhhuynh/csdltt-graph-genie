@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Giải thích tiếng Việt về GraphGenie: mục đích, kiểm thử biến hình, kiến trúc, ví dụ Cypher và cách đọc kết quả.">
+  <title>GraphGenie — Hiểu mục đích và cách hoạt động</title>
+  <style>
+    :root { color-scheme: light; --paper: #fff; --ground: #f5f6f3; --ink: #202e32; --muted: #596b70; --line: #dce4e0; --accent: #176052; --soft: #eef6f2; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; background: var(--ground); color: var(--ink); font-size: 17px; line-height: 1.8; }
+    a { color: var(--accent); text-underline-offset: 3px; overflow-wrap: anywhere; }
+    a:hover { text-decoration-thickness: 2px; }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+    .skip-link { position: absolute; top: -100px; left: 20px; padding: 8px 16px; background: var(--paper); z-index: 2; }
+    .skip-link:focus { top: 12px; }
+    .topbar { border-bottom: 1px solid var(--line); background: var(--paper); }
+    .topbar-inner { max-width: 1260px; margin: auto; padding: 20px 28px; display: flex; gap: 20px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .brand { font-weight: 750; letter-spacing: -.025em; font-size: 21px; }
+    .brand span { font-size: 14px; font-weight: 500; color: var(--muted); margin-left: 12px; }
+    .topbar a { font-size: 14px; }
+    .layout { max-width: 1260px; margin: 36px auto 70px; padding: 0 28px; display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 32px; align-items: start; }
+    .sidebar { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; padding: 20px 18px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; }
+    .sidebar h2 { margin: 0 0 12px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .sidebar ol { list-style: none; padding: 0; margin: 0; }
+    .sidebar li { margin: 0 0 5px; }
+    .sidebar a { display: block; font-size: 13px; line-height: 1.5; text-decoration: none; padding: 8px; border-radius: 6px; }
+    .sidebar a:hover { background: var(--soft); }
+    .sidebar .back { display: block; margin-top: 16px; border-top: 1px solid var(--line); padding-top: 16px; }
+    article { min-width: 0; padding: 40px 46px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; }
+    .eyebrow { font-size: 12px; color: var(--accent); letter-spacing: .08em; font-weight: 700; text-transform: uppercase; }
+    h1 { font-size: clamp(29px, 3.5vw, 42px); line-height: 1.23; letter-spacing: -.035em; margin: 14px 0 26px; }
+    h2 { font-size: 25px; line-height: 1.4; letter-spacing: -.02em; margin: 46px 0 18px; padding-top: 24px; border-top: 1px solid var(--line); }
+    h3 { font-size: 20px; line-height: 1.4; margin: 26px 0 12px; }
+    p { margin: 0 0 18px; }
+    article > p:first-of-type { color: var(--muted); font-size: 15px; }
+    strong { font-weight: 700; }
+    code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: .86em; padding: 2px 5px; border-radius: 4px; background: var(--soft); overflow-wrap: anywhere; }
+    .code-block { margin: 22px 0; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+    .code-label { padding: 8px 16px; font-size: 12px; font-weight: 650; color: var(--accent); background: var(--soft); border-bottom: 1px solid var(--line); }
+    pre { margin: 0; padding: 18px; overflow-x: auto; background: #f8faf9; font-size: 14px; line-height: 1.65; tab-size: 4; }
+    pre code { padding: 0; background: transparent; border-radius: 0; font-size: inherit; overflow-wrap: normal; }
+    .table-wrap { margin: 22px 0; overflow-x: auto; border: 1px solid var(--line); border-radius: 9px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.7; }
+    th, td { text-align: left; vertical-align: top; padding: 12px 15px; border-bottom: 1px solid var(--line); }
+    th { background: var(--soft); color: var(--accent); font-weight: 700; }
+    td:first-child { width: 32%; min-width: 160px; }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:nth-child(even) { background: #fafbf9; }
+    article ol { padding-left: 25px; margin: 18px 0 24px; }
+    article li { margin-bottom: 12px; padding-left: 3px; }
+    blockquote { margin: 24px 0; padding: 20px 24px; border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; background: var(--soft); }
+    blockquote p { margin: 0; }
+    footer { max-width: 1260px; margin: 0 auto 32px; padding: 0 28px; color: var(--muted); font-size: 13px; text-align: center; }
+    @media (max-width: 950px) { .layout { grid-template-columns: 1fr; } .sidebar { position: static; max-height: none; } .sidebar ol { columns: 2; column-gap: 24px; } .sidebar li { break-inside: avoid; } article { padding: 32px; } }
+    @media (max-width: 560px) { body { font-size: 16px; } .topbar-inner { padding: 16px; } .brand span { display: block; margin: 0; } .layout { padding: 0 12px; margin-top: 18px; gap: 18px; } .sidebar ol { columns: 1; } article { padding: 25px 18px; } h2 { font-size: 22px; } th, td { padding: 10px; } pre { font-size: 12px; padding: 14px; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    @media print { body { background: white; color: black; font-size: 11pt; } .topbar, .sidebar, .skip-link, footer { display: none; } .layout { display: block; margin: 0; padding: 0; max-width: none; } article { padding: 0; border: 0; } h1 { font-size: 24pt; } h2 { font-size: 17pt; break-after: avoid; } h3 { break-after: avoid; } pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 9pt; } .code-block, blockquote { break-inside: avoid; } .table-wrap { overflow: visible; } a { color: black; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#noi-dung">Đi đến nội dung</a>
+  <header class="topbar"><div class="topbar-inner"><div class="brand">GraphGenie<span>Tài liệu giải thích bằng tiếng Việt</span></div><a href="graphgenie_overview.md">Đọc bản Markdown ↗</a></div></header>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Mục lục"><h2>Mục lục</h2><ol><li><a href="#muc-1">1. Dự án này dùng để làm gì?</a></li><li><a href="#muc-2">2. Cơ sở dữ liệu đồ thị và Cypher là gì?</a></li><li><a href="#muc-3">3. Vì sao cần so sánh những truy vấn đã biến đổi?</a></li><li><a href="#muc-4">4. Hai nhóm truy vấn mà GraphGenie so sánh</a></li><li><a href="#muc-5">5. Quy trình chạy từ đầu đến cuối</a></li><li><a href="#muc-6">6. Mỗi file quan trọng làm nhiệm vụ gì?</a></li><li><a href="#muc-7">7. Bộ sinh truy vấn hoạt động như thế nào?</a></li><li><a href="#muc-8">8. Bộ biến đổi truy vấn làm gì?</a></li><li><a href="#muc-9">9. Dự án tìm những loại vấn đề nào?</a></li><li><a href="#muc-10">10. Đọc các file log như thế nào?</a></li><li><a href="#muc-11">11. Bắt đầu dùng dự án theo thứ tự nào?</a></li><li><a href="#muc-12">12. Những điểm cần hiểu đúng trong phiên bản hiện tại</a></li><li><a href="#muc-13">13. Ý nghĩa học thuật và cách trình bày dự án</a></li><li><a href="#muc-14">14. Từ vựng nhanh</a></li></ol><a class="back" href="#dau-trang">↑ Về đầu tài liệu</a></nav>
+    <main id="noi-dung"><article><div class="eyebrow">Mục đích · Quy trình · Ví dụ · Kết quả</div>
+<h1 id="dau-trang">GraphGenie — Hiểu mục đích và cách hoạt động của dự án</h1>
+<p>Tài liệu này giải thích bằng tiếng Việt, dựa trên mã nguồn hiện có trong repository: <code>main.py</code>, <code>schema_scanner.py</code>, <code>query_generator.py</code>, <code>query_mutator.py</code> và <code>README.md</code>. Các ví dụ có nhãn <code>Person</code>, <code>Movie</code>, <code>ACTED_IN</code> chỉ dùng để minh họa; nhãn thực tế phụ thuộc dữ liệu của bạn.</p>
+<h2 id="muc-1">1. Dự án này dùng để làm gì?</h2>
+<p><strong>GraphGenie là công cụ tự động tìm lỗi trong hệ quản trị cơ sở dữ liệu đồ thị.</strong> Nó tạo truy vấn, biến đổi truy vấn, chạy chúng trên cơ sở dữ liệu và tìm các kết quả hoặc thời gian thực thi đáng nghi.</p>
+<p>Ví dụ, hai truy vấn diễn đạt cùng một yêu cầu đếm nhưng trả về hai con số khác nhau. Nếu quy tắc biến đổi đúng và dữ liệu không thay đổi giữa hai lần chạy, sự khác biệt đó có thể chỉ ra lỗi xử lý truy vấn của hệ quản trị.</p>
+<p>Trong repository này, GraphGenie chủ yếu kiểm thử <strong>Cypher</strong>, có các nhánh kết nối <strong>Neo4j</strong>, <strong>RedisGraph</strong> và <strong>AgensGraph</strong>. Nhánh Neo4j có bộ quét dữ liệu để hỗ trợ sinh truy vấn tự động; các hệ còn lại cần khai báo thông tin nhãn trong mã nguồn.</p>
+<p>Đầu ra của một lần chạy là các truy vấn đã thử, kết quả, thời gian và những trường hợp cần điều tra. Đây là một công cụ nghiên cứu và kiểm thử: người dùng vẫn cần xác minh cảnh báo để kết luận có lỗi trong cơ sở dữ liệu.</p>
+<h2 id="muc-2">2. Cơ sở dữ liệu đồ thị và Cypher là gì?</h2>
+<p>Cơ sở dữ liệu đồ thị biểu diễn dữ liệu bằng <strong>nút</strong>, <strong>quan hệ giữa các nút</strong> và <strong>thuộc tính</strong> của chúng. Nhãn nút giúp phân loại thực thể; kiểu quan hệ giúp diễn tả mối liên hệ.</p>
+<p>Ví dụ, trong một đồ thị phim:</p>
+<div class="code-block"><div class="code-label">Sơ đồ / cấu trúc</div><pre><code>(An:Person) ──ACTED_IN──▶ (Phim A:Movie)
+(Bình:Person) ──ACTED_IN──▶ (Phim A:Movie)</code></pre></div>
+<p>Cypher là ngôn ngữ truy vấn đồ thị mà bộ sinh của dự án sử dụng. Một mẫu truy vấn minh họa:</p>
+<div class="code-block"><div class="code-label">Ví dụ Cypher</div><pre><code>MATCH (p:Person)-[:ACTED_IN]-&gt;(m:Movie)
+RETURN count(p)</code></pre></div>
+<p><code>MATCH</code> tìm những lần khớp với mẫu người đóng phim. <code>p</code> và <code>m</code> là tên biến; <code>Person</code> và <code>Movie</code> là nhãn nút; <code>ACTED_IN</code> là kiểu quan hệ; mũi tên biểu diễn chiều quan hệ.</p>
+<p><code>count(p)</code> đếm số lần biến <code>p</code> có giá trị khác null trong kết quả khớp. <strong>Nó không mặc định đếm số người khác nhau</strong>: một người đóng nhiều phim có thể được đếm nhiều lần. Đếm người khác nhau sẽ cần <code>count(DISTINCT p)</code>.</p>
+<p>Sự khác nhau giữa số dòng khớp, số nút khác nhau và giá trị null là lý do việc kiểm thử truy vấn đồ thị cần chú ý đến ngữ nghĩa.</p>
+<h2 id="muc-3">3. Vì sao cần so sánh những truy vấn đã biến đổi?</h2>
+<p>Khi sinh một truy vấn ngẫu nhiên phức tạp, ta thường không biết trước kết quả đúng phải là bao nhiêu. Để tính đáp án chuẩn cho từng truy vấn, có thể phải viết thêm một bộ thực thi truy vấn đáng tin cậy.</p>
+<p>GraphGenie dùng một cách khác: tạo truy vấn gốc <code>Q</code>, rồi tạo truy vấn <code>Q&#x27;</code> có quan hệ dự kiến với <code>Q</code>. Ta chưa cần biết con số đúng, nhưng biết hai kết quả <strong>phải bằng nhau</strong> hoặc <strong>phải thỏa một quan hệ thứ tự</strong>, nếu phép biến đổi đáp ứng điều kiện ngữ nghĩa của nó.</p>
+<p>Cách này thường được gọi là <strong>kiểm thử biến hình — metamorphic testing</strong>. Quy tắc quan hệ giữa các kết quả đóng vai trò tiêu chí kiểm tra, thường gọi là <strong>test oracle</strong>.</p>
+<p>Có thể hiểu đơn giản: thay vì hỏi “đáp án đúng là bao nhiêu?”, công cụ hỏi “hai cách viết liên quan với nhau có cho ra kết quả phù hợp với quan hệ đó không?”.</p>
+<h2 id="muc-4">4. Hai nhóm truy vấn mà GraphGenie so sánh</h2>
+<h3>4.1. Truy vấn tương đương</h3>
+<p>Nhóm này hướng đến các truy vấn có cùng kết quả với truy vấn gốc. Một phép biến đổi minh họa là chuyển nhãn từ mẫu nút sang điều kiện <code>WHERE</code>:</p>
+<div class="code-block"><div class="code-label">Ví dụ Cypher</div><pre><code>// Truy vấn gốc
+MATCH (p:Person)-[:ACTED_IN]-&gt;(m:Movie)
+RETURN count(p)
+
+// Cùng yêu cầu, chuyển nhãn Person vào WHERE
+MATCH (p)-[:ACTED_IN]-&gt;(m:Movie)
+WHERE p:Person
+RETURN count(p)</code></pre></div>
+<p>Với cùng dữ liệu và đúng ngữ nghĩa của ví dụ, hai truy vấn này phải cho cùng kết quả. Nếu truy vấn đầu trả về 12, truy vấn sau trả về 9, công cụ có lý do ghi lại cặp truy vấn để kiểm tra.</p>
+<p>Trong <code>main.py</code>, <code>result_checking()</code> so sánh cả kiểu dữ liệu lẫn giá trị kết quả. Nhánh ghi lỗi logic hiện còn kiểm tra chuỗi <code>count</code> trong truy vấn biến đổi. Nếu một kết quả là <code>None</code>, nó ghi thông báo <code>None Check</code> thay vì ghi một cặp lỗi logic thông thường vào <code>bug.log</code>.</p>
+<h3>4.2. Truy vấn bị hạn chế thêm điều kiện</h3>
+<p>Nhóm <strong>restricted queries</strong> bổ sung ràng buộc vào mẫu đồ thị. Trong những trường hợp áp dụng phù hợp, ràng buộc mới làm tập kết quả nhỏ đi hoặc giữ nguyên.</p>
+<div class="code-block"><div class="code-label">Ví dụ Cypher</div><pre><code>// Truy vấn gốc: không yêu cầu nút p phải có nhãn Person
+MATCH (p)-[:ACTED_IN]-&gt;(m:Movie)
+RETURN count(p)
+
+// Truy vấn bị hạn chế thêm nhãn Person
+MATCH (p:Person)-[:ACTED_IN]-&gt;(m:Movie)
+RETURN count(p)</code></pre></div>
+<p>Với ví dụ này, số đếm của truy vấn thứ hai phải <strong>nhỏ hơn hoặc bằng</strong> truy vấn thứ nhất. Nếu kết quả gốc là 12 mà kết quả bị hạn chế là 15, đó là dấu hiệu đáng kiểm tra.</p>
+<p><code>variant = 1</code> bật nhóm này. <code>restricted_result_checking()</code> hiện đánh dấu khi hai kết quả đều khác <code>None</code> và kết quả restricted lớn hơn kết quả gốc.</p>
+<p><strong>Các ví dụ trên minh họa quan hệ so sánh, không chứng minh mọi phép biến đổi trong bộ công cụ đều đúng với mọi truy vấn.</strong> Các chi tiết như <code>OPTIONAL MATCH</code>, <code>DISTINCT</code>, giá trị null, đường đi và <code>LIMIT</code> có thể làm điều kiện áp dụng phức tạp hơn. Cảnh báo cần được tái hiện và kiểm tra ngữ nghĩa.</p>
+<h2 id="muc-5">5. Quy trình chạy từ đầu đến cuối</h2>
+<div class="code-block"><div class="code-label">Sơ đồ / cấu trúc</div><pre><code>Đọc graphgenie.ini
+        ↓
+Kết nối cơ sở dữ liệu có sẵn
+        ↓
+Quét nhãn, thuộc tính, quan hệ kết nối — nhánh Neo4j
+        ↓
+Sinh truy vấn Cypher gốc Q và thực thi Q
+        ↓
+Sinh các truy vấn tương đương Q1, Q2, ...
+Sinh thêm truy vấn restricted nếu variant được bật
+        ↓
+Thực thi các truy vấn biến đổi
+        ↓
+So sánh kết quả và kiểm tra hiệu năng khi được bật
+        ↓
+Ghi log, ghi trường hợp nghi ngờ, rồi lặp với truy vấn mới</code></pre></div>
+<ol><li><strong>Đọc cấu hình:</strong> địa chỉ kết nối, thông tin đăng nhập, chiến lược sinh truy vấn, phép biến đổi và đường dẫn log.</li><li><strong>Chuẩn bị dữ liệu:</strong> cơ sở dữ liệu phải có dữ liệu đồ thị từ trước. Chương trình chính không tự nạp bộ dữ liệu.</li><li><strong>Quét dữ liệu Neo4j:</strong> lấy nhãn nút, kiểu quan hệ, thuộc tính và ma trận cho biết có kết nối giữa các cặp nhãn theo chiều hay không.</li><li><strong>Sinh truy vấn:</strong> chọn mẫu đường đi, tên biến, nhãn, chiều cạnh, độ dài cạnh, điều kiện và biểu thức trả về.</li><li><strong>Biến đổi:</strong> xây dựng nhiều cách viết liên quan với truy vấn gốc để có cơ sở so sánh.</li><li><strong>Thực thi và so sánh:</strong> kiểm tra giá trị đếm; nếu bật kiểm tra hiệu năng, kiểm tra thêm chênh lệch thời gian ở nhóm tương đương.</li><li><strong>Lưu bằng chứng:</strong> giữ truy vấn và kết quả trong log để người dùng có thể tái hiện.</li></ol>
+<p>Khi bật <code>multi_threading</code>, các truy vấn tương đương của một truy vấn gốc được chạy trong các luồng riêng. Công cụ đợi nhóm luồng này kết thúc rồi mới chuyển sang truy vấn gốc tiếp theo. Các truy vấn restricted vẫn được chạy tuần tự.</p>
+<h2 id="muc-6">6. Mỗi file quan trọng làm nhiệm vụ gì?</h2>
+<div class="table-wrap" role="region" aria-label="Bảng thông tin" tabindex="0"><table><thead><tr><th scope="col">File hoặc thư mục</th><th scope="col">Vai trò trong dự án</th></tr></thead><tbody><tr><td><code>main.py</code></td><td>Điều phối toàn bộ quy trình; chọn hệ quản trị, chạy truy vấn, so sánh kết quả, đo thời gian và ghi log.</td></tr><tr><td><code>schema_scanner.py</code></td><td>Quét dữ liệu Neo4j để lấy nhãn, thuộc tính và thông tin kết nối phục vụ bộ sinh truy vấn.</td></tr><tr><td><code>query_generator.py</code></td><td>Sinh truy vấn Cypher gốc, chủ yếu là mẫu đường đi đồ thị và biểu thức đếm.</td></tr><tr><td><code>query_mutator.py</code></td><td>Tạo các truy vấn tương đương và restricted từ truy vấn gốc bằng các quy tắc biến đổi.</td></tr><tr><td><code>graphgenie.ini</code></td><td>Cấu hình mà chương trình thực sự đọc khi chạy.</td></tr><tr><td><code>graphgenie_guide.ini</code></td><td>Bản cấu hình có chú thích tiếng Việt, giải thích cả tham số đang hoạt động và chưa áp dụng.</td></tr><tr><td><code>requirements.txt</code></td><td>Khai báo phụ thuộc Python; hiện bật <code>neo4j==6.3.0</code>, còn các dòng cho hệ khác đang bị comment.</td></tr><tr><td><code>data/recommendations-50.dump</code></td><td>File dump dữ liệu đi kèm; chương trình chính không tự import file này.</td></tr><tr><td><code>artifacts/reproducing_bugs/</code></td><td>Ví dụ, script và hướng dẫn tái hiện một số lỗi được lưu cùng dự án.</td></tr><tr><td><code>tests/test_query_mutator.py</code></td><td>Kiểm tra hành vi sinh truy vấn của bộ biến đổi; không phải bằng chứng rằng một hệ quản trị cụ thể có lỗi.</td></tr><tr><td><code>logs/</code></td><td>Nơi mã khởi tạo log chuyển các file log cũ vào khi đáp ứng điều kiện.</td></tr></tbody></table></div>
+<p>Để đọc mã dễ hơn, bắt đầu từ khối <code>if __name__ == &quot;__main__&quot;</code> và hàm <code>Testing.testing()</code> trong <code>main.py</code>, sau đó đọc bộ sinh và bộ biến đổi.</p>
+<h2 id="muc-7">7. Bộ sinh truy vấn hoạt động như thế nào?</h2>
+<p><code>RandomCypherGenerator</code> ghép truy vấn theo cấu trúc:</p>
+<div class="code-block"><div class="code-label">Sơ đồ / cấu trúc</div><pre><code>MATCH hoặc OPTIONAL MATCH
+  + mẫu đường đi đồ thị
+  + điều kiện WHERE
+  + RETURN hoặc RETURN DISTINCT với count(...)
+  + ORDER BY, SKIP, LIMIT được chọn ngẫu nhiên</code></pre></div>
+<p>Bộ sinh thay đổi hướng cạnh, tên biến, nhãn nút và kiểu quan hệ. Nó cũng có thể sinh cạnh có biểu thức độ dài biến đổi, hoặc đường đi chu trình dùng cùng một tên biến ở hai đầu.</p>
+<p>Thông tin kết nối lấy từ Neo4j giúp chọn nhãn nút tiếp theo dựa trên nhãn trước đó và chiều cạnh. Đây là thông tin hỗ trợ sinh mẫu; nó không bảo đảm mọi truy vấn được tạo đều có kết quả hoặc đều được máy chủ chấp nhận.</p>
+<p><code>_node_num</code> là số vị trí nút ban đầu trong mẫu đường đi. Khi liên tiếp gặp lại các mẫu nhãn đã ghi nhận đủ nhiều lần, bộ sinh tăng số vị trí nút để thử những mẫu dài hơn. Nó không tăng theo một số truy vấn cố định.</p>
+<p>Điểm cần nhớ: <strong>tính ngẫu nhiên chủ yếu nằm ở cấu trúc truy vấn đồ thị</strong>, còn phần <code>WHERE</code> hiện khá đơn giản. Bộ sinh luôn tạo <code>WHERE</code>, thường là kiểm tra một biến nút khác null kết hợp <code>AND True</code>, hoặc chỉ <code>WHERE True</code>.</p>
+<h2 id="muc-8">8. Bộ biến đổi truy vấn làm gì?</h2>
+<p>Trong tài liệu dự án, <strong>GQT — Graph Query Transformation</strong> là biến đổi truy vấn đồ thị. Mã phân loại quy tắc thành ba nhóm để thống kê:</p>
+<div class="table-wrap" role="region" aria-label="Bảng thông tin" tabindex="0"><table><thead><tr><th scope="col">Nhóm trong mã</th><th scope="col">Ý nghĩa và ví dụ</th></tr></thead><tbody><tr><td><code>Structure-GQT</code></td><td>Biến đổi cấu trúc mẫu đồ thị, ví dụ tách đường đi hoặc mở một chu trình thành hai đầu kèm điều kiện bằng nhau.</td></tr><tr><td><code>Property-GQT</code></td><td>Biến đổi liên quan đến nhãn hoặc cách sử dụng biến/thuộc tính, ví dụ chuyển nhãn nút từ mẫu sang <code>WHERE</code>.</td></tr><tr><td><code>Non-GQT</code></td><td>Những biến đổi khác, ví dụ thêm điều kiện dư <code>AND True</code>, đổi tên biến hoặc đổi cách viết một phần truy vấn.</td></tr></tbody></table></div>
+<p><code>generate_equivalent_queries()</code> trước tiên áp dụng một tập quy tắc. Với Cypher trên hệ khác AgensGraph, nó tiếp tục chọn một số quy tắc để biến đổi lặp cho đến khi đạt mục tiêu <code>mutated_query_num</code>.</p>
+<p><code>generate_restricted_queries()</code> thử thêm nhãn nút, nhãn cạnh, hướng cạnh hoặc một nút mới. Một số quy tắc chỉ áp dụng được khi truy vấn gốc có dạng phù hợp.</p>
+<p><code>graph_pattern_mutation = 0</code> tắt các quy tắc có kiểm tra công tắc này, nhưng không tắt toàn bộ biến đổi. Những quy tắc như thêm <code>AND True</code> vẫn có thể chạy.</p>
+<h2 id="muc-9">9. Dự án tìm những loại vấn đề nào?</h2>
+<h3>9.1. Lỗi logic tiềm ẩn</h3>
+<p>Truy vấn chạy được nhưng kết quả không tuân theo quan hệ dự kiến: hai truy vấn tương đương cho số đếm khác nhau, hoặc truy vấn restricted cho số đếm lớn hơn truy vấn gốc.</p>
+<p>Ví dụ minh họa: <code>base_result = 12</code>, <code>test_result = 9</code> cho một cặp được kỳ vọng tương đương. Điều cần điều tra là vì sao hai kết quả lệch nhau, bao gồm cả khả năng phép biến đổi hoặc bộ so sánh chưa phù hợp.</p>
+<h3>9.2. Vấn đề hiệu năng tiềm ẩn</h3>
+<p>Hai truy vấn tương đương có thể có thời gian rất khác nhau. Một cách viết mất 500 ms, cách còn lại mất 80 ms; tỷ lệ là <code>500 / 80 = 6.25</code>.</p>
+<p>Trong mã hiện tại, cảnh báo hiệu năng cho nhóm tương đương chỉ xuất hiện khi đồng thời thỏa các điều kiện:</p>
+<ol><li><code>perf_issue = 1</code>.</li><li>Thời gian truy vấn gốc lớn hơn <code>minimum_test_ms</code>.</li><li>Tỷ lệ giữa thời gian lớn hơn và nhỏ hơn vượt <code>threshold</code>.</li><li>Truy vấn tương đương chạy lâu hơn 50 ms và nhanh hơn truy vấn gốc.</li></ol>
+<p>Đây là tiêu chí tìm trường hợp đáng nghiên cứu, không phải kết luận rằng mọi chênh lệch thời gian đều là lỗi. Tải máy chủ, cache và việc chạy đồng thời đều có thể ảnh hưởng phép đo.</p>
+<h3>9.3. Ngoại lệ khi thực thi</h3>
+<p>Lỗi thực thi truy vấn được ghi vào <code>exception.log</code>, nếu không bị bộ lọc thông báo timeout loại bỏ. Một lỗi có thể đến từ cú pháp không phù hợp, quyền truy cập, phiên bản máy chủ hoặc lỗi nội bộ của hệ quản trị.</p>
+<p>Để hiểu một ví dụ lỗi nội bộ được lưu trong dự án, có thể xem <a href="artifacts/reproducing_bugs/neo4j-5.4.0/README.md">hướng dẫn tái hiện trên Neo4j 5.4.0</a>. Đây là trường hợp gắn với phiên bản cụ thể, không chứng minh phiên bản bạn đang chạy còn lỗi đó.</p>
+<h2 id="muc-10">10. Đọc các file log như thế nào?</h2>
+<div class="table-wrap" role="region" aria-label="Bảng thông tin" tabindex="0"><table><thead><tr><th scope="col">File mặc định</th><th scope="col">Nội dung cần tìm</th></tr></thead><tbody><tr><td><code>testing.log</code></td><td>Truy vấn gốc, truy vấn tương đương/restricted, giá trị trả về, thời gian, thống kê và cảnh báo.</td></tr><tr><td><code>bug.log</code></td><td>Cặp truy vấn gốc và tương đương bị ghi nhận là nghi ngờ lỗi logic, kèm giá trị kết quả và thời điểm.</td></tr><tr><td><code>exception.log</code></td><td>Truy vấn gây ngoại lệ và thông tin lỗi; thông báo chứa <code>imeout</code> bị bỏ qua.</td></tr></tbody></table></div>
+<p><strong>Theo mã hiện tại, cảnh báo hiệu năng và restricted được ghi vào <code>testing.log</code>; chúng không được ghi vào <code>bug.log</code> qua hàm <code>bug_log()</code>.</strong> Điều này giúp bạn tránh chỉ đọc <code>bug.log</code> rồi bỏ sót các cảnh báo khác.</p>
+<p>Một quy trình kiểm tra cảnh báo:</p>
+<ol><li>Tìm đoạn <code>Base Query</code> và truy vấn biến đổi tương ứng trong log.</li><li>Ghi lại phiên bản cơ sở dữ liệu, dữ liệu và cấu hình đang dùng.</li><li>Chạy lại từng truy vấn với dữ liệu không thay đổi để kiểm tra kết quả.</li><li>Với cảnh báo logic, kiểm tra phép biến đổi có giữ đúng quan hệ ngữ nghĩa hay không.</li><li>Với cảnh báo hiệu năng, chạy lặp và so sánh trong điều kiện tải tương tự; có thể xem thêm kế hoạch thực thi.</li><li>Rút gọn dữ liệu và truy vấn thành ví dụ nhỏ đủ tái hiện trước khi kết luận hoặc báo lỗi.</li></ol>
+<h2 id="muc-11">11. Bắt đầu dùng dự án theo thứ tự nào?</h2>
+<ol><li><strong>Chuẩn bị Neo4j có dữ liệu:</strong> nhánh Neo4j là hướng có bộ quét tự động trong repository. Máy chủ và dữ liệu cần có trước khi chạy chương trình.</li><li><strong>Chuẩn bị môi trường Python và cài phụ thuộc:</strong> dùng môi trường ảo để quản lý các thư viện của dự án.</li><li><strong>Sửa <code>graphgenie.ini</code>:</strong> điền địa chỉ, cổng, tài khoản, mật khẩu và các lựa chọn kiểm thử theo máy chủ thực tế.</li><li><strong>Chạy từ thư mục gốc dự án:</strong> mã dùng đường dẫn tương đối để đọc cấu hình và ghi log.</li><li><strong>Quan sát log và dừng khi đủ dữ liệu:</strong> vòng kiểm thử hiện chưa có điều kiện tự dừng theo giới hạn cấu hình.</li></ol>
+<p>Các lệnh cơ bản, nếu Python 3 và máy chủ Neo4j đã được chuẩn bị:</p>
+<div class="code-block"><div class="code-label">Lệnh terminal</div><pre><code>python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+python3 main.py</code></pre></div>
+<p>Lệnh kích hoạt môi trường ở trên dành cho shell kiểu bash/zsh trên macOS/Linux. Cài thư viện Python không cài máy chủ Neo4j và không tự nạp file dump dữ liệu.</p>
+<p>Đọc <a href="README.md">README gốc</a> để tham khảo cách chuẩn bị máy chủ và dữ liệu. Hướng dẫn đó ghi môi trường tác giả từng kiểm thử là Python 3.8.10 và Ubuntu 20.04.2 LTS; đó không phải kết quả xác nhận tương thích cho mọi phiên bản hiện nay. Tài liệu này giải thích mã nguồn, không phải báo cáo đã chạy kiểm thử trên một máy chủ cụ thể.</p>
+<h2 id="muc-12">12. Những điểm cần hiểu đúng trong phiên bản hiện tại</h2>
+<div class="table-wrap" role="region" aria-label="Bảng thông tin" tabindex="0"><table><thead><tr><th scope="col">Điểm trong cấu hình hoặc mã</th><th scope="col">Hành vi thực tế</th></tr></thead><tbody><tr><td><code>max_testing_query_num = 2000</code></td><td>Được đọc nhưng chưa dùng làm điều kiện dừng; chương trình không tự dừng ở 2000 truy vấn.</td></tr><tr><td><code>testing_times = 1</code></td><td>Có vòng lặp ngoài, nhưng vòng <code>while True</code> bên trong không có điều kiện thoát bình thường.</td></tr><tr><td><code>max_thread_num = 8</code></td><td>Chưa được đọc để giới hạn luồng; không bảo đảm tối đa 8 luồng đồng thời.</td></tr><tr><td><code>min_node_num</code>, <code>max_node_num</code></td><td>Được đọc nhưng chưa giới hạn độ dài mẫu; bộ sinh dùng <code>_node_num</code> và tự tăng giá trị đó.</td></tr><tr><td><code>predicate_rate</code>, <code>statistics</code></td><td>Chưa điều khiển việc sinh <code>WHERE</code> hoặc bật/tắt thống kê như tên tham số có thể gợi ý.</td></tr><tr><td><code>mutated_query_num</code></td><td>Là mục tiêu số truy vấn tương đương ở nhánh có sinh lặp, không phải giới hạn cứng hay tổng tất cả truy vấn.</td></tr><tr><td>Kết quả được so sánh</td><td>Các nhánh thực thi chủ yếu lấy giá trị đầu tiên của hàng đầu tiên; không so sánh toàn bộ bảng trả về.</td></tr><tr><td>Đa luồng</td><td>Một số trạng thái, bộ đếm và việc ghi log được dùng chung, chưa có đồng bộ đầy đủ.</td></tr><tr><td>Gremlin</td><td>README ghi mã kiểm thử Gremlin chưa được phát hành; đổi <code>language</code> không đủ để hỗ trợ nó.</td></tr><tr><td>RedisGraph/AgensGraph</td><td>Có nhánh kết nối nhưng cần chuẩn bị thêm thư viện và thông tin nhãn; không có bộ quét tự động tương đương Neo4j trong luồng chính.</td></tr></tbody></table></div>
+<p>Các điểm này phản ánh một bản công cụ nghiên cứu còn phần chưa hoàn thiện. Khi dùng để làm bài tập hoặc báo cáo, nên phân biệt <strong>ý tưởng của phương pháp</strong> với <strong>mức độ hiện thực trong mã nguồn đang có</strong>.</p>
+<p>Giải thích từng cấu hình nằm trong <a href="graphgenie_guide.ini">graphgenie_guide.ini</a>.</p>
+<h2 id="muc-13">13. Ý nghĩa học thuật và cách trình bày dự án</h2>
+<p>Điểm đáng chú ý của dự án là cách tạo tiêu chí kiểm tra khi không có sẵn đáp án chuẩn cho truy vấn ngẫu nhiên. Thay vì chỉ thay đổi điều kiện lọc, GraphGenie chú trọng biến đổi mẫu truy vấn đồ thị để tạo những truy vấn có quan hệ ngữ nghĩa với nhau.</p>
+<p>Repository dẫn công trình “Detecting Logic Bugs in Graph Database Management Systems via Injective and Surjective Graph Query Transformation”, của Jiang và cộng sự, ICSE 2024. Thông tin trích dẫn đầy đủ được ghi trong <a href="README.md">README.md</a>; tài liệu này tập trung vào cách mã trong repository vận hành.</p>
+<p>Nếu cần giải thích dự án trong một đoạn ngắn, có thể dùng:</p>
+<blockquote><p>GraphGenie là công cụ kiểm thử tự động cho hệ quản trị cơ sở dữ liệu đồ thị. Công cụ sinh truy vấn Cypher, áp dụng các phép biến đổi để tạo truy vấn tương đương hoặc truy vấn có điều kiện chặt hơn, rồi so sánh kết quả và thời gian thực thi. Những cặp truy vấn vi phạm quan hệ dự kiến được ghi lại để điều tra lỗi logic hoặc vấn đề hiệu năng. Mã hiện tại có nhánh kết nối Neo4j, RedisGraph và AgensGraph, trong đó Neo4j có hỗ trợ quét dữ liệu tự động.</p></blockquote>
+<h2 id="muc-14">14. Từ vựng nhanh</h2>
+<div class="table-wrap" role="region" aria-label="Bảng thông tin" tabindex="0"><table><thead><tr><th scope="col">Thuật ngữ</th><th scope="col">Cách hiểu trong tài liệu này</th></tr></thead><tbody><tr><td>Graph database</td><td>Cơ sở dữ liệu biểu diễn thực thể và quan hệ dưới dạng đồ thị.</td></tr><tr><td>Node / relationship</td><td>Nút / quan hệ nối các nút.</td></tr><tr><td>Label / relationship type</td><td>Nhãn phân loại nút / kiểu của quan hệ.</td></tr><tr><td>Graph pattern</td><td>Mẫu nút, cạnh, chiều và ràng buộc cần khớp trong truy vấn.</td></tr><tr><td>Base query</td><td>Truy vấn gốc do bộ sinh tạo ra.</td></tr><tr><td>Equivalent query</td><td>Truy vấn biến đổi được kỳ vọng cho kết quả bằng truy vấn gốc.</td></tr><tr><td>Restricted query</td><td>Truy vấn được thêm ràng buộc, có quan hệ kết quả dự kiến với truy vấn gốc.</td></tr><tr><td>Query mutation / GQT</td><td>Biến đổi cách biểu diễn hoặc cấu trúc của truy vấn.</td></tr><tr><td>Metamorphic testing</td><td>Kiểm thử bằng quan hệ giữa các lần chạy liên quan, thay vì đáp án tuyệt đối.</td></tr><tr><td>Test oracle</td><td>Tiêu chí dùng để đánh giá một kết quả có phù hợp kỳ vọng hay không.</td></tr><tr><td>Potential bug</td><td>Dấu hiệu lỗi cần được tái hiện và xác minh.</td></tr></tbody></table></div>
+<p>Bạn có thể đọc nội dung tương ứng dưới dạng trang HTML tại <a href="graphgenie_overview.html">graphgenie_overview.html</a>.</p>
+    </article></main>
+  </div>
+  <footer>Bản HTML độc lập · Đọc ngoại tuyến · Có thể in hoặc lưu PDF bằng trình duyệt</footer>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Báo cáo độc lập: SOTA 3: Kiểm thử hiệu năng bằng truy vấn tương đương. Nội dung bài báo, SOTA và What–How–Why.">
+<title>SOTA 3: Kiểm thử hiệu năng bằng truy vấn tương đương — Báo cáo GraphGenie</title><style>
+    @page { size: A4 portrait; margin: 0; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: #e9edf0; color: #17212a; font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.35; }
+    a { color: #164c78; text-decoration-thickness: .6px; text-underline-offset: 2px; }
+    .reader { max-width: 210mm; margin: 24px auto 18px; padding: 16px 20px; background: #fff; border-radius: 8px; font: 14px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .reader strong { display: block; font-size: 17px; }
+    .reader nav { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 8px; }
+    .page { width: 210mm; height: 297mm; padding: 16mm 19mm 21mm; margin: 0 auto 20px; position: relative; background: white; box-shadow: 0 3px 16px #17212a15; break-after: page; page-break-after: always; }
+    .page:last-child { break-after: auto; page-break-after: auto; }
+    .running { padding-bottom: 6pt; margin-bottom: 12pt; border-bottom: 1px solid #bcc7cf; font-size: 9pt; color: #536271; display: flex; justify-content: space-between; gap: 20px; }
+    .page-content { display: flow-root; }
+    .footer { position: absolute; left: 19mm; right: 19mm; bottom: 12mm; border-top: 1px solid #d4dce1; padding-top: 5pt; color: #536271; font-size: 9pt; display: flex; justify-content: space-between; }
+    .eyebrow { font-size: 10pt; text-transform: uppercase; letter-spacing: .7pt; color: #164c78; font-weight: bold; }
+    h1 { font-size: 23pt; line-height: 1.2; margin: 7pt 0 11pt; }
+    h2 { font-size: 15pt; line-height: 1.25; margin: 0 0 10pt; color: #153d5a; }
+    h3 { font-size: 12.5pt; line-height: 1.3; margin: 12pt 0 5pt; }
+    p { margin: 0 0 8pt; text-align: justify; }
+    ul, ol { padding-left: 19pt; margin: 6pt 0 9pt; }
+    li { margin-bottom: 4pt; }
+    table { width: 100%; border-collapse: collapse; margin: 8pt 0 10pt; font-size: 10.5pt; line-height: 1.28; }
+    th, td { padding: 6pt 7pt; border: 1px solid #c5d0d8; text-align: left; vertical-align: top; }
+    th { background: #edf3f7; color: #153d5a; }
+    .note { padding: 8pt 10pt; background: #f0f5f8; border-left: 3px solid #426c87; margin: 9pt 0; }
+    .note p:last-child { margin-bottom: 0; }
+    .meta { font-size: 11pt; color: #344756; margin: 12pt 0; }
+    .meta p { text-align: left; margin-bottom: 5pt; }
+    code { font-family: Consolas, "Liberation Mono", monospace; font-size: .85em; overflow-wrap: anywhere; }
+    pre { margin: 7pt 0 9pt; padding: 9pt 10pt; border: 1px solid #d1dbe2; background: #f7f9fb; white-space: pre-wrap; font: 9.2pt/1.35 Consolas, "Liberation Mono", monospace; overflow-wrap: anywhere; }
+    pre code { font-size: inherit; }
+    .equation { text-align: center; padding: 7pt; background: #f0f5f8; margin: 8pt 0; font-size: 12pt; }
+    .caption { font-size: 10pt; color: #445967; text-align: left; }
+    .flow { display: flex; gap: 6pt; align-items: center; margin: 10pt 0; font-size: 10pt; }
+    .flow span { flex: 1; padding: 9pt 5pt; border: 1px solid #b6c8d5; background: #f0f5f8; text-align: center; }
+    .flow b { font-weight: normal; }
+    .small { font-size: 10.5pt; }
+    .references { font-size: 9.7pt; line-height: 1.26; }
+    .references p { text-align: left; margin-bottom: 7pt; overflow-wrap: anywhere; }
+    .references a { overflow-wrap: anywhere; }
+    .dense { font-size: 11.5pt; line-height: 1.3; }
+    :focus-visible { outline: 2px solid #164c78; outline-offset: 3px; }
+    @media screen and (max-width: 820px) { .reader { margin: 12px; } .page { width: auto; height: auto; min-height: 0; margin: 12px; padding: 24px 22px 65px; } .running { font-size: 9pt; } .footer { left: 22px; right: 22px; bottom: 20px; } h1 { font-size: 21pt; } table { font-size: 9.8pt; } th, td { padding: 5pt; } .flow { flex-wrap: wrap; } .flow span { min-width: 90px; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    @media print { body { background: white; } .reader { display: none; } .page { margin: 0; box-shadow: none; } a { color: inherit; text-decoration: none; } pre, .note, table, .flow { break-inside: avoid; } h2, h3 { break-after: avoid; } }
+  
+.page { font-size: 11.5pt; line-height: 1.32; } .page-content { min-width: 0; } .page-content h1 { font-size: 22pt; } .report-nav { font-size: 12px; }
+</style></head>
+<body><aside class="reader" aria-label="Hướng dẫn đọc và in"><strong>Báo cáo độc lập SOTA 3 · 6 trang A4</strong>
+Mở bằng trình duyệt để đọc. Khi xuất PDF: chọn A4, tỷ lệ 100%, tắt đầu trang/chân trang của trình duyệt. Điền thông tin sinh viên trước khi nộp.
+<nav aria-label="Mục lục"><a href="#muc-1">1. Bối cảnh và vấn đề nghiên cứu</a><a href="#muc-2">2. Phép đo và hành vi hiện tại</a><a href="#muc-3">3. SOTA và giới hạn diễn giải</a><a href="#muc-4">4. What và Why: runner xác minh hiệu năng</a><a href="#muc-5">5. How: quy trình đo và diễn giải</a><a href="#muc-6">6. Thực nghiệm, giới hạn và kết luận</a></nav><p class="report-nav"><a href="graphgenie_sota_1_report.html">Báo cáo SOTA 1</a> · <a href="graphgenie_sota_2_report.html">Báo cáo SOTA 2</a> · <a href="graphgenie_sota_3_report.html">Báo cáo SOTA 3</a></p></aside>
+<main><section class="page" id="muc-1" aria-label="Trang 1">
+<div class="running"><span>BÁO CÁO SOTA 3 · GRAPHGENIE</span><span>Bối cảnh và vấn đề nghiên cứu</span></div>
+<div class="page-content">
+<div class="eyebrow">Báo cáo đồ án cuối kỳ · Chuyên đề độc lập số 3</div>
+<h1>Kiểm thử hiệu năng bằng truy vấn tương đương trong GraphGenie</h1>
+<div class="meta"><p><strong>Sinh viên:</strong> ................................ <strong>MSSV:</strong> ........................</p><p><strong>Lớp/Học phần:</strong> ........................ <strong>Giảng viên:</strong> ........................</p><p><strong>Công trình nền:</strong> GraphGenie, Jiang và cộng sự, ICSE 2024. <a href="#ref1">[1]</a></p></div>
+<h3>Tóm tắt</h3>
+<p>Báo cáo nghiên cứu cách dùng cặp truy vấn có cùng yêu cầu ngữ nghĩa để tìm sự khác biệt đáng chú ý về thời gian thực thi. Trọng tâm không phải mọi truy vấn tương đương đều phải chạy nhanh như nhau, mà là xây dựng bằng chứng đủ rõ để điều tra cách máy chủ lựa chọn và thực thi kế hoạch.</p>
+<p>Từ phép kiểm tra tỷ lệ thời gian trong mã GraphGenie, báo cáo đề xuất runner đo lặp, kiểm soát thứ tự và trạng thái cache, xác minh kết quả trước khi so sánh tốc độ và lưu hồ sơ. Phần phát triển là kế hoạch chưa triển khai; số đo minh họa không được dùng làm kết quả thực nghiệm.</p>
+<h3>1.1. Vì sao cần kiểm thử hiệu năng?</h3>
+<p>Hệ quản trị có thể trả đúng kết quả nhưng chậm do cách chọn kế hoạch, số lần truy cập dữ liệu hoặc trung gian cần xử lý. Hai cách viết cùng yêu cầu có thể dẫn tới các kế hoạch khác nhau. Cặp truy vấn tương đương cung cấp một mốc so sánh hữu ích trên cùng máy chủ, không cần lấy tốc độ của hệ khác làm tiêu chuẩn.</p>
+<p>Tuy nhiên, chênh lệch thời gian có thể đến từ cache, tải nền, truyền dữ liệu, biên dịch kế hoạch và dao động đo. Một tỷ lệ lớn trong một lần chạy chưa đủ chứng minh vấn đề ổn định, càng chưa xác định nguyên nhân hoặc kết luận rằng hành vi là lỗi của hệ quản trị.</p>
+<h3>1.2. Câu hỏi của chuyên đề</h3>
+<p>Đóng góp được khảo sát là tái sử dụng cặp truy vấn liên quan để nghiên cứu hiệu năng, bên cạnh kiểm tra giá trị kết quả. Câu hỏi phát triển: làm thế nào phân biệt chênh lệch lặp lại được với một lần đo bị nhiễu, và cung cấp hồ sơ đủ để phân tích kế hoạch thực thi?</p>
+<p>Báo cáo chọn miền truy vấn đọc trên dữ liệu ổn định. Trước khi đo, quan hệ tương đương phải được kiểm tra trong miền hỗ trợ; cặp restricted không mặc định được dùng như cặp có cùng khối lượng công việc. Độ tin cậy của so sánh thời gian phụ thuộc cả ngữ nghĩa lẫn thiết kế phép đo.</p>
+</div>
+<div class="footer"><span>Hiệu năng · Đo lặp có kiểm soát · Hồ sơ tái hiện</span><span>1 / 6</span></div>
+</section><section class="page" id="muc-2" aria-label="Trang 2">
+<div class="running"><span>BÁO CÁO SOTA 3 · GRAPHGENIE</span><span>Phép đo và hành vi hiện tại</span></div>
+<div class="page-content"><h2>Phép đo và hành vi hiện tại</h2>
+<h3>2.1. Tiêu chí hiệu năng trong mã nguồn</h3>
+<p><code>main.py</code> bật kiểm tra khi <code>perf_issue == 1</code> và thời gian truy vấn gốc vượt <code>minimum_test_ms</code>. Hàm <code>time_checking()</code> tính tỷ lệ lớn/nhỏ, rồi ghi cảnh báo nếu vượt threshold, truy vấn tương đương lâu hơn 50 ms và nhanh hơn truy vấn gốc. Đây là tiêu chí cụ thể của hiện thực, không phải định nghĩa tổng quát về lỗi hiệu năng.</p>
+<div class="equation">ρ = max(tQ, tQ′) / min(tQ, tQ′)<br>Điều kiện hiện tại: ρ &gt; threshold, tQ′ &gt; 50 ms, tQ′ &lt; tQ</div>
+<p>Ví dụ tự xây dựng: tQ = 500 ms và tQ′ = 80 ms cho ρ = 6,25. Nếu các ngưỡng tương ứng được thỏa, mã có thể ghi nghi ngờ. Đảo thứ tự gốc/biến đổi làm điều kiện một chiều không còn thỏa, dù cùng hai số đo. Vì vậy, hướng so sánh cần được nêu rõ khi diễn giải kết quả.</p>
+<h3>2.2. Thời gian nào đang được đo?</h3>
+<p>Nhánh Neo4j lấy tổng <code>result_available_after</code> và <code>result_consumed_after</code> từ summary. Nhánh RedisGraph dùng thời gian do driver cung cấp; nhánh AgensGraph đo khoảng thời gian quanh thao tác thực thi bằng đồng hồ Python. Không nên gộp các thước đo này thành cùng một đại lượng mà không giải thích phạm vi của chúng.</p>
+<p>Đề xuất runner cần lưu riêng thời gian từ summary máy chủ và thời gian đầu-cuối phía client khi có. Thước đo đầu-cuối phải kết thúc sau khi lấy đủ kết quả cần thiết, dùng đồng hồ đơn điệu độ phân giải cao. Không trộn hai loại thời gian trong cùng một tỷ lệ. Tài liệu driver chính thức minh họa việc lấy kết quả và summary. <a href="#ref5">[5]</a></p>
+<h3>2.3. Cache và việc chạy đồng thời</h3>
+<p>Mã Neo4j có gọi <code>db.clearQueryCaches()</code> quanh thực thi truy vấn. Cache truy vấn/kế hoạch là một thành phần cần phân biệt với trạng thái dữ liệu trong bộ nhớ; lời gọi đó không đủ để tuyên bố toàn bộ hệ thống ở trạng thái lạnh. Neo4j mô tả việc tái sử dụng kế hoạch qua query cache. <a href="#ref4">[4]</a></p>
+<p>Đa luồng làm nhiều truy vấn tranh tài nguyên cùng lúc. Thời gian của Q chạy riêng và Q′ chạy giữa nhiều luồng có thể chưa công bằng. Runner xác minh đề xuất phải chạy từng cặp tuần tự trong một điều kiện tải được ghi nhận, còn chiến dịch tìm ứng viên có thể có cấu hình riêng.</p>
+<p>Cảnh báo hiệu năng hiện vào <code>testing.log</code>; không nên chỉ đọc <code>bug.log</code> để thống kê nhóm này. Các lần lỗi hoặc thời gian không hợp lệ cần được loại khỏi phép chia và ghi trạng thái riêng.</p>
+</div>
+<div class="footer"><span>Hiệu năng · Đo lặp có kiểm soát · Hồ sơ tái hiện</span><span>2 / 6</span></div>
+</section><section class="page" id="muc-3" aria-label="Trang 3">
+<div class="running"><span>BÁO CÁO SOTA 3 · GRAPHGENIE</span><span>SOTA và giới hạn diễn giải</span></div>
+<div class="page-content"><h2>SOTA và giới hạn diễn giải</h2>
+<h3>3.1. Ý nghĩa của đóng góp</h3>
+<p>Trong bối cảnh GraphGenie, cùng một cơ chế sinh cặp truy vấn có thể hỗ trợ cả kiểm tra kết quả và khảo sát hiệu năng. Đối chiếu trên cùng máy chủ làm giảm việc so tốc độ giữa những kiến trúc khác nhau, nhưng không loại hết khác biệt môi trường hoặc chất lượng kế hoạch.</p>
+<p>Trục SOTA của chuyên đề là khả năng tạo ra một cách viết khác cùng yêu cầu để làm đối chứng thực nghiệm. Nó tạo cơ hội tìm cách thực thi có chi phí thấp hơn hoặc cao hơn rõ rệt. Đây là đóng góp được xét theo bối cảnh nghiên cứu; không phải khẳng định GraphGenie là công cụ duy nhất kiểm thử hiệu năng bằng viết lại.</p>
+<h3>3.2. Đối chiếu công trình và tài liệu liên quan</h3>
+<table><thead><tr><th>Nguồn</th><th>Điểm đối chiếu</th></tr></thead><tbody>
+<tr><td>GraphGenie <a href="#ref1">[1]</a></td><td>Đề cập hiệu năng bên cạnh lỗi logic; chuyên đề đi sâu cách hiện thực phép đo trong bản cục bộ.</td></tr>
+<tr><td>GRev, ICSE 2024 <a href="#ref3">[3]</a></td><td>Viết lại truy vấn tương đương để kích hoạt kế hoạch khác và tìm khác biệt hành vi; có hướng khảo sát hiệu năng cùng thời điểm.</td></tr>
+<tr><td>Neo4j query cache <a href="#ref4">[4]</a></td><td>Giải thích tái sử dụng kế hoạch; là cơ sở để ghi rõ chế độ cache trong thực nghiệm.</td></tr>
+<tr><td>Neo4j driver summary <a href="#ref5">[5]</a></td><td>Phân biệt kết quả và thông tin summary; cần xác định đại lượng thời gian đang lấy.</td></tr>
+</tbody></table>
+<h3>3.3. Vì sao không thể coi tốc độ phải bằng nhau?</h3>
+<p>Tương đương là một phát biểu về kết quả, không phải định lý về thời gian. Một kế hoạch tận dụng chỉ mục còn kế hoạch khác không tận dụng có thể tạo chênh lệch mà vẫn là hành vi được thiết kế. Người kiểm thử cần đánh giá mức độ, khả năng lặp lại và bối cảnh, rồi trao đổi với nhà phát triển nếu muốn báo vấn đề.</p>
+<p>Ngưỡng tỷ lệ cũng dễ phóng đại chênh lệch của truy vấn rất nhanh. Hai số đo gần độ phân giải đồng hồ có thể tạo tỷ lệ lớn nhưng tác động thực tế nhỏ. Vì vậy, đề xuất dùng đồng thời tỷ lệ, độ chênh tuyệt đối, phân bố thời gian và trạng thái thực thi.</p>
+<h3>3.4. Khoảng trống cần phát triển</h3>
+<p>Mã hiện chưa tổ chức một chiến dịch đo lặp cặp truy vấn với hồ sơ riêng về warm-up, thứ tự và mức biến động. Runner mới cần biến phép kiểm tra nhanh thành quá trình xác minh có thể giải thích. Việc xác minh này làm bằng chứng tốt hơn; chưa chứng minh sẽ tìm thêm lỗi hoặc làm máy chủ chạy nhanh hơn.</p>
+</div>
+<div class="footer"><span>Hiệu năng · Đo lặp có kiểm soát · Hồ sơ tái hiện</span><span>3 / 6</span></div>
+</section><section class="page" id="muc-4" aria-label="Trang 4">
+<div class="running"><span>BÁO CÁO SOTA 3 · GRAPHGENIE</span><span>What và Why: runner xác minh hiệu năng</span></div>
+<div class="page-content"><h2>What và Why: runner xác minh hiệu năng</h2>
+<h3>4.1. What — Sản phẩm đề xuất</h3>
+<p>Phát triển <strong>GraphGenie-PerfCheck</strong>: runner chạy lại một cặp tương đương trên dữ liệu ổn định. Đầu vào gồm Q, Q′, hợp đồng quan hệ, phiên bản, cấu hình và chính sách cache. Đầu ra gồm số đo thô, thống kê, trạng thái kết quả, tỷ lệ chênh lệch và hồ sơ tái hiện.</p>
+<table><thead><tr><th>Mô-đun</th><th>Nội dung cần hiện thực</th></tr></thead><tbody>
+<tr><td>Kiểm tra đầu vào</td><td>Nhận diện miền, bảo đảm truy vấn đọc và kiểm tra kết quả trước phép đo.</td></tr>
+<tr><td>Điều phối phép đo</td><td>Warm-up, lặp từng cặp, xen kẽ thứ tự và dừng theo ngân sách.</td></tr>
+<tr><td>Thống kê</td><td>Trung vị, độ chênh tuyệt đối, tỷ lệ và mức biến động.</td></tr>
+<tr><td>Hồ sơ</td><td>Truy vấn, số đo, cache, máy, dữ liệu, phiên bản và kế hoạch nếu lấy được.</td></tr>
+</tbody></table>
+<h3>4.2. Why — Vì sao cần đo lặp?</h3>
+<p>Một lần chạy không cho biết dao động thông thường. Đo lặp giúp phân biệt chênh lệch xuất hiện đều với một giá trị ngoại lệ. Xen kẽ thứ tự giảm nguy cơ luôn có một truy vấn được lợi do chạy sau; ghi cache và tải giúp người đọc biết những điều kiện nào đã được giữ tương tự.</p>
+<p>Xác minh tương đương trước khi đo tránh so hai truy vấn thực tế làm hai việc khác nhau. Nếu kết quả không phù hợp, cặp đó phải chuyển sang điều tra ngữ nghĩa hoặc lỗi logic. Không đánh đổi tính đúng để có một tỷ lệ thời gian đẹp.</p>
+<h3>4.3. Phạm vi và tiêu chí hoàn thành</h3>
+<p>Bản đầu chọn Neo4j, truy vấn đọc trong miền đơn giản và chạy tuần tự. Mỗi cặp có ít nhất 10 lượt đo sau warm-up và ngân sách riêng cho xác minh. Chế độ warm-query-cache được chọn làm mặc định; chế độ khảo sát lập kế hoạch tách thành nhóm khác, không trộn số đo hai chế độ.</p>
+<p>Runner phải xuất đủ dữ liệu thô và thống kê có thể tính lại. Trường hợp timeout, lỗi, kết quả lệch hoặc thiếu số đo được phân loại rõ. Ngưỡng tỷ lệ và chênh tuyệt đối là tham số nghiên cứu; vượt ngưỡng chỉ tạo ứng viên cần điều tra, không tự khẳng định lỗi tối ưu hóa.</p>
+<h3>4.4. Đánh đổi</h3>
+<p>Đo lặp làm tốn thời gian, giảm số cặp được kiểm tra trong một phiên. Thực nghiệm phải báo cả số cặp hoàn tất và chi phí xác minh. Một chính sách ưu tiên đo truy vấn quá nhanh có thể làm sai lệch danh sách ứng viên; cần giữ tiêu chí đầu vào và ngân sách minh bạch.</p>
+</div>
+<div class="footer"><span>Hiệu năng · Đo lặp có kiểm soát · Hồ sơ tái hiện</span><span>4 / 6</span></div>
+</section><section class="page" id="muc-5" aria-label="Trang 5">
+<div class="running"><span>BÁO CÁO SOTA 3 · GRAPHGENIE</span><span>How: quy trình đo và diễn giải</span></div>
+<div class="page-content"><h2>How: quy trình đo và diễn giải</h2>
+<h3>5.1. Chuẩn bị và warm-up</h3>
+<p>Lưu cấu hình máy chủ, bộ dữ liệu, chỉ mục và thông tin máy. Chạy thử Q/Q′, lấy đủ kết quả và kiểm tra quan hệ tương đương trong miền hỗ trợ. Chọn số warm-up định trước, chẳng hạn ba lượt cho mỗi truy vấn; không đổi chính sách cache giữa hai vế. Giá trị này cần được kiểm tra độ nhạy.</p>
+<h3>5.2. Đo theo cặp và kiểm soát thứ tự</h3>
+<pre><code>Kiểm tra kết quả Q và Q′ → warm-up
+Lượt chẵn: Q rồi Q′; lượt lẻ: Q′ rồi Q
+Sau mỗi truy vấn: lấy đủ kết quả, lưu summary và wall time
+Đủ số lượt → tính thống kê → chạy phiên xác minh độc lập
+Lỗi / hết ngân sách → xuất trạng thái chưa đủ bằng chứng</code></pre>
+<p>Dùng đồng hồ đơn điệu cho thời gian phía client, kết thúc khi kết quả đã được lấy đủ. Lưu thời gian summary thành cột khác. Không chạy đồng thời hai vế. Một phiên xác minh độc lập dùng cùng snapshot và chính sách, giúp kiểm tra rằng xu hướng không chỉ xuất hiện trong một phiên.</p>
+<h3>5.3. Thống kê và điều kiện ứng viên</h3>
+<p>Tính trung vị mQ, mQ′ và <code>ρ = max(mQ,mQ′)/min(mQ,mQ′)</code> khi cả hai dương. Tính thêm <code>Δ = |mQ−mQ′|</code> và khoảng tứ phân vị (IQR). Không dùng thời gian bằng 0, timeout hay lỗi làm mẫu số. Trung vị giảm ảnh hưởng giá trị ngoại lệ, nhưng không tự loại hết nhiễu.</p>
+<p>Ứng viên cần vượt ngưỡng tỷ lệ và độ chênh tuyệt đối, đồng thời có xu hướng ổn định qua các lượt và phiên xác minh. Có thể báo khoảng tin cậy bằng bootstrap nếu triển khai đúng, nhưng bản tối thiểu chỉ tuyên bố thống kê mô tả. Ngưỡng ổn định cần được ghi thành tham số; chưa tự gọi kết quả là “có ý nghĩa thống kê”.</p>
+<h3>5.4. Ví dụ minh họa và hồ sơ</h3>
+<table><thead><tr><th>Cặp tự xây dựng</th><th>Trung vị giả định</th><th>Cách diễn giải</th></tr></thead><tbody>
+<tr><td>A</td><td>500 ms và 80 ms</td><td>ρ = 6,25; kiểm tra độ ổn định, kết quả và kế hoạch trước kết luận.</td></tr>
+<tr><td>B</td><td>2 ms và 0,3 ms</td><td>Tỷ lệ lớn nhưng Δ nhỏ; cần xét độ phân giải và tác động thực tế.</td></tr>
+<tr><td>C</td><td>Kết quả khác nhau</td><td>Không dùng như bằng chứng cặp tương đương; điều tra ngữ nghĩa trước.</td></tr>
+</tbody></table>
+<p>Hồ sơ lưu từng lượt, thứ tự, mã lỗi, loại thời gian, cache, query text và kế hoạch EXPLAIN nếu hỗ trợ. PROFILE, nếu dùng, phải nằm trong bước chẩn đoán riêng vì phép đo có thêm instrumentation. Truy vấn có thêm ghi dữ liệu không thuộc phạm vi runner này.</p>
+</div>
+<div class="footer"><span>Hiệu năng · Đo lặp có kiểm soát · Hồ sơ tái hiện</span><span>5 / 6</span></div>
+</section><section class="page" id="muc-6" aria-label="Trang 6">
+<div class="running"><span>BÁO CÁO SOTA 3 · GRAPHGENIE</span><span>Thực nghiệm, giới hạn và kết luận</span></div>
+<div class="page-content"><h2>Thực nghiệm, giới hạn và kết luận</h2>
+<h3>6.1. Kế hoạch đánh giá</h3>
+<p>Chuẩn bị một tập cặp tương đương đã kiểm tra, gồm truy vấn nhanh, vừa và chậm. So sánh B0 kiểm tra một lần với B1 đo lặp trên cùng tập cặp; dùng năm phiên xác minh, ghi chi phí và số cặp hoàn tất. So sánh theo cùng đầu vào trước, rồi thêm ngân sách thời gian bằng nhau để đánh giá đánh đổi thông lượng.</p>
+<p>Đo mức lặp lại của hướng chênh lệch, phân bố tỷ lệ, số ứng viên và thời gian xác minh. “Không ổn định” không tự đồng nghĩa cảnh báo sai. Nếu có bất đồng, cần kiểm tra môi trường và kế hoạch. Chưa có dữ liệu nên chưa ghi tỷ lệ giảm nhiễu hoặc số vấn đề mới.</p>
+<h3>6.2. Giới hạn và kết luận</h3>
+<p>Tải nền, cache dữ liệu và biến đổi kế hoạch khó được cố định tuyệt đối. Một miền đọc và một máy chủ giới hạn khái quát. What là runner xác minh; How là kiểm tra ngữ nghĩa, warm-up, đo xen kẽ và lưu số liệu; Why là cung cấp bằng chứng hiệu năng có thể giải thích. Kết quả vẫn cần điều tra trước khi gọi là lỗi.</p>
+<p class="small"><strong>Lộ trình:</strong> tuần 1 bộ cặp/baseline; tuần 2 bộ đo; tuần 3 thống kê/hồ sơ; tuần 4 phiên xác minh; tuần 5 phân tích và báo cáo.</p>
+<h3>Tài liệu tham khảo</h3><div class="references"><p id="ref1">[1] Y. Jiang, J. Liu, J. Ba, R. H. C. Yap, Z. Liang, M. Rigger. <em>Detecting Logic Bugs in Graph Database Management Systems via Injective and Surjective Graph Query Transformation.</em> ICSE 2024. DOI: 10.1145/3597503.3623307. <a href="https://yuanchengjiang.github.io/docs/GraphGenie-ICSE24.pdf">Nguồn gốc</a>.</p><p id="ref2">[2] Y. Jiang và cộng sự. <em>GraphGenie, mã nguồn.</em> Phân tích hiện thực trong báo cáo dùng bản cục bộ, các file main.py, query_generator.py và query_mutator.py. <a href="https://github.com/YuanchengJiang/GraphGenie">Nguồn gốc</a>.</p><p id="ref3">[3] Q. Mang, A. Fang, B. Yu, H. Chen, P. He. <em>Testing Graph Database Systems via Equivalent Query Rewriting.</em> ICSE 2024. DOI: 10.1145/3597503.3639200. <a href="https://joyemang33.github.io/assets/pdf/GRev.pdf">Nguồn gốc</a>.</p><p id="ref4">[4] Neo4j. <em>Query caches — Cypher Manual.</em> Tài liệu chính thức về cache kế hoạch truy vấn. <a href="https://neo4j.com/docs/cypher-manual/current/planning-and-tuning/caching/">Nguồn gốc</a>.</p><p id="ref5">[5] Neo4j. <em>Manipulate query results — Python Driver Manual.</em> Tài liệu chính thức về kết quả và summary. <a href="https://neo4j.com/docs/python-manual/current/transformers/">Nguồn gốc</a>.</p></div><p class="small">Đối chiếu nguồn ngày 07/10/2026. Thiết kế mở rộng và số liệu minh họa trong báo cáo chưa phải kết quả thực nghiệm.</p></div>
+<div class="footer"><span>Hiệu năng · Đo lặp có kiểm soát · Hồ sơ tái hiện</span><span>6 / 6</span></div>
+</section></main></body></html>

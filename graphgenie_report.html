@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Báo cáo đồ án cuối kỳ về GraphGenie: nội dung bài báo, đánh giá SOTA và đề xuất phát triển theo What–How–Why.">
+  <title>Báo cáo đồ án — Tìm hiểu và phát triển GraphGenie</title>
+  <style>
+    @page { size: A4 portrait; margin: 0; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: #e9edf0; color: #17212a; font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.35; }
+    a { color: #164c78; text-decoration-thickness: .6px; text-underline-offset: 2px; }
+    .reader { max-width: 210mm; margin: 24px auto 18px; padding: 16px 20px; background: #fff; border-radius: 8px; font: 14px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .reader strong { display: block; font-size: 17px; }
+    .reader nav { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 8px; }
+    .page { width: 210mm; height: 297mm; padding: 16mm 19mm 21mm; margin: 0 auto 20px; position: relative; background: white; box-shadow: 0 3px 16px #17212a15; break-after: page; page-break-after: always; }
+    .page:last-child { break-after: auto; page-break-after: auto; }
+    .running { padding-bottom: 6pt; margin-bottom: 12pt; border-bottom: 1px solid #bcc7cf; font-size: 9pt; color: #536271; display: flex; justify-content: space-between; gap: 20px; }
+    .page-content { display: flow-root; }
+    .footer { position: absolute; left: 19mm; right: 19mm; bottom: 12mm; border-top: 1px solid #d4dce1; padding-top: 5pt; color: #536271; font-size: 9pt; display: flex; justify-content: space-between; }
+    .eyebrow { font-size: 10pt; text-transform: uppercase; letter-spacing: .7pt; color: #164c78; font-weight: bold; }
+    h1 { font-size: 23pt; line-height: 1.2; margin: 7pt 0 11pt; }
+    h2 { font-size: 15pt; line-height: 1.25; margin: 0 0 10pt; color: #153d5a; }
+    h3 { font-size: 12.5pt; line-height: 1.3; margin: 12pt 0 5pt; }
+    p { margin: 0 0 8pt; text-align: justify; }
+    ul, ol { padding-left: 19pt; margin: 6pt 0 9pt; }
+    li { margin-bottom: 4pt; }
+    table { width: 100%; border-collapse: collapse; margin: 8pt 0 10pt; font-size: 10.5pt; line-height: 1.28; }
+    th, td { padding: 6pt 7pt; border: 1px solid #c5d0d8; text-align: left; vertical-align: top; }
+    th { background: #edf3f7; color: #153d5a; }
+    .note { padding: 8pt 10pt; background: #f0f5f8; border-left: 3px solid #426c87; margin: 9pt 0; }
+    .note p:last-child { margin-bottom: 0; }
+    .meta { font-size: 11pt; color: #344756; margin: 12pt 0; }
+    .meta p { text-align: left; margin-bottom: 5pt; }
+    code { font-family: Consolas, "Liberation Mono", monospace; font-size: .85em; overflow-wrap: anywhere; }
+    pre { margin: 7pt 0 9pt; padding: 9pt 10pt; border: 1px solid #d1dbe2; background: #f7f9fb; white-space: pre-wrap; font: 9.2pt/1.35 Consolas, "Liberation Mono", monospace; overflow-wrap: anywhere; }
+    pre code { font-size: inherit; }
+    .equation { text-align: center; padding: 7pt; background: #f0f5f8; margin: 8pt 0; font-size: 12pt; }
+    .caption { font-size: 10pt; color: #445967; text-align: left; }
+    .flow { display: flex; gap: 6pt; align-items: center; margin: 10pt 0; font-size: 10pt; }
+    .flow span { flex: 1; padding: 9pt 5pt; border: 1px solid #b6c8d5; background: #f0f5f8; text-align: center; }
+    .flow b { font-weight: normal; }
+    .small { font-size: 10.5pt; }
+    .references { font-size: 9.7pt; line-height: 1.26; }
+    .references p { text-align: left; margin-bottom: 7pt; overflow-wrap: anywhere; }
+    .references a { overflow-wrap: anywhere; }
+    .dense { font-size: 11.5pt; line-height: 1.3; }
+    :focus-visible { outline: 2px solid #164c78; outline-offset: 3px; }
+    @media screen and (max-width: 820px) { .reader { margin: 12px; } .page { width: auto; height: auto; min-height: 0; margin: 12px; padding: 24px 22px 65px; } .running { font-size: 9pt; } .footer { left: 22px; right: 22px; bottom: 20px; } h1 { font-size: 21pt; } table { font-size: 9.8pt; } th, td { padding: 5pt; } .flow { flex-wrap: wrap; } .flow span { min-width: 90px; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    @media print { body { background: white; } .reader { display: none; } .page { margin: 0; box-shadow: none; } a { color: inherit; text-decoration: none; } pre, .note, table, .flow { break-inside: avoid; } h2, h3 { break-after: avoid; } }
+  </style>
+</head>
+<body>
+  <aside class="reader" aria-label="Hướng dẫn đọc và in">
+    <strong>Báo cáo đồ án cuối kỳ · 7 trang A4</strong>
+    Nội dung gồm: bài báo, SOTA và đề xuất phát triển What–How–Why. Để xuất PDF, dùng Ctrl+P hoặc Cmd+P, chọn A4, tỷ lệ 100%, tắt đầu trang/chân trang của trình duyệt. Điền thông tin sinh viên trong file trước khi nộp.
+    <nav aria-label="Mục lục"><a href="#noi-dung">1. Nội dung bài báo</a><a href="#sota">2. Tính SOTA</a><a href="#what">3. What</a><a href="#how">4. How</a><a href="#why">5. Why &amp; tài liệu tham khảo</a></nav>
+  </aside>
+
+  <main>
+    <section class="page" id="noi-dung" aria-label="Trang 1">
+      <div class="running"><span>BÁO CÁO ĐỒ ÁN CUỐI KỲ</span><span>Cơ sở dữ liệu đồ thị · GraphGenie</span></div>
+      <div class="page-content">
+        <div class="eyebrow">Tìm hiểu công trình nghiên cứu và đề xuất phát triển</div>
+        <h1>GraphGenie: Kiểm thử cơ sở dữ liệu đồ thị bằng biến đổi truy vấn</h1>
+        <div class="meta">
+          <p><strong>Sinh viên:</strong> ........................................ <strong>MSSV:</strong> ........................</p>
+          <p><strong>Lớp/Học phần:</strong> ................................ <strong>Giảng viên:</strong> ........................</p>
+          <p><strong>Công trình khảo sát:</strong> Jiang và cộng sự, ICSE 2024, DOI: <a href="https://doi.org/10.1145/3597503.3623307">10.1145/3597503.3623307</a>. <a href="#ref1">[1]</a></p>
+        </div>
+        <h3>Tóm tắt</h3>
+        <p>GraphGenie là công cụ kiểm thử tự động nhằm phát hiện lỗi logic trong hệ quản trị cơ sở dữ liệu đồ thị. Thay vì tính trước đáp án chính xác cho từng truy vấn ngẫu nhiên, công cụ sinh nhiều truy vấn có quan hệ ngữ nghĩa dự kiến, rồi kiểm tra quan hệ giữa các kết quả. Báo cáo phân tích ý tưởng này qua mã nguồn, đặt công trình trong bối cảnh các phương pháp kiểm thử liên quan và đề xuất một hướng phát triển có thể triển khai trong đồ án.</p>
+        <p>Ba hướng đề xuất tương ứng ba điểm đóng góp: bảo đảm điều kiện ngữ nghĩa của phép biến đổi, lựa chọn quy tắc theo phản hồi và xác minh hiệu năng bằng đo lặp. Seed, ngân sách chạy và hồ sơ tái hiện là hạ tầng chung. Các kết quả nghiên cứu đã công bố được phân biệt với nhận xét từ mã nguồn và kế hoạch thực nghiệm của đồ án.</p>
+        <h2>1. Nội dung chính bài báo</h2>
+        <h3>1.1. Bài toán và động cơ nghiên cứu</h3>
+        <p>Cơ sở dữ liệu đồ thị biểu diễn thực thể bằng nút, quan hệ bằng cạnh và thông tin bổ sung bằng thuộc tính. Truy vấn phải xử lý hướng cạnh, nhãn, đường đi, chu trình và phép tổng hợp. Một hệ quản trị có thể thực thi truy vấn thành công nhưng trả về kết quả sai; đây là lỗi logic, khó nhận biết hơn lỗi làm chương trình dừng hoặc báo ngoại lệ.</p>
+        <p>Khó khăn quan trọng là <em>test oracle</em>: tiêu chí để biết một kết quả có đúng hay không. Với truy vấn ngẫu nhiên, việc tự tính đáp án chuẩn thường tốn công. So sánh nhiều hệ quản trị cũng có thể gặp khác biệt cú pháp và ngữ nghĩa. GraphGenie lựa chọn kiểm thử biến hình: so sánh các lần thực thi liên quan trên cùng hệ quản trị.</p>
+        <h3>1.2. Câu hỏi trung tâm</h3>
+        <p>Nếu biến đổi cách diễn đạt một truy vấn mà vẫn giữ quan hệ xác định với yêu cầu ban đầu, hệ quản trị có trả kết quả phù hợp không? Cách đặt câu hỏi này cho phép tìm dấu hiệu lỗi mà chưa cần biết đáp án tuyệt đối. Đối tượng phân tích trong báo cáo là phép biến đổi mẫu đồ thị, cơ chế so sánh và khả năng lưu bằng chứng để kiểm tra lại.</p>
+      </div>
+      <div class="footer"><span>GraphGenie · Nội dung nghiên cứu</span><span>1 / 7</span></div>
+    </section>
+
+    <section class="page" aria-label="Trang 2">
+      <div class="running"><span>1. NỘI DUNG CHÍNH BÀI BÁO</span><span>Nguyên lý và ví dụ</span></div>
+      <div class="page-content">
+        <h2>1.3. Biến đổi truy vấn và quan hệ kết quả</h2>
+        <p>GQT — <em>Graph Query Transformation</em> — khai thác ánh xạ đơn ánh, toàn ánh và song ánh để kiểm tra quan hệ tương đương hoặc bao hàm kết quả. <a href="https://yuanchengjiang.github.io/docs/GraphGenie-ICSE24.pdf">[1, §3–4]</a></p>
+        <p>Về toán học, đơn ánh không gộp hai phần tử khác nhau thành một; toàn ánh phủ hết tập đích; song ánh có cả hai tính chất. Trong kiểm thử, cần xác định rõ ánh xạ đang liên hệ những đối tượng nào và hướng của nó. Không thể suy ra chiều tăng/giảm số đếm chỉ từ tên “đơn ánh” hoặc từ việc nhìn thấy mẫu có ít cạnh hơn.</p>
+        <div class="equation">Tương đương: R(Q′) = R(Q)<br>Hạn chế: R(Q′) ⊆ R(Q) · Tổng quát hóa: R(Q′) ⊇ R(Q)</div>
+        <p>Ở đây, <em>R</em> là kết quả theo ngữ nghĩa đang xét. Khi hiện thực bằng số đếm, tập con thường dẫn đến bất đẳng thức ≤, nhưng cần xét số lần lặp, null, phép chiếu và <code>DISTINCT</code>. Hai số đếm bằng nhau cũng chưa bảo đảm hai tập kết quả giống nhau.</p>
+        <h3>Ví dụ tự xây dựng: chuyển nhãn vào điều kiện lọc</h3>
+        <pre><code>// Q: nhãn Person nằm trong mẫu nút
+MATCH (p:Person)-[:ACTED_IN]-&gt;(m:Movie)
+RETURN count(p)
+
+// Q′: cùng điều kiện, chuyển nhãn Person sang WHERE
+MATCH (p)-[:ACTED_IN]-&gt;(m:Movie)
+WHERE p:Person
+RETURN count(p)</code></pre>
+        <p>Với dữ liệu không thay đổi, ví dụ này yêu cầu hai kết quả bằng nhau. Nếu Q trả 12 còn Q′ trả 9, cần kiểm tra phép biến đổi và tái hiện trên máy chủ. Các nhãn trong ví dụ dùng để minh họa, không phải kết quả thực nghiệm của đồ án.</p>
+        <h3>Ví dụ tự xây dựng: bổ sung ràng buộc</h3>
+        <p>Từ <code>MATCH (p)-[:ACTED_IN]-&gt;(m:Movie) RETURN count(p)</code>, thêm nhãn <code>Person</code> vào p chỉ giữ những lần khớp thỏa nhãn đó. Với phép đếm và mẫu cụ thể này, kết quả mới không được lớn hơn kết quả cũ. Đây là cơ sở trực quan của nhóm truy vấn <em>restricted</em> trong mã nguồn.</p>
+        <h3>1.4. Vai trò của điều kiện áp dụng</h3>
+        <p><code>count(p)</code> đếm những lần p khác null, còn <code>count(DISTINCT p)</code> đếm giá trị p khác nhau. Một người xuất hiện trong nhiều đường đi có thể được đếm nhiều lần. Vì vậy, quy tắc giữ đúng quan hệ cho một phép đếm chưa chắc đúng cho phép đếm khác.</p>
+        <p>Trong phân tích của báo cáo, mỗi quy tắc cần kèm tiền điều kiện và loại quan hệ mong đợi. Khi ghép quy tắc, “tương đương rồi hạn chế” có thể vẫn giữ chiều hạn chế nếu từng bước hợp lệ. Chuỗi vừa mở rộng vừa thu hẹp thường không cho một chiều so sánh đơn giản; không nên áp dụng oracle bất đẳng thức khi chưa chứng minh được.</p>
+      </div>
+      <div class="footer"><span>GraphGenie · Ngữ nghĩa và test oracle</span><span>2 / 7</span></div>
+    </section>
+
+    <section class="page dense" aria-label="Trang 3">
+      <div class="running"><span>1. NỘI DUNG CHÍNH BÀI BÁO</span><span>Hiện thực và bằng chứng</span></div>
+      <div class="page-content">
+        <h2>1.5. Đối chiếu với hiện thực trong repository</h2>
+        <div class="flow" aria-label="Quy trình kiểm thử"><span>Quét<br>dữ liệu</span><b>→</b><span>Sinh<br>truy vấn Q</span><b>→</b><span>Biến đổi<br>thành Q′</span><b>→</b><span>Chạy và<br>so sánh</span><b>→</b><span>Ghi<br>bằng chứng</span></div>
+        <table>
+          <thead><tr><th>Thành phần</th><th>Chức năng quan sát từ mã nguồn cục bộ</th></tr></thead>
+          <tbody>
+            <tr><td><code>schema_scanner.py</code></td><td>Lấy nhãn, thuộc tính và ma trận kết nối từ dữ liệu Neo4j có sẵn.</td></tr>
+            <tr><td><code>query_generator.py</code></td><td>Sinh mẫu đường đi, chiều cạnh, nhãn, chu trình và truy vấn dùng count.</td></tr>
+            <tr><td><code>query_mutator.py</code></td><td>Tạo nhóm tương đương và restricted; phối hợp quy tắc cấu trúc, nhãn/thuộc tính và các phép viết lại khác.</td></tr>
+            <tr><td><code>main.py</code></td><td>Kết nối, thực thi, so sánh giá trị, kiểm tra thời gian và ghi log.</td></tr>
+          </tbody>
+        </table>
+        <p>Hiện thực dùng regex và thao tác chuỗi để phân tích truy vấn. Nhánh kiểm tra logic chủ yếu so sánh giá trị đầu tiên của hàng đầu tiên; phần sinh truy vấn tập trung vào <code>count</code>. Đây là phạm vi cụ thể của mã đang khảo sát, cần phân biệt với một bộ kiểm thử so sánh toàn bộ bảng kết quả.</p>
+        <h3>1.6. Kết quả bài báo đã công bố</h3>
+        <p>Tác giả đánh giá sáu hệ: Neo4j, RedisGraph, AgensGraph, TinkerPop, JanusGraph và HugeGraph; báo cáo 25 vấn đề gồm 16 lỗi logic, 3 lỗi nội bộ và 6 vấn đề hiệu năng. <a href="https://yuanchengjiang.github.io/docs/GraphGenie-ICSE24.pdf">[1, §6]</a></p>
+        <table>
+          <thead><tr><th>Loại vấn đề</th><th>Số lượng</th><th>Trạng thái tại thời điểm bài báo</th></tr></thead>
+          <tbody>
+            <tr><td>Lỗi logic</td><td>16</td><td>6 đã sửa; 3 xác nhận; 7 chưa xác nhận.</td></tr>
+            <tr><td>Lỗi nội bộ</td><td>3</td><td>3 đã sửa.</td></tr>
+            <tr><td>Hiệu năng</td><td>6</td><td>2 đã sửa; 2 xác nhận; 2 được ghi là intended.</td></tr>
+          </tbody>
+        </table>
+        <p class="caption">Nguồn: Bảng 3–4 của [1]. “Intended” là trạng thái phản hồi, không đồng nghĩa lỗi đã được xác nhận. Đây là số liệu của tác giả, không phải số liệu do đồ án chạy lại.</p>
+        <p>Trong so sánh 24 giờ, bài báo nêu 42.609 trường hợp sau khử trùng lặp cho GraphGenie và 151 cho GDBMeter; tiêu chí khử trùng dựa trên cặp số đếm. <a href="https://yuanchengjiang.github.io/docs/GraphGenie-ICSE24.pdf">[1, §6.2]</a> Theo đánh giá của báo cáo, các con số này chưa thể đại diện trực tiếp cho số nguyên nhân lỗi độc lập.</p>
+        <h3>1.7. Nhận xét từ mã nguồn</h3>
+        <p>Repository có ba nhánh kết nối Cypher; mã Gremlin chưa được phát hành theo README. <code>max_testing_query_num</code> chưa dừng vòng <code>while True</code>; <code>max_thread_num</code> chưa giới hạn luồng. Cảnh báo hiệu năng và restricted được ghi vào <code>testing.log</code>, còn <code>bug.log</code> chủ yếu chứa cặp nghi ngờ lỗi logic tương đương. Những điểm này tạo cơ sở thực tế cho phần đề xuất phát triển.</p>
+      </div>
+      <div class="footer"><span>GraphGenie · Số liệu công bố và hiện thực cục bộ</span><span>3 / 7</span></div>
+    </section>
+
+    <section class="page dense" id="sota" aria-label="Trang 4">
+      <div class="running"><span>2. TÍNH SOTA</span><span>Đóng góp và vị trí nghiên cứu</span></div>
+      <div class="page-content">
+        <h2>2. Tính SOTA của GraphGenie</h2>
+        <p><em>State of the Art</em> cần được xét theo thời điểm, bài toán và điều kiện đánh giá. Trong báo cáo này, SOTA được hiểu là vị trí đóng góp của công trình so với những cách kiểm thử liên quan, không phải danh hiệu “tốt nhất” áp dụng cho mọi hệ quản trị.</p>
+        <table>
+          <thead><tr><th>Phương pháp</th><th>Cơ chế chính</th><th>Ý nghĩa khi đối chiếu</th></tr></thead>
+          <tbody>
+            <tr><td>GDsmith<br>2022 <a href="https://arxiv.org/abs/2206.08530">[3]</a></td><td>Sinh Cypher bằng khung và hoàn thiện; hỗ trợ kiểm thử vi sai giữa các hệ.</td><td>Ưu tiên truy vấn hợp lệ, kết quả không rỗng và đa dạng hành vi; đối chiếu nhiều hệ cần xử lý khác biệt ngữ nghĩa.</td></tr>
+            <tr><td>GDBMeter<br>ISSTA 2023 <a href="https://www.research-collection.ethz.ch/items/7be0bcab-d1a7-4385-86d2-8dae60bdc276">[4]</a></td><td>Phân hoạch truy vấn theo điều kiện; ghép kết quả để kiểm tra truy vấn gốc.</td><td>Có oracle trên một hệ, tập trung vào quan hệ của điều kiện lọc.</td></tr>
+            <tr><td>GraphGenie<br>ICSE 2024</td><td>Biến đổi mẫu đồ thị; kiểm tra quan hệ tương đương hoặc restricted trong hiện thực khảo sát.</td><td>Bổ sung cách khai thác cấu trúc đồ thị, thay vì chỉ thử biến đổi phần lọc.</td></tr>
+            <tr><td>GRev<br>ICSE 2024 <a href="https://joyemang33.github.io/assets/pdf/GRev.pdf">[5]</a></td><td>Abstract Syntax Graph và Random Walk Covering để sinh truy vấn tương đương.</td><td>Công trình cùng thời điểm, cho thấy còn hướng viết lại dựa trên biểu diễn ngữ nghĩa.</td></tr>
+            <tr><td>Dinkel<br>arXiv v3, 2025 <a href="https://arxiv.org/abs/2408.07525v3">[6]</a></td><td>Theo dõi phạm vi biến và lược đồ; biến đổi ở mức mệnh đề và biểu thức.</td><td>Mở rộng việc sinh truy vấn phức tạp và phạm vi oracle so với bộ sinh nhẹ trong repository.</td></tr>
+          </tbody>
+        </table>
+        <h3>2.1. SOTA 1 — Oracle dựa trên mẫu đồ thị</h3>
+        <p>GQT khai thác ánh xạ mẫu để kiểm tra quan hệ tương đương hoặc bao hàm, bổ sung hướng kiểm thử cấu trúc đồ thị. <a href="https://yuanchengjiang.github.io/docs/GraphGenie-ICSE24.pdf">[1]</a> Khoảng trống hiện thực cần xử lý là điều kiện ngữ nghĩa của từng quy tắc. Điểm này tương ứng <strong>W1–H1–Y1: biến đổi có kiểm tra tiền điều kiện</strong>.</p>
+        <h3>2.2. SOTA 2 — Kết hợp và lặp nhiều quy tắc</h3>
+        <p>Bộ biến đổi cục bộ phối hợp quy tắc cấu trúc, nhãn/thuộc tính và các phép viết lại khác, rồi tiếp tục biến đổi truy vấn để tăng đa dạng. Việc chọn quy tắc lặp hiện dùng lựa chọn ngẫu nhiên. Điểm này tương ứng <strong>W2–H2–Y2: lựa chọn quy tắc theo phản hồi thực thi</strong>.</p>
+        <h3>2.3. SOTA 3 — Khai thác cặp truy vấn cho hiệu năng</h3>
+        <p>Cặp tương đương không chỉ phục vụ so sánh kết quả mà còn cho phép khảo sát chênh lệch thời gian. Mã hiện tại kiểm tra tỷ lệ thời gian trong một chiều. Điểm này tương ứng <strong>W3–H3–Y3: đo lặp và xác minh cảnh báo hiệu năng</strong>.</p>
+        <p class="small"><strong>Đánh giá:</strong> đây là ba trục đóng góp, không phải ba phương pháp đã được chứng minh tốt nhất. GRev là công trình cùng ICSE 2024; Dinkel v3 (2025) và GRAF, preprint 2026, cho thấy lĩnh vực tiếp tục phát triển. <a href="https://joyemang33.github.io/assets/pdf/GRev.pdf">[5]</a> <a href="https://arxiv.org/abs/2408.07525v3">[6]</a> <a href="https://arxiv.org/abs/2607.03741">[7]</a> Số lỗi giữa các bài báo không đủ để xếp hạng vì khác dữ liệu và điều kiện.</p>
+      </div>
+      <div class="footer"><span>GraphGenie · SOTA được xét theo bối cảnh</span><span>4 / 7</span></div>
+    </section>
+
+    <section class="page" id="what" aria-label="Trang 5">
+      <div class="running"><span>3. PHÁT TRIỂN TỪ BÀI BÁO</span><span>What · Phạm vi và mục tiêu</span></div>
+      <div class="page-content">
+        <h2>3.1. What — Phát triển điều gì?</h2>
+        <p>Đề xuất phiên bản <strong>GraphGenie-R</strong> gồm ba mô-đun phát triển tương ứng ba điểm SOTA ở phần 2. Mục tiêu là nâng chất lượng oracle, hiệu quả chọn phép biến đổi và độ tin cậy khi kiểm tra hiệu năng. Khả năng tái lập là yêu cầu xuyên suốt; chưa có căn cứ khẳng định các mô-đun đề xuất vượt phương pháp hiện có.</p>
+        <div class="note"><p><strong>Trạng thái:</strong> các chức năng dưới đây là đề xuất, chưa có kết quả triển khai và đánh giá. Không sử dụng số liệu của bài báo làm kết quả thực nghiệm của GraphGenie-R.</p></div>
+        <table>
+          <thead><tr><th>Điểm đóng góp gốc</th><th>What — Mô-đun phát triển tương ứng</th></tr></thead>
+          <tbody>
+            <tr><td>SOTA 1: oracle mẫu đồ thị</td><td>W1: bộ biến đổi có tiền điều kiện và dấu vết quan hệ ngữ nghĩa.</td></tr>
+            <tr><td>SOTA 2: kết hợp quy tắc</td><td>W2: bộ chọn quy tắc thích nghi theo phản hồi thực thi.</td></tr>
+            <tr><td>SOTA 3: kiểm tra hiệu năng</td><td>W3: bộ xác minh hiệu năng bằng đo lặp và hồ sơ tái hiện.</td></tr>
+          </tbody>
+        </table>
+        <h3 id="what-1">W1 — Biến đổi có kiểm tra điều kiện ngữ nghĩa</h3>
+        <p>Xây dựng mô-đun nhận diện miền truy vấn hỗ trợ và kiểm tra quy tắc trước khi áp dụng. Mỗi phép biến đổi xuất Q′, loại quan hệ kỳ vọng và dấu vết. Khởi đầu với đổi tên biến, thêm <code>AND True</code> và chuyển nhãn vào <code>WHERE</code>; cấu trúc chưa hỗ trợ phải được từ chối rõ.</p>
+        <h3 id="what-2">W2 — Chọn quy tắc theo phản hồi</h3>
+        <p>Thay việc chọn ngẫu nhiên đều bằng bộ chọn có trọng số, học từ lịch sử áp dụng thành công, đa dạng mẫu và cảnh báo tái hiện. Sản phẩm gồm bộ thống kê từng quy tắc, chính sách cập nhật trọng số và log chuỗi biến đổi. Giữ một phần ngân sách khám phá để tránh chỉ lặp những quy tắc quen thuộc.</p>
+        <h3 id="what-3">W3 — Xác minh hiệu năng bằng đo lặp</h3>
+        <p>Phát triển runner đo lặp cặp truy vấn đã được kiểm tra tương đương. Mô-đun xuất phân bố thời gian, tỷ lệ trung vị, mức biến động và hồ sơ chạy lại. Khảo sát cả hai chiều chênh lệch; trường hợp không tái hiện ổn định được phân loại riêng, chưa kết luận là lỗi hiệu năng.</p>
+        <h3>Phạm vi và hạ tầng chung</h3>
+        <p>Bản tối thiểu chọn Neo4j, dữ liệu cố định và truy vấn đọc <code>MATCH ... RETURN count(x)</code>, đường đi có độ dài cố định. Chưa xử lý <code>OPTIONAL MATCH</code>, tổng hợp phức tạp hoặc <code>SKIP/LIMIT</code>. Seed, giới hạn truy vấn/thời gian, pool có giới hạn và hồ sơ JSON là hạ tầng hỗ trợ cả ba hướng; parser/AST đầy đủ là bước mở rộng dài hạn.</p>
+        <p class="small"><strong>Lộ trình dự kiến:</strong> tuần 1 baseline và hạ tầng; tuần 2 W1; tuần 3 W2; tuần 4 W3; tuần 5 thực nghiệm và hoàn thiện báo cáo.</p>
+      </div>
+      <div class="footer"><span>GraphGenie-R · Đề xuất phát triển, chưa triển khai</span><span>5 / 7</span></div>
+    </section>
+
+    <section class="page dense" id="how" aria-label="Trang 6">
+      <div class="running"><span>3. PHÁT TRIỂN TỪ BÀI BÁO</span><span>How · Hiện thực và đánh giá</span></div>
+      <div class="page-content">
+        <h2>3.2. How — Phát triển bằng cách nào?</h2>
+        <h3 id="how-1">H1 — Hiện thực cho W1</h3>
+        <p>Phân tích miền Cypher tối thiểu thành biểu diễn nút, cạnh, biến, nhãn, điều kiện và phép trả về. Mỗi quy tắc có hàm <code>can_apply(Q)</code> và hàm biến đổi trả về quan hệ kỳ vọng. Kiểm tra <code>DISTINCT</code>, null, độ dài đường đi và miền biến; từ chối trường hợp chưa hỗ trợ. Dùng đồ thị nhỏ có đáp án biết trước để kiểm tra quan hệ của quy tắc. Ghép quy tắc chỉ khi quan hệ kết quả có thể suy ra hợp lệ.</p>
+        <h3 id="how-2">H2 — Hiện thực cho W2</h3>
+        <p>Gán trọng số ban đầu bằng nhau; trong các quy tắc thỏa tiền điều kiện, dành chẳng hạn 20% lượt cho lựa chọn ngẫu nhiên và phần còn lại chọn theo trọng số. Cập nhật điểm từ tỷ lệ truy vấn hợp lệ, độ mới của mẫu và cảnh báo đã tái hiện; giảm ưu tiên khi thường xuyên thất bại hoặc vượt ngân sách. Đây là tham số thử nghiệm, chưa phải thiết lập tối ưu.</p>
+        <pre><code>Q → lọc quy tắc hợp lệ → chọn theo chính sách → Q′
+  → thực thi và xác minh → cập nhật điểm, lưu dấu vết</code></pre>
+        <p class="small">Độ mới ban đầu đo bằng fingerprint mẫu và chuỗi quy tắc; đó là đại diện cho đa dạng đầu vào, chưa phải độ bao phủ mã máy chủ. Bộ chọn dùng RNG riêng và ghi các lần cập nhật để hỗ trợ tái lập.</p>
+        <h3 id="how-3">H3 — Hiện thực cho W3</h3>
+        <p>Kiểm tra kết quả tương đương trước khi đo. Chạy tuần tự, làm nóng cả hai truy vấn, đo ít nhất 10 cặp theo thứ tự xen kẽ Q–Q′ và Q′–Q. So sánh trung vị, tỷ lệ lớn/nhỏ và khoảng biến động; chỉ ghi nghi ngờ khi chênh lệch vượt ngưỡng cấu hình và lặp lại ổn định. Lưu dữ liệu, phiên bản, điều kiện tải và kế hoạch <code>EXPLAIN</code> nếu hệ quản trị hỗ trợ. Ngưỡng tỷ lệ không tự chứng minh nguyên nhân lỗi.</p>
+        <h3>Thiết kế thực nghiệm dự kiến</h3>
+        <table>
+          <thead><tr><th>Cấu hình</th><th>Mục tiêu so sánh</th></tr></thead>
+          <tbody>
+            <tr><td>B0: bản gốc + runner chung</td><td>Baseline; runner áp seed và thời gian dừng cho phép so sánh, không đổi quy tắc biến đổi.</td></tr>
+            <tr><td>B1: bật W1</td><td>Đo số cặp oracle hợp lệ và cảnh báo được kiểm tra ngữ nghĩa.</td></tr>
+            <tr><td>B2: bật W1 + W2</td><td>So với B1 để đo lợi ích chọn quy tắc theo phản hồi.</td></tr>
+            <tr><td>B3: bật W1 + W2 + W3</td><td>So với B2 để đo độ ổn định và chi phí xác minh hiệu năng.</td></tr>
+          </tbody>
+        </table>
+        <p class="small">Dùng cùng máy, phiên bản, dữ liệu và 5 seed; 30 phút/cấu hình/seed, tổng 10 giờ chưa kể chuẩn bị. Đo tỷ lệ truy vấn hợp lệ, mẫu mới, cảnh báo tái hiện và chi phí xác minh. Cảnh báo sai cần kiểm tra ngữ nghĩa thủ công. So sánh hiệu năng còn cần tập cặp truy vấn chung cho B2/B3 để tránh nhiễu do đầu vào khác nhau.</p>
+      </div>
+      <div class="footer"><span>GraphGenie-R · Kế hoạch hiện thực và thực nghiệm</span><span>6 / 7</span></div>
+    </section>
+
+    <section class="page dense" id="why" aria-label="Trang 7">
+      <div class="running"><span>3. PHÁT TRIỂN TỪ BÀI BÁO</span><span>Why · Kết luận và tài liệu tham khảo</span></div>
+      <div class="page-content">
+        <h2>3.3. Why — Vì sao chọn hướng phát triển này?</h2>
+        <h3 id="why-1">Y1 — Vì sao cần W1?</h3>
+        <p>Oracle đáng tin chỉ khi phép biến đổi đúng trong ngữ cảnh đang xét. Kiểm tra tiền điều kiện giúp phân biệt lỗi máy chủ với việc dùng sai quy tắc, đồng thời tạo cơ sở mở rộng miền truy vấn có kiểm soát. Giả thuyết cần đánh giá là cảnh báo do sai điều kiện giảm, với chi phí có thể mất một phần độ bao phủ.</p>
+        <h3 id="why-2">Y2 — Vì sao cần W2?</h3>
+        <p>Chọn ngẫu nhiên có thể lặp các phép biến đổi ít hữu ích. Phản hồi giúp phân bổ ngân sách cho quy tắc tạo mẫu mới hoặc cảnh báo tái hiện, trong khi phần khám phá giữ đa dạng. Cần kiểm chứng trên cùng ngân sách; cải thiện số mẫu không tự đồng nghĩa phát hiện thêm lỗi độc lập.</p>
+        <h3 id="why-3">Y3 — Vì sao cần W3?</h3>
+        <p>Một lần đo chịu ảnh hưởng của cache, tải và thứ tự chạy. Đo lặp giúp nhận diện chênh lệch ổn định, còn hồ sơ hỗ trợ điều tra kế hoạch thực thi. Lợi ích cần đánh giá là chất lượng bằng chứng hiệu năng; chi phí là thời gian xác minh tăng và thông lượng kiểm thử giảm.</p>
+        <h3>Giới hạn và nguy cơ ảnh hưởng kết luận</h3>
+        <p>Seed không cố định lịch luồng hoặc kế hoạch máy chủ. Trọng số thích nghi có thể thiên lệch; cần thử nhiều seed và giữ ngân sách khám phá. Một hệ quản trị, một bộ dữ liệu chưa đại diện mọi tình huống. Báo cáo cả chi phí, truy vấn bị loại và trường hợp không tái hiện; chưa có thực nghiệm thì chưa khẳng định ba hướng phát triển đạt hiệu quả.</p>
+        <h3>Kết luận</h3>
+        <p>Ba trục đóng góp của GraphGenie dẫn đến ba đề xuất tương ứng: W1 củng cố oracle, W2 cải tiến chọn quy tắc và W3 xác minh hiệu năng. Mỗi đề xuất có cách thực hiện và lý do riêng, cùng dùng hạ tầng tái lập. Kết quả của phần phát triển phải được đánh giá bằng thực nghiệm độc lập với số liệu bài báo.</p>
+        <h3>Tài liệu tham khảo</h3>
+        <div class="references">
+          <p id="ref1">[1] Y. Jiang, J. Liu, J. Ba, R. H. C. Yap, Z. Liang, M. Rigger. <em>Detecting Logic Bugs in Graph Database Management Systems via Injective and Surjective Graph Query Transformation.</em> ICSE 2024, 12 trang. DOI: <a href="https://doi.org/10.1145/3597503.3623307">10.1145/3597503.3623307</a>. <a href="https://yuanchengjiang.github.io/docs/GraphGenie-ICSE24.pdf">PDF tác giả</a>.</p>
+          <p>[2] Y. Jiang và cộng sự. <em>GraphGenie — mã nguồn công cụ.</em> <a href="https://github.com/YuanchengJiang/GraphGenie">github.com/YuanchengJiang/GraphGenie</a>. Nhận xét về hành vi hiện thực trong báo cáo dựa trên các file Python và INI của bản cục bộ được cung cấp cho đồ án.</p>
+          <p>[3] W. Lin và cộng sự. <em>GDsmith: Detecting Bugs in Graph Database Engines.</em> arXiv:2206.08530, 2022. <a href="https://arxiv.org/abs/2206.08530">Bản tác giả</a>.</p>
+          <p>[4] M. Kamm, M. Rigger, C. Zhang, Z. Su. <em>Testing Graph Database Engines via Query Partitioning.</em> ISSTA 2023, tr. 140–149. DOI: <a href="https://doi.org/10.1145/3597926.3598044">10.1145/3597926.3598044</a>. <a href="https://www.research-collection.ethz.ch/items/7be0bcab-d1a7-4385-86d2-8dae60bdc276">ETH Research Collection</a>.</p>
+          <p>[5] Q. Mang, A. Fang, B. Yu, H. Chen, P. He. <em>Testing Graph Database Systems via Equivalent Query Rewriting.</em> ICSE 2024. DOI: <a href="https://doi.org/10.1145/3597503.3639200">10.1145/3597503.3639200</a>. <a href="https://joyemang33.github.io/assets/pdf/GRev.pdf">PDF tác giả</a>.</p>
+          <p>[6] C. Wüst, Z.-M. Jiang, Z. Su. <em>Dinkel: State-Aware and Granular Framework for Validating Graph Databases.</em> arXiv:2408.07525v3, cập nhật 29/09/2025. <a href="https://arxiv.org/abs/2408.07525v3">Bản v3 được sử dụng trong báo cáo</a>.</p>
+          <p>[7] Y. Li và cộng sự. <em>Graph-Aware Fuzzing for Graph Database Management Systems.</em> arXiv:2607.03741, 07/2026; preprint. <a href="https://arxiv.org/abs/2607.03741">Bản tác giả</a>.</p>
+        </div>
+        <p class="small">Nguồn trực tuyến được đối chiếu ngày 07/10/2026. Các ví dụ và thiết kế GraphGenie-R là phần phân tích, đề xuất của báo cáo; không phải phát biểu về kết quả đã triển khai.</p>
+      </div>
+      <div class="footer"><span>GraphGenie · Phân tích và đề xuất phát triển</span><span>7 / 7</span></div>
+    </section>
+  </main>
+</body>
+</html>
