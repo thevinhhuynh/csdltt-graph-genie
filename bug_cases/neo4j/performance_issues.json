@@ -1,0 +1,51 @@
+{
+  "dbms": "neo4j",
+  "kind": "performance",
+  "description": "Vấn đề hiệu năng Neo4j được bài báo ICSE'24 phân tích chi tiết (mục 6.4, Listing 9 và 10; Bảng 4). Hai truy vấn tương đương không được chênh thời gian quá ngưỡng T= = 5 lần (Phương trình 3 của bài báo).",
+  "oracle": "time_ratio",
+  "threshold": 5,
+  "cases": [
+    {
+      "id": "NEO4J-P1",
+      "issue": "neo4j#12973",
+      "url": "https://github.com/neo4j/neo4j/issues/12973",
+      "title": "One equivalent query can help improve performance hundred of times",
+      "paper_ref": "Listing 9, Bảng 4 (Fixed)",
+      "cause": "Kế hoạch truy vấn kém với SKIP: bọc cùng truy vấn trong CALL {} lại nhanh hơn hàng trăm lần",
+      "gqt_rule": "AddCallWrapper (Non-GQT)",
+      "affected_version": "4.4.12",
+      "fixed_version": "5.4 (không backport về 4.x)",
+      "fix_note": "Nhà phát triển, 2022-12-05: \"A fix will come with the next neo4j release: 5.4. We will not be rolling out this fix to the 4.x\"",
+      "reported": "2022-11-07",
+      "closed": "2022-12-05",
+      "dataset": "pole",
+      "setup": [],
+      "base_query": "MATCH p=(n1)--()<-[r1]-()--(r2:PostCode)--(n2)<--()-->()-->()<-[r3:POSTCODE_IN_AREA]-(n1) RETURN n2 AS X SKIP 6 LIMIT 2",
+      "mutated_query": "CALL { MATCH p=(n1)--()<-[r1]-()--(r2:PostCode)--(n2)<--()-->()-->()<-[r3:POSTCODE_IN_AREA]-(n1) RETURN n2 AS X SKIP 6 LIMIT 2 } RETURN X",
+      "paper_result": {"base_ms": 4642011, "mutated_ms": 5984, "ratio": 776},
+      "expected_slow": "base",
+      "explanation": "CALL { Q } RETURN X trả cùng kết quả với Q nên thời gian phải tương đương. Trên 4.4.12 câu gốc chạy hơn 1 giờ, câu bọc CALL chỉ vài giây."
+    },
+    {
+      "id": "NEO4J-P2",
+      "issue": "neo4j#13034",
+      "url": "https://github.com/neo4j/neo4j/issues/13034",
+      "title": "Inconsistent performance",
+      "paper_ref": "Listing 10, Bảng 4 (Fixed)",
+      "cause": "Planner chọn kế hoạch kém do giả định sai khi OPTIONAL MATCH đi cùng ORDER BY",
+      "gqt_rule": "Thêm OPTIONAL (mutation tương đương trên mẫu luôn có kết quả)",
+      "affected_version": "5.4.0",
+      "fixed_version": null,
+      "fix_note": "Nhà phát triển, 2023-02-16: \"I've addressed the issue in a PR and the fix should be present in the next release of Neo4j 5.\"",
+      "reported": "2023-01-31",
+      "closed": "2023-02-16",
+      "dataset": "cybersecurity",
+      "setup": [],
+      "base_query": "MATCH (s3:Computer)<--(s4:HighValue)-->(s0:Computer)-->(s2:User)--()-->(s1:User)<--() RETURN s3 ORDER BY id(s3) ASC SKIP 4 LIMIT 6",
+      "mutated_query": "OPTIONAL MATCH (s3:Computer)<--(s4:HighValue)-->(s0:Computer)-->(s2:User)--()-->(s1:User)<--() RETURN s3 ORDER BY id(s3) ASC SKIP 4 LIMIT 6",
+      "paper_result": {"base_ms": 100, "mutated_ms": 201384, "ratio": 2014},
+      "expected_slow": "mutated",
+      "explanation": "Mẫu có kết quả nên thêm OPTIONAL không đổi kết quả; thời gian phải tương đương. Trên 5.4.0 bản OPTIONAL chậm hơn khoảng 2000 lần."
+    }
+  ]
+}

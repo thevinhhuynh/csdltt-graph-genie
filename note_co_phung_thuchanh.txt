@@ -1,0 +1,32 @@
+1. Phân công công việc (task)
+ 1.1 Tìm hiểu repo gốc trong bài báo
+ 1.2 Tìm các data gốc trong bài báo
+    + Phân tích data gốc tổng quan
+ 1.3 Setup và chạy chương trình trên Neo4j
+
+ 1.4 Setup và chạy chương trình trên TinkerPop (dự kiến)
+ 1.5 Phân tích các kết quả sau khi chạy: testing.log, bug.log, exception.log
+
+2. Kịch bản chạy chương trình
+  2.1 Chạy với các cấu hình mặc định graphgeinie.ini
+  2.2 Chạy với các cấu hình thay đổi các thông số trong graphgeinie.ini
+    + Cấu hình 1 – Tăng độ phức tạp truy vấn
+    + Cấu hình 2 – Kiểm tra chênh lệch hiệu năng
+    + Cấu hình 3 – Thử tải đa luồng
+  2.3 Có nên quay về phiên bản cũ chạy để ra bug.log không? outdate
+  2.4 Show ra các release note để chứng minh có lỗi tại thời điểm bài báo công bố năm 2024
+
+3. Video
+
+***************
+Bài báo mình cải tiến điều gì
+
++ logic bug phân loại neo4j và TinkerPop phân loại lỗi. Câu SQL lỗi nhưng hệ quản trị không lỗi -> Nó đã fix tìm các câu SQL lỗi
+VD: truy vấn đối xướng
++ giải thích các lỗi, chạy ra
++ Phân loại lỗi
++ Hướng phát triễn: các lỗi phát sinh còn tồn động hay không
+
+
+tính chất lỗi, phải chạy ra lỗi đó
+chứng minh có những lỗi xuất hiện, giả định lỗi để thực hiện

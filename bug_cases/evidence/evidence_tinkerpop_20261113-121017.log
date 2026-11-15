@@ -1,0 +1,110 @@
+BẰNG CHỨNG: 3 LỖI TINKERPOP NẰM Ở BỘ DỊCH CYPHER-FOR-GREMLIN, KHÔNG PHẢI Ở TINKERGRAPH
+Tạo lúc (UTC): 2026-11-13T05:10:04Z
+----------------------------------------------------------------------------------------------------
+0. MÔI TRƯỜNG
+  Gremlin Server: 3.4.13
+  Bộ dịch (plugin): cypher-gremlin-extensions-1.0.4.jar, cypher-gremlin-server-plugin-1.0.4.jar
+  Log máy chủ khi khởi động: [INFO] OpLoader - Adding the cypher OpProcessor.
+  Dữ liệu TinkerGraph: 28863 đỉnh, 166261 cạnh
+  Neo4j đối chiếu: 2026.09.0 (GraphGenieLab)
+----------------------------------------------------------------------------------------------------
+1. LỖI LOGIC (TP-L1): ĐẢO CHIỀU ĐƯỜNG ĐI CHO KẾT QUẢ GẤP ĐÔI
+
+(a) Hai câu Cypher tương đương qua bộ dịch:
+  [Q] Cypher: MATCH (g:Genre)<-[*0..1]-(h)<-[*1..1]-(u:User) RETURN count(h)
+      Gremlin do bộ dịch sinh ra:
+      g.V().hasLabel('Genre').emit(__.loops().is(gte(0))).repeat(__.inE().outV()).times(1).as('h').times(1).repeat(__.inE().outV()).hasLabel('User').select('h').is(neq('  cypher.null')).count().project('count(h)').by(__.identity())
+  [Q chạy bản dịch] g.V().hasLabel('Genre').emit(__.loops().is(gte(0))).repeat(__.inE().outV()).times(1).as('h').times(1).repeat(__.inE().outV()).hasLabel('User').select('h').is(neq('  cypher.null')).count().project('count(h)').by(__.identity())
+      => kết quả: 265517    thời gian: 528 ms
+  [Q'] Cypher: MATCH (u:User)-[*1..1]->(h)-[*0..1]->(g:Genre) RETURN count(h)
+      Gremlin do bộ dịch sinh ra:
+      g.V().hasLabel('User').times(1).repeat(__.outE().inV()).as('h').emit(__.loops().is(gte(0))).repeat(__.outE().inV()).times(1).hasLabel('Genre').select('h').is(neq('  cypher.null')).count().project('count(h)').by(__.identity())
+  [Q' chạy bản dịch] g.V().hasLabel('User').times(1).repeat(__.outE().inV()).as('h').emit(__.loops().is(gte(0))).repeat(__.outE().inV()).times(1).hasLabel('Genre').select('h').is(neq('  cypher.null')).count().project('count(h)').by(__.identity())
+      => kết quả: 531034    thời gian: 582 ms
+
+(b) Neo4j trên cùng dữ liệu:
+  [Neo4j đối chiếu] MATCH (g:Genre)<-[*0..1]-(h)<-[*1..1]-(u:User) RETURN count(h)  => 265517
+  [Neo4j đối chiếu] MATCH (u:User)-[*1..1]->(h)-[*0..1]->(g:Genre) RETURN count(h)  => 265517
+
+(c) Cùng TinkerGraph, câu Gremlin viết tay đúng nghĩa của Q':
+  [viết tay] g.V().hasLabel('User').out().union(__.identity(), __.out()).hasLabel('Genre').count()
+      => kết quả: 265517    thời gian: 451 ms
+
+(d) Bản dịch của Q', CHỈ chuyển times(1) ra sau repeat(...) của đoạn đầu (không đổi gì khác):
+  [bản dịch sửa đúng một chỗ] g.V().hasLabel('User').repeat(__.outE().inV()).times(1).as('h').emit(__.loops().is(gte(0))).repeat(__.outE().inV()).times(1).hasLabel('Genre').count()
+      => kết quả: 265517    thời gian: 125 ms
+
+=> Kết luận: bộ dịch viết '.times(1).repeat(A).as(h).emit(E).repeat(B)'. Trong Gremlin, emit() đứng ngay sau repeat(A)
+   (as() chỉ là nhãn) nên được gắn vào repeat(A) thay vì repeat(B): mỗi đường đi bị phát ra hai lần.
+   TinkerGraph tính đúng khi các bước được viết đúng thứ tự (c, d).
+----------------------------------------------------------------------------------------------------
+2. LỖI NỘI BỘ (TP-I1): OPTIONAL MATCH KHÔNG KHỚP + WITH * + id() GÂY LỖI ÉP KIỂU
+
+(a) Hai câu Cypher tương đương qua bộ dịch:
+  [Q] Cypher: OPTIONAL MATCH (a)-[]->(b:Director) WITH a WHERE id(a)>=0 RETURN count(a)
+      Gremlin do bộ dịch sinh ra:
+      g.inject('  cypher.start').choose(__.V().as('a').outE().inV().hasLabel('Director'), __.V().as('a').outE().inV().hasLabel('Director'), __.constant('  cypher.null').as('a')).select('a').as('a').has('~id', gte(0)).is(neq('  cypher.null')).count().project('count(a)').by(__.identity())
+  [Q chạy bản dịch] g.inject('  cypher.start').choose(__.V().as('a').outE().inV().hasLabel('Director'), __.V().as('a').outE().inV().hasLabel('Director'), __.constant('  cypher.null').as('a')).select('a').as('a').has('~id', gte(0)).is(neq('  cypher.null')).count().project('count(a)').by(__.identity())
+      => kết quả: 0    thời gian: 38 ms
+  [Q'] Cypher: OPTIONAL MATCH (a)-[]->(b:Director) WITH * WHERE id(a)>=0.0 RETURN count(a)
+      Gremlin do bộ dịch sinh ra:
+      g.inject('  cypher.start').choose(__.V().as('a').outE().inV().as('b').hasLabel('Director'), __.V().as('a').outE().inV().as('b').hasLabel('Director'), __.constant('  cypher.null').as('a').as('b')).select('a', 'b').project('a', 'b').by(__.select('a')).by(__.select('b')).as('  GENERATED2').select('a').as('a').has('~id', gte(0.0d)).select('  GENERATED2').select('b').as('b').select('a').is(neq('  cypher.null')).count().project('count(a)').by(__.identity())
+  [Q' chạy bản dịch] g.inject('  cypher.start').choose(__.V().as('a').outE().inV().as('b').hasLabel('Director'), __.V().as('a').outE().inV().as('b').hasLabel('Director'), __.constant('  cypher.null').as('a').as('b')).select('a', 'b').project('a', 'b').by(__.select('a')).by(__.select('b')).as('  GENERATED2').select('a').as('a').has('~id', gte(0.0d)).select('  GENERATED2').select('b').as('b').select('a').is(neq('  cypher.null')).count().project('count(a)').by(__.identity())
+      => LỖI: 597: java.lang.ClassCastException    thời gian: 33 ms
+
+(b) Neo4j trên cùng dữ liệu:
+  [Neo4j đối chiếu] OPTIONAL MATCH (a)-[]->(b:Director) WITH a WHERE id(a)>=0 RETURN count(a)  => 0
+  [Neo4j đối chiếu] OPTIONAL MATCH (a)-[]->(b:Director) WITH * WHERE id(a)>=0.0 RETURN count(a)  => 0
+
+(c) Cùng TinkerGraph, câu Gremlin viết tay đúng nghĩa:
+  [viết tay] g.V().as('a').out().hasLabel('Director').select('a').filter(__.id().is(gte(0))).count()
+      => kết quả: 0    thời gian: 40 ms
+
+(d) Bước gây lỗi, tách riêng: bộ dịch thay giá trị null bằng chuỗi '  cypher.null', rồi áp has('~id', ...) lên chuỗi đó:
+  [bước has() trên chuỗi null giả] g.inject('  cypher.null').has('~id', gte(0.0d))
+      => LỖI: 597: java.lang.ClassCastException    thời gian: 2 ms
+
+(e) Vì sao Q cũng có has('~id', ...) mà không lỗi? Thứ tự bước sau khi TinkerPop tối ưu (explain), bỏ phần choose():
+  [Q ] SelectOneStep(last,a)  ->  IsStep(neq(  cypher.null))  ->  HasStep([~id.gte(0)])  ->  CountGlobalStep  ->  ProjectStep([count(a)],[[IdentityStep]])
+  [Q'] SelectStep(last,[a, b])  ->  ProjectStep([a, b],[[SelectOneStep(last,a)], [SelectOneStep(last,b)]])  ->  SelectOneStep(last,a)  ->  HasStep([~id.gte(0.0)])  ->  SelectOneStep(last,  GENERATED2)  ->  SelectOneStep(last,b)  ->  SelectOneStep(last,a)  ->  IsStep(neq(  cypher.null))  ->  CountGlobalStep  ->  ProjectStep([count(a)],[[IdentityStep]])
+  Q : bước lọc null IsStep(neq('  cypher.null')) đứng TRƯỚC HasStep, nên dòng null bị loại trước khi tới has().
+  Q': bộ dịch chèn project/select vào giữa, bước lọc null đứng SAU HasStep, nên has() gặp chuỗi null giả và lỗi.
+
+=> Kết luận: bước has() của Gremlin chỉ nhận đỉnh/cạnh (thiết kế của TinkerPop). Bộ dịch đặt has('~id', ...) lên
+   chuỗi '  cypher.null' mà chính nó tạo ra cho dòng null, trước bước lọc bỏ chuỗi đó, nên máy chủ báo lỗi ép kiểu
+   tại HasStep. Câu viết tay trên cùng TinkerGraph chạy bình thường và trả 0 như Neo4j.
+----------------------------------------------------------------------------------------------------
+3. HIỆU NĂNG (TP-P1): HAI CÂU ĐỐI XỨNG CHÊNH HÀNG NGHÌN LẦN
+
+(a) Hai câu Cypher tương đương qua bộ dịch (chú ý bước đầu tiên của mỗi bản dịch):
+  [Q] Cypher: MATCH ()<-[]-(x)-[]->(u:User) WHERE x IS NOT NULL RETURN count(u)
+      Gremlin do bộ dịch sinh ra:
+      g.V().inE().as('  UNNAMED9').outV().as('x').outE().as('  UNNAMED17').inV().as('u').hasLabel('User').where(__.and(__.select('x').is(neq('  cypher.null')), __.select('  UNNAMED17').where(neq('  UNNAMED9')))).select('u').is(neq('  cypher.null')).count().project('count(u)').by(__.identity())
+  [Q chạy bản dịch] g.V().inE().as('  UNNAMED9').outV().as('x').outE().as('  UNNAMED17').inV().as('u').hasLabel('User').where(__.and(__.select('x').is(neq('  cypher.null')), __.select('  UNNAMED17').where(neq('  UNNAMED9')))).select('u').is(neq('  cypher.null')).count().project('count(u)').by(__.identity())
+      => kết quả: 0    thời gian: 10434 ms
+  [Q'] Cypher: MATCH (u:User)<-[]-(x)-[]->() WHERE x IS NOT NULL RETURN count(u)
+      Gremlin do bộ dịch sinh ra:
+      g.V().as('u').hasLabel('User').inE().as('  UNNAMED15').outV().as('x').outE().as('  UNNAMED23').inV().where(__.and(__.select('x').is(neq('  cypher.null')), __.select('  UNNAMED15').where(neq('  UNNAMED23')))).select('u').is(neq('  cypher.null')).count().project('count(u)').by(__.identity())
+  [Q' chạy bản dịch] g.V().as('u').hasLabel('User').inE().as('  UNNAMED15').outV().as('x').outE().as('  UNNAMED23').inV().where(__.and(__.select('x').is(neq('  cypher.null')), __.select('  UNNAMED15').where(neq('  UNNAMED23')))).select('u').is(neq('  cypher.null')).count().project('count(u)').by(__.identity())
+      => kết quả: 0    thời gian: 7 ms
+
+(b) Số đỉnh mà mỗi bản dịch phải xuất phát:
+  [Q bắt đầu từ g.V(): mọi đỉnh] g.V().count()
+      => kết quả: 28863    thời gian: 2 ms
+  [Q' bắt đầu từ g.V().hasLabel('User')] g.V().hasLabel('User').count()
+      => kết quả: 671    thời gian: 4 ms
+
+(c) Cùng TinkerGraph, câu Gremlin viết tay cho mẫu của Q nhưng xuất phát từ :User:
+  [viết tay] g.V().hasLabel('User').inE().outV().outE().inV().count()
+      => kết quả: 0    thời gian: 3 ms
+
+(d) Neo4j trên cùng dữ liệu:
+  [Neo4j đối chiếu] MATCH ()<-[]-(x)-[]->(u:User) WHERE x IS NOT NULL RETURN count(u)  => 0
+
+=> Kết luận: bộ dịch luôn bắt đầu duyệt từ nút viết đầu tiên trong mẫu (Q: g.V() với 28863 đỉnh; Q': chỉ 671 đỉnh User),
+   không chọn điểm xuất phát theo chi phí. TinkerGraph trả lời cùng mẫu trong vài mili giây khi câu Gremlin xuất phát đúng chỗ.
+----------------------------------------------------------------------------------------------------
+TỔNG KẾT
+  Cả 3 lỗi: cùng máy chủ TinkerGraph, cùng dữ liệu, chỉ thay câu Gremlin thì kết quả đúng / không lỗi / nhanh.
+  Biến duy nhất thay đổi là câu Gremlin do bộ dịch sinh ra => lỗi nằm ở bộ dịch cypher-for-gremlin.
+----------------------------------------------------------------------------------------------------

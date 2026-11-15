@@ -1,0 +1,82 @@
+{
+  "run_at": "2026-11-10T14:47:43",
+  "dbms": "neo4j",
+  "server": "bolt://127.0.0.1:7687",
+  "version": "2026.09.0 (enterprise)",
+  "reference": null,
+  "files": [
+    {
+      "file": "bug_cases/neo4j/performance_issues.json",
+      "kind": "performance",
+      "oracle": "time_ratio",
+      "results": [
+        {
+          "id": "NEO4J-P1",
+          "issue": "neo4j#12973",
+          "affected_version": "4.4.12",
+          "dataset": "pole",
+          "database": "pole",
+          "base_query": "MATCH p=(n1)--()<-[r1]-()--(r2:PostCode)--(n2)<--()-->()-->()<-[r3:POSTCODE_IN_AREA]-(n1) RETURN n2 AS X SKIP 6 LIMIT 2",
+          "mutated_query": "CALL { MATCH p=(n1)--()<-[r1]-()--(r2:PostCode)--(n2)<--()-->()-->()<-[r3:POSTCODE_IN_AREA]-(n1) RETURN n2 AS X SKIP 6 LIMIT 2 } RETURN X",
+          "verdict": "INCONCLUSIVE",
+          "detail": "cả hai câu vượt giới hạn bộ nhớ giao dịch của server (MemoryPoolOutOfMemoryError)",
+          "base": {
+            "result": null,
+            "rows": null,
+            "ms": 1713.3,
+            "error": "{neo4j_code: Neo.TransientError.General.MemoryPoolOutOfMemoryError} {message: The allocation of an extra 2.0 MiB would use more than the limit 716.8 MiB. Currently using 716.0 MiB. dbms.memory.transaction.total.max threshold reached} {gql_status: 51N72} {gql_status_description: error: system configuration or operation exception - memory pool out of memory. Failed to allocate memory in a memory poo",
+            "timeout": false,
+            "runs_ms": [
+              1713.3
+            ]
+          },
+          "mutated": {
+            "result": null,
+            "rows": null,
+            "ms": 2031.2,
+            "error": "{neo4j_code: Neo.TransientError.General.MemoryPoolOutOfMemoryError} {message: The allocation of an extra 2.0 MiB would use more than the limit 716.8 MiB. Currently using 716.0 MiB. dbms.memory.transaction.total.max threshold reached} {gql_status: 51N72} {gql_status_description: error: system configuration or operation exception - memory pool out of memory. Failed to allocate memory in a memory poo",
+            "timeout": false,
+            "runs_ms": [
+              2031.2
+            ]
+          },
+          "reference": null,
+          "paper_match": null
+        },
+        {
+          "id": "NEO4J-P2",
+          "issue": "neo4j#13034",
+          "affected_version": "5.4.0",
+          "dataset": "cybersecurity",
+          "database": "cybersecurity",
+          "base_query": "MATCH (s3:Computer)<--(s4:HighValue)-->(s0:Computer)-->(s2:User)--()-->(s1:User)<--() RETURN s3 ORDER BY id(s3) ASC SKIP 4 LIMIT 6",
+          "mutated_query": "OPTIONAL MATCH (s3:Computer)<--(s4:HighValue)-->(s0:Computer)-->(s2:User)--()-->(s1:User)<--() RETURN s3 ORDER BY id(s3) ASC SKIP 4 LIMIT 6",
+          "verdict": "NOT REPRODUCED",
+          "detail": "base=4ms mutated=5ms tỉ lệ 1.3x (ngưỡng 5x)",
+          "base": {
+            "result": "<6 row(s)>",
+            "rows": 6,
+            "ms": 4.1,
+            "error": null,
+            "timeout": false,
+            "runs_ms": [
+              4.1
+            ]
+          },
+          "mutated": {
+            "result": "<6 row(s)>",
+            "rows": 6,
+            "ms": 5.3,
+            "error": null,
+            "timeout": false,
+            "runs_ms": [
+              5.3
+            ]
+          },
+          "reference": null,
+          "paper_match": null
+        }
+      ]
+    }
+  ]
+}

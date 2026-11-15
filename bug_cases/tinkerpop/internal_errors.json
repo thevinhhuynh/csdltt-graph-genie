@@ -1,0 +1,55 @@
+{
+  "dbms": "tinkerpop",
+  "kind": "internal_error",
+  "description": "Lỗi nội bộ trên TinkerPop (Gremlin Server 3.4.13 + cypher-for-gremlin 1.0.4). Đồ án ghi nhận 316 lỗi ClassCastException trong tinkerpop/logs/exception.log; mọi câu đều là OPTIONAL MATCH kèm WITH * WHERE ... Các case dưới đây là câu đại diện đã rút gọn. Truy vấn hợp lệ không được báo lỗi; Neo4j chạy được tất cả.",
+  "oracle": "no_error",
+  "cases": [
+    {
+      "id": "TP-I1",
+      "issue": "cypher-for-gremlin (đồ án)",
+      "url": "https://github.com/opencypher/cypher-for-gremlin",
+      "title": "OPTIONAL MATCH không khớp + WITH * + id() gây ClassCastException",
+      "paper_ref": "Chú thích 10 của bài báo (plugin có thể dịch sai); rút gọn từ 252 câu lỗi ClassCastException trong tinkerpop/logs/exception.log",
+      "cause": "OPTIONAL MATCH không khớp được dịch thành dòng chứa hằng chuỗi '  cypher.null'. Khi đi qua WITH *, bộ dịch áp id() lên giá trị đó như một đỉnh nên Gremlin ném ClassCastException. Với WITH a (chỉ giữ một biến) hoặc khi OPTIONAL MATCH có kết quả thì không lỗi",
+      "gqt_rule": "RedundantPredicate (Non-GQT): thêm WITH * WHERE id(x)>=0.0 luôn đúng",
+      "affected_version": "TinkerPop 3.4.13 + cypher-for-gremlin 1.0.4",
+      "fixed_version": null,
+      "fix_note": "Chưa báo cáo lên kho cypher-for-gremlin.",
+      "reported": null,
+      "closed": null,
+      "dataset": "recommendations",
+      "setup": [],
+      "base_query": "OPTIONAL MATCH (a)-[]->(b:Director) WITH a WHERE id(a)>=0 RETURN count(a)",
+      "mutated_query": "OPTIONAL MATCH (a)-[]->(b:Director) WITH * WHERE id(a)>=0.0 RETURN count(a)",
+      "paper_result": null,
+      "observed_result": {
+        "base": 0,
+        "mutated": "597: java.lang.ClassCastException"
+      },
+      "explanation": "Không có cạnh nào trỏ vào Director nên OPTIONAL MATCH trả một dòng null; id(null) là null nên điều kiện lọc bỏ dòng đó và count(a) = 0. Neo4j trả 0 cho cả hai câu; TinkerPop chạy được câu WITH a nhưng lỗi với câu WITH *."
+    },
+    {
+      "id": "TP-I2",
+      "issue": "cypher-for-gremlin (đồ án)",
+      "url": "https://github.com/opencypher/cypher-for-gremlin",
+      "title": "Biến thể 'String cannot be cast to Element'",
+      "paper_ref": "Câu nguyên văn trong tinkerpop/logs/exception.log (9 câu có thông báo này)",
+      "cause": "Cùng nguyên nhân TP-I1 (hằng '  cypher.null' bị xử lý như đỉnh). Thông báo chi tiết 'String cannot be cast to ...Element' chỉ xuất hiện ở vài lần ném đầu; sau đó JVM (HotSpot, OmitStackTraceInFastThrow) bỏ thông báo nên chỉ còn 'java.lang.ClassCastException'. Vì vậy 302 lỗi chung và 14 lỗi chi tiết trong exception.log là cùng một lỗi",
+      "gqt_rule": "RedundantPredicate (Non-GQT)",
+      "affected_version": "TinkerPop 3.4.13 + cypher-for-gremlin 1.0.4",
+      "fixed_version": null,
+      "fix_note": "Chưa báo cáo lên kho cypher-for-gremlin.",
+      "reported": null,
+      "closed": null,
+      "dataset": "recommendations",
+      "setup": [],
+      "base_query": "OPTIONAL MATCH (a)-[]->(b:Director)-[*0..0]-() WHERE b IS NOT NULL WITH * WHERE True AND id(a)>=0.0 RETURN DISTINCT count(a) ORDER BY -1+1",
+      "mutated_query": null,
+      "paper_result": null,
+      "observed_result": {
+        "base": "597: java.lang.String cannot be cast to org.apache.tinkerpop.gremlin.structure.Element (hoặc 597: java.lang.ClassCastException sau khi JVM bỏ thông báo)"
+      },
+      "explanation": "Neo4j trả 0. TinkerPop báo lỗi ép kiểu chuỗi sang Element."
+    }
+  ]
+}

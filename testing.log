@@ -1,0 +1,628 @@
+***** Testing Neo4j *****
+	multi_threading=1
+	variant=1
+0 executed. Rules evaluation statitics: [0, 0, 0]
+number of tested base queries: 0
+number of detected inconsistent pair: 0
+=================================
+No.1 Base Query: OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1 
+No.1 [BASE QUERY] Query="OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=178
+No.2 [Equivalent] Query="OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(id(cccccccc)) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=692
+No.3 [Equivalent] Query="OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True AND cccccccc=cccccccc AND True AND True AND True AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=629
+No.4 [Equivalent] Query="MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True AND cccccccc=cccccccc AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=663
+No.5 [Equivalent] Query="MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=725
+No.6 [Equivalent] Query="OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=633
+No.7 [Equivalent] Query="OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=589
+No.8 [Equivalent] Query="OPTIONAL MATCH (s0)-[]-(s0) WHERE s0 IS NOT NULL AND True RETURN DISTINCT count(s0) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=668
+No.9 [Equivalent] Query="OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(id(cccccccc)) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=700
+No.10 [Equivalent] Query="MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True AND cccccccc=cccccccc AND True AND True AND True AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=698
+No.11 [Equivalent] Query="OPTIONAL MATCH (start)-[]-(end) WHERE start IS NOT NULL AND True AND start=end RETURN DISTINCT count(start)  ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=801
+No.12 [Equivalent] Query="MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True AND cccccccc=cccccccc AND True AND True AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=717
+No.13 [Equivalent] Query="OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True AND cccccccc=cccccccc AND True AND True AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=703
+No.14 [Equivalent] Query="OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True AND cccccccc=cccccccc RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=711
+No.15 [Equivalent] Query="MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True AND cccccccc=cccccccc AND True AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=645
+No.16 [Equivalent] Query="OPTIONAL MATCH (thtwwoscamxdqrbmftgsdewvwcvaphke)-[]-(thtwwoscamxdqrbmftgsdewvwcvaphke) WHERE thtwwoscamxdqrbmftgsdewvwcvaphke IS NOT NULL AND True RETURN DISTINCT count(thtwwoscamxdqrbmftgsdewvwcvaphke) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=728
+No.17 [Equivalent] Query="OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True AND cccccccc=cccccccc AND True AND True AND True AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=729
+No.18 [Equivalent] Query="OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True AND cccccccc=cccccccc RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=627
+No.19 [Equivalent] Query="OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=708
+No.20 [Equivalent] Query="CALL { OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) AS deadbeef ORDER BY -1+1 LIMIT 1 } RETURN deadbeef"
+	Query Result=0
+	Query Time=696
+No.21 [Equivalent] Query="OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True AND cccccccc=cccccccc AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=828
+No.22 [Equivalent] Query="OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True AND cccccccc=cccccccc RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=727
+No.23 [Equivalent] Query="OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True AND id(cccccccc)>=0.0 RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=847
+No.24 [Equivalent] Query="MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True AND cccccccc=cccccccc AND True AND True AND True AND True AND id(cccccccc)>=0.0 RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=853
+No.25 [Equivalent] Query="OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True AND cccccccc=cccccccc AND True AND True AND True AND True AND id(cccccccc)>=0.0 RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=817
+No.26 [Equivalent] Query="MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True AND cccccccc=cccccccc AND True AND True AND True AND True AND id(cccccccc)>=0.0 AND id(cccccccc)>=0.0 RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=862
+No.27 [Equivalent] Query="MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True AND cccccccc=cccccccc AND True AND True AND True AND True AND id(cccccccc)>=0.0 AND id(cccccccc)>=0.0 AND id(cccccccc)>=0.0 RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=821
+No.28 [Equivalent] Query="MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True WITH * WHERE cccccccc=cccccccc WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE id(cccccccc)>=0.0 WITH * WHERE id(cccccccc)>=0.0 WITH * WHERE id(cccccccc)>=0.0 WITH * WHERE cccccccc=cccccccc RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=787
+No.29 [Equivalent] Query="MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True AND cccccccc=cccccccc AND True AND True AND True AND True AND id(cccccccc)>=0.0 AND id(cccccccc)>=0.0 AND id(cccccccc)>=0.0 AND cccccccc=cccccccc RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=814
+No.31 [Equivalent] Query="MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True WITH * WHERE cccccccc=cccccccc WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE id(cccccccc)>=0.0 WITH * WHERE id(cccccccc)>=0.0 WITH * WHERE id(cccccccc)>=0.0 WITH * WHERE cccccccc=cccccccc RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=766
+No.30 [Equivalent] Query="MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True WITH * WHERE cccccccc=cccccccc WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE id(cccccccc)>=0.0 WITH * WHERE id(cccccccc)>=0.0 WITH * WHERE id(cccccccc)>=0.0 WITH * WHERE cccccccc=cccccccc AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=778
+No.32 [Restricted] Query="OPTIONAL MATCH (cccccccc)<-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=66
+No.33 [Restricted] Query="OPTIONAL MATCH (cccccccc)-[:IN_GENRE]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=96
+No.34 [Restricted] Query="OPTIONAL MATCH (crbuyikv)-[]-(cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(DISTINCT cccccccc) ORDER BY -1+1 LIMIT 1"
+	Query Result=0
+	Query Time=125
+number of tested base queries: 1
+number of detected inconsistent pair: 0
+=================================
+No.2 Base Query: OPTIONAL MATCH (hezdczcl)-[]-(omsdpefh:User) WHERE omsdpefh IS NOT NULL AND True RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3 
+No.35 [BASE QUERY] Query="OPTIONAL MATCH (hezdczcl)-[]-(omsdpefh:User) WHERE omsdpefh IS NOT NULL AND True RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=65
+No.36 [Equivalent] Query="MATCH (omsdpefh)-[]-(hezdczcl) WHERE omsdpefh IS NOT NULL WITH * WHERE True WITH * WHERE omsdpefh=omsdpefh WITH * WHERE True WITH * WHERE omsdpefh:User WITH * WHERE True WITH * WHERE omsdpefh=omsdpefh RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=252
+No.37 [Equivalent] Query="MATCH (omsdpefh)-[]-(hezdczcl) WHERE omsdpefh IS NOT NULL WITH * WHERE True WITH * WHERE omsdpefh=omsdpefh WITH * WHERE True WITH * WHERE omsdpefh:User RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=264
+No.38 [Equivalent] Query="MATCH (omsdpefh)-[]-(hezdczcl) WHERE omsdpefh IS NOT NULL WITH * WHERE True WITH * WHERE omsdpefh=omsdpefh WITH * WHERE True WITH * WHERE omsdpefh:User RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=337
+No.39 [Equivalent] Query="MATCH (omsdpefh)-[]-(hezdczcl) WHERE omsdpefh IS NOT NULL WITH * WHERE True WITH * WHERE omsdpefh=omsdpefh WITH * WHERE True WITH * WHERE omsdpefh:User AND True RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=276
+No.40 [Equivalent] Query="MATCH (omsdpefh)-[]-(hezdczcl) WHERE omsdpefh IS NOT NULL WITH * WHERE True WITH * WHERE omsdpefh=omsdpefh WITH * WHERE True WITH * WHERE omsdpefh:User AND True AND omsdpefh=omsdpefh RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=353
+No.41 [Equivalent] Query="MATCH (omsdpefh)-[]-(hezdczcl) WHERE omsdpefh IS NOT NULL AND True AND omsdpefh=omsdpefh AND True AND omsdpefh:User RETURN DISTINCT count(hezdczcl) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=295
+No.42 [Equivalent] Query="MATCH (omsdpefh)-[]-(hezdczcl) WHERE omsdpefh IS NOT NULL WITH * WHERE True WITH * WHERE omsdpefh=omsdpefh WITH * WHERE True WITH * WHERE omsdpefh:User WITH * WHERE True WITH * WHERE omsdpefh=omsdpefh AND True RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=378
+No.43 [Equivalent] Query="MATCH (omsdpefh)-[]-(hezdczcl) WHERE omsdpefh IS NOT NULL WITH * WHERE True WITH * WHERE omsdpefh=omsdpefh WITH * WHERE True WITH * WHERE omsdpefh:User RETURN DISTINCT count(hezdczcl) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=385
+No.44 [Equivalent] Query="OPTIONAL MATCH (hezdczcl)-[]-(omsdpefh:User) WHERE omsdpefh IS NOT NULL AND True RETURN DISTINCT count(id(omsdpefh)) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=505
+No.45 [Equivalent] Query="MATCH (hezdczcl)-[]-(omsdpefh:User) WHERE omsdpefh IS NOT NULL AND True RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=288
+No.46 [Equivalent] Query="OPTIONAL MATCH (omsdpefh:User)-[]-(hezdczcl) WHERE omsdpefh IS NOT NULL AND True RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=580
+No.47 [Equivalent] Query="OPTIONAL MATCH (hezdczcl)-[]-(omsdpefh:User) WHERE omsdpefh IS NOT NULL AND True AND True RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=616
+No.48 [Equivalent] Query="OPTIONAL MATCH (omsdpefh)-[]-(hezdczcl) WHERE omsdpefh IS NOT NULL AND True AND omsdpefh=omsdpefh AND True AND omsdpefh:User RETURN DISTINCT count(hezdczcl) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=632
+No.49 [Equivalent] Query="OPTIONAL MATCH (omsdpefh:User)-[]-(hezdczcl) WHERE omsdpefh IS NOT NULL AND True RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=651
+No.50 [Equivalent] Query="OPTIONAL MATCH (hezdczcl)-[]-(omsdpefh) WHERE omsdpefh IS NOT NULL AND True AND omsdpefh:User RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=665
+No.51 [Equivalent] Query="OPTIONAL MATCH (s0)-[]-(s1:User) WHERE s1 IS NOT NULL AND True RETURN DISTINCT count(s1) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=596
+No.52 [Equivalent] Query="OPTIONAL MATCH (omsdpefh:User)-[]-(hezdczcl) WHERE omsdpefh IS NOT NULL AND True AND omsdpefh=omsdpefh AND True RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=653
+No.53 [Equivalent] Query="OPTIONAL MATCH (yumrvoxbgljqfnfuzpwancujpuvtcelg)-[]-(miwanfnjdlvazuzplqbpkaoyqzwikvsa:User) WHERE miwanfnjdlvazuzplqbpkaoyqzwikvsa IS NOT NULL AND True RETURN DISTINCT count(miwanfnjdlvazuzplqbpkaoyqzwikvsa) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=687
+No.54 [Equivalent] Query="OPTIONAL MATCH (hezdczcl)-[]-(omsdpefh:User),(omsdpefh:User) WHERE omsdpefh IS NOT NULL AND True RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=666
+No.55 [Equivalent] Query="CALL { OPTIONAL MATCH (hezdczcl)-[]-(omsdpefh:User) WHERE omsdpefh IS NOT NULL AND True RETURN DISTINCT count(omsdpefh) AS deadbeef ORDER BY NULL LIMIT 3 } RETURN deadbeef"
+	Query Result=100004
+	Query Time=705
+No.56 [Equivalent] Query="OPTIONAL MATCH (hezdczcl)-[]-(omsdpefh:User) WHERE omsdpefh IS NOT NULL AND True AND omsdpefh=omsdpefh RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=723
+No.57 [Equivalent] Query="OPTIONAL MATCH (omsdpefh:User)-[]-(hezdczcl) WHERE omsdpefh IS NOT NULL AND True AND omsdpefh=omsdpefh RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=688
+No.58 [Equivalent] Query="OPTIONAL MATCH (hezdczcl)-[]-(omsdpefh:User) WHERE omsdpefh IS NOT NULL AND True AND id(omsdpefh)>=0.0 RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=724
+No.59 [Equivalent] Query="OPTIONAL MATCH (hezdczcl)-[]-(omsdpefh:User) WHERE omsdpefh IS NOT NULL AND True RETURN DISTINCT count(id(omsdpefh)) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=630
+No.60 [Equivalent] Query="OPTIONAL MATCH (omsdpefh:User)-[]-(hezdczcl) WHERE omsdpefh IS NOT NULL AND True AND omsdpefh=omsdpefh AND True RETURN DISTINCT count(hezdczcl) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=714
+No.61 [Equivalent] Query="OPTIONAL MATCH (hezdczcl)-[]-(omsdpefh:User) WHERE omsdpefh IS NOT NULL WITH * WHERE True RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=721
+No.62 [Equivalent] Query="OPTIONAL MATCH (hezdczcl)-[]-(omsdpefh) WHERE omsdpefh IS NOT NULL WITH * WHERE True WITH * WHERE omsdpefh=omsdpefh WITH * WHERE True WITH * WHERE omsdpefh:User WITH * WHERE True WITH * WHERE omsdpefh=omsdpefh AND True RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=907
+No.63 [Equivalent] Query="OPTIONAL MATCH (omsdpefh)-[]-(hezdczcl) WHERE omsdpefh IS NOT NULL WITH * WHERE True WITH * WHERE omsdpefh=omsdpefh WITH * WHERE True WITH * WHERE omsdpefh:User WITH * WHERE True WITH * WHERE omsdpefh=omsdpefh AND True RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=843
+No.64 [Equivalent] Query="OPTIONAL MATCH (hezdczcl)-[]-(omsdpefh) WHERE omsdpefh IS NOT NULL WITH * WHERE True WITH * WHERE omsdpefh=omsdpefh WITH * WHERE True WITH * WHERE omsdpefh:User WITH * WHERE True WITH * WHERE omsdpefh=omsdpefh AND True AND omsdpefh=omsdpefh AND True RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=851
+No.65 [Equivalent] Query="OPTIONAL MATCH (hezdczcl)-[]-(omsdpefh) WHERE omsdpefh IS NOT NULL WITH * WHERE True WITH * WHERE omsdpefh=omsdpefh WITH * WHERE True WITH * WHERE omsdpefh:User WITH * WHERE True WITH * WHERE omsdpefh=omsdpefh AND True AND omsdpefh=omsdpefh RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=884
+No.66 [Restricted] Query="OPTIONAL MATCH (hezdczcl)<-[]-(omsdpefh:User) WHERE omsdpefh IS NOT NULL AND True RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=100004
+	Query Time=50
+No.67 [Restricted] Query="OPTIONAL MATCH (hezdczcl)-[:ACTED_IN]-(omsdpefh:User) WHERE omsdpefh IS NOT NULL AND True RETURN DISTINCT count(omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=0
+	Query Time=29
+No.68 [Restricted] Query="OPTIONAL MATCH (qmhzoydy)<-[]-(hezdczcl)-[]-(omsdpefh:User) WHERE omsdpefh IS NOT NULL AND True RETURN DISTINCT count(DISTINCT omsdpefh) ORDER BY NULL LIMIT 3"
+	Query Result=671
+	Query Time=149
+number of tested base queries: 2
+number of detected inconsistent pair: 0
+=================================
+No.3 Base Query: OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL AND True RETURN count(dwewmbaj) SKIP 0 
+No.69 [BASE QUERY] Query="OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL AND True RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=62
+No.70 [Equivalent] Query="MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL AND True RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=204
+No.71 [Equivalent] Query="MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL AND True RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=175
+No.72 [Equivalent] Query="MATCH (jdnupmds)-[]-(dwewmbaj) WHERE dwewmbaj IS NOT NULL AND True RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=318
+No.73 [Equivalent] Query="OPTIONAL MATCH (jdnupmds)-[]-(dwewmbaj) WHERE dwewmbaj IS NOT NULL AND True RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=406
+No.74 [Equivalent] Query="MATCH (jdnupmds)-[]-(dwewmbaj) WHERE dwewmbaj IS NOT NULL AND True AND dwewmbaj=dwewmbaj RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=444
+No.75 [Equivalent] Query="OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL AND True AND True RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=458
+No.76 [Equivalent] Query="OPTIONAL MATCH (dwewmbaj),(dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL AND True RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=543
+No.77 [Equivalent] Query="OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL WITH * WHERE True RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=498
+No.78 [Equivalent] Query="OPTIONAL MATCH (jdnupmds)-[]-(dwewmbaj) WHERE dwewmbaj IS NOT NULL AND True AND dwewmbaj=dwewmbaj RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=577
+No.79 [Equivalent] Query="OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL AND True RETURN count(id(dwewmbaj)) SKIP 0"
+	Query Result=332522
+	Query Time=482
+No.80 [Equivalent] Query="OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL AND True RETURN count(id(jdnupmds)) SKIP 0"
+	Query Result=332522
+	Query Time=528
+No.81 [Equivalent] Query="OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL AND True AND id(dwewmbaj)>=0.0 RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=586
+No.82 [Equivalent] Query="OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL WITH * WHERE True WITH * WHERE dwewmbaj=dwewmbaj AND True RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=587
+No.83 [Equivalent] Query="OPTIONAL MATCH (jdnupmds)-[]-(dwewmbaj) WHERE dwewmbaj IS NOT NULL WITH * WHERE True WITH * WHERE dwewmbaj=dwewmbaj RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=599
+No.84 [Equivalent] Query="OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL WITH * WHERE True WITH * WHERE dwewmbaj=dwewmbaj WITH * WHERE True RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=582
+No.85 [Equivalent] Query="CALL { OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL AND True RETURN count(dwewmbaj) AS deadbeef SKIP 0 } RETURN deadbeef"
+	Query Result=332522
+	Query Time=629
+No.86 [Equivalent] Query="OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL WITH * WHERE True WITH * WHERE dwewmbaj=dwewmbaj WITH * WHERE True AND jdnupmds=jdnupmds AND True AND dwewmbaj=dwewmbaj RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=646
+No.87 [Equivalent] Query="OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL AND True AND jdnupmds=jdnupmds RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=620
+No.88 [Equivalent] Query="OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL WITH * WHERE True WITH * WHERE dwewmbaj=dwewmbaj WITH * WHERE True AND jdnupmds=jdnupmds AND True AND dwewmbaj=dwewmbaj RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=601
+No.89 [Equivalent] Query="OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL WITH * WHERE True WITH * WHERE dwewmbaj=dwewmbaj WITH * WHERE True RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=613
+No.90 [Equivalent] Query="OPTIONAL MATCH (s0)-[]-(s1) WHERE s0 IS NOT NULL AND True RETURN count(s0) SKIP 0"
+	Query Result=332522
+	Query Time=649
+No.91 [Equivalent] Query="OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL WITH * WHERE True WITH * WHERE dwewmbaj=dwewmbaj RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=561
+No.92 [Equivalent] Query="OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL WITH * WHERE True WITH * WHERE dwewmbaj=dwewmbaj WITH * WHERE True RETURN count(jdnupmds) SKIP 0"
+	Query Result=332522
+	Query Time=619
+No.93 [Equivalent] Query="OPTIONAL MATCH (xbnjbwjfksngokhvunslevngnbewodkn)-[]-(oajbzmxcmeqcryzcugefjsfylxlqtdix) WHERE xbnjbwjfksngokhvunslevngnbewodkn IS NOT NULL AND True RETURN count(xbnjbwjfksngokhvunslevngnbewodkn) SKIP 0"
+	Query Result=332522
+	Query Time=487
+No.94 [Equivalent] Query="OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL WITH * WHERE True WITH * WHERE dwewmbaj=dwewmbaj WITH * WHERE True WITH * WHERE jdnupmds=jdnupmds WITH * WHERE True WITH * WHERE dwewmbaj=dwewmbaj RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=680
+No.95 [Equivalent] Query="OPTIONAL MATCH (jdnupmds)-[]-(dwewmbaj) WHERE dwewmbaj IS NOT NULL WITH * WHERE True WITH * WHERE dwewmbaj=dwewmbaj WITH * WHERE True WITH * WHERE jdnupmds=jdnupmds WITH * WHERE True WITH * WHERE dwewmbaj=dwewmbaj WITH * WHERE id(dwewmbaj)>=0.0 RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=477
+No.96 [Equivalent] Query="OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL WITH * WHERE True WITH * WHERE dwewmbaj=dwewmbaj WITH * WHERE True AND jdnupmds=jdnupmds AND True RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=579
+No.97 [Equivalent] Query="OPTIONAL MATCH (dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL WITH * WHERE True WITH * WHERE dwewmbaj=dwewmbaj WITH * WHERE True AND jdnupmds=jdnupmds RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=605
+No.98 [Equivalent] Query="OPTIONAL MATCH (jdnupmds)-[]-(dwewmbaj) WHERE dwewmbaj IS NOT NULL WITH * WHERE True WITH * WHERE dwewmbaj=dwewmbaj WITH * WHERE True WITH * WHERE jdnupmds=jdnupmds WITH * WHERE True WITH * WHERE dwewmbaj=dwewmbaj RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=664
+No.99 [Equivalent] Query="OPTIONAL MATCH (jdnupmds)-[]-(dwewmbaj) WHERE dwewmbaj IS NOT NULL WITH * WHERE True WITH * WHERE dwewmbaj=dwewmbaj WITH * WHERE True WITH * WHERE jdnupmds=jdnupmds WITH * WHERE True WITH * WHERE dwewmbaj=dwewmbaj AND id(dwewmbaj)>=0.0 RETURN count(dwewmbaj) SKIP 0"
+	Query Result=332522
+	Query Time=562
+No.100 [Restricted] Query="OPTIONAL MATCH (dwewmbaj)-[]->(jdnupmds) WHERE dwewmbaj IS NOT NULL AND True RETURN count(dwewmbaj) SKIP 0"
+	Query Result=166261
+	Query Time=45
+No.101 [Restricted] Query="OPTIONAL MATCH (dwewmbaj)-[:DIRECTED]-(jdnupmds) WHERE dwewmbaj IS NOT NULL AND True RETURN count(dwewmbaj) SKIP 0"
+	Query Result=20014
+	Query Time=39
+No.102 [Restricted] Query="OPTIONAL MATCH (ewdtpwcm)<-[]-(dwewmbaj)-[]-(jdnupmds) WHERE dwewmbaj IS NOT NULL AND True RETURN count(DISTINCT dwewmbaj) SKIP 0"
+	Query Result=16361
+	Query Time=2721
+number of tested base queries: 3
+number of detected inconsistent pair: 0
+=================================
+No.4 Base Query: OPTIONAL MATCH ()-[]->() WHERE True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5 
+No.103 [BASE QUERY] Query="OPTIONAL MATCH ()-[]->() WHERE True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=60
+No.104 [Equivalent] Query="OPTIONAL MATCH ()<-[]-() WHERE True WITH * WHERE True WITH * WHERE True AND True AND True AND True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=127
+No.105 [Equivalent] Query="MATCH ()<-[]-() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True AND True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=219
+No.106 [Equivalent] Query="MATCH ()-[]->() WHERE True WITH * WHERE True WITH * WHERE True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=255
+No.107 [Equivalent] Query="OPTIONAL MATCH ()<-[]-() WHERE True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=211
+No.108 [Equivalent] Query="MATCH ()-[]->() WHERE True WITH * WHERE True WITH * WHERE True AND True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=222
+No.109 [Equivalent] Query="MATCH ()-[]->() WHERE True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=253
+No.110 [Equivalent] Query="MATCH ()-[]->() WHERE True WITH * WHERE True WITH * WHERE True AND True AND True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=254
+No.111 [Equivalent] Query="OPTIONAL MATCH ()-[]->() WHERE True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=242
+No.112 [Equivalent] Query="MATCH ()-[]->() WHERE True AND True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=260
+No.113 [Equivalent] Query="MATCH ()-[]->() WHERE True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=261
+No.114 [Equivalent] Query="OPTIONAL MATCH ()-[]->() WHERE True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=348
+No.115 [Equivalent] Query="CALL { OPTIONAL MATCH ()-[]->() WHERE True RETURN count(1) AS deadbeef ORDER BY -1+1 SKIP 0 LIMIT 5 } RETURN deadbeef"
+	Query Result=166261
+	Query Time=303
+No.116 [Equivalent] Query="MATCH ()<-[]-() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True AND True AND True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=317
+No.117 [Equivalent] Query="MATCH ()-[]->() WHERE True WITH * WHERE True WITH * WHERE True AND True AND True AND True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=209
+No.118 [Equivalent] Query="MATCH ()<-[]-() WHERE True WITH * WHERE True WITH * WHERE True AND True AND True AND True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=229
+No.119 [Equivalent] Query="OPTIONAL MATCH ()-[]->() WHERE True WITH * WHERE True WITH * WHERE True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=306
+No.120 [Equivalent] Query="MATCH ()<-[]-() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=325
+No.121 [Equivalent] Query="OPTIONAL MATCH ()<-[]-() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=401
+No.122 [Equivalent] Query="OPTIONAL MATCH ()<-[]-() WHERE True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=340
+No.123 [Equivalent] Query="OPTIONAL MATCH ()<-[]-() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=448
+No.124 [Equivalent] Query="OPTIONAL MATCH ()-[]->() WHERE True AND True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=349
+No.125 [Equivalent] Query="OPTIONAL MATCH ()<-[]-() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=337
+No.126 [Equivalent] Query="OPTIONAL MATCH ()<-[]-() WHERE True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=340
+No.127 [Equivalent] Query="OPTIONAL MATCH ()-[]->() WHERE True WITH * WHERE True WITH * WHERE True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=356
+No.128 [Equivalent] Query="OPTIONAL MATCH ()-[]->() WHERE True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=469
+No.129 [Equivalent] Query="OPTIONAL MATCH ()-[]->() WHERE True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=221
+No.130 [Equivalent] Query="OPTIONAL MATCH ()-[]->() WHERE True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=394
+No.131 [Equivalent] Query="OPTIONAL MATCH ()<-[]-() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True AND True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=398
+No.132 [Equivalent] Query="OPTIONAL MATCH ()<-[]-() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True AND True AND True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=466
+No.133 [Equivalent] Query="OPTIONAL MATCH ()-[]->() WHERE True WITH * WHERE True WITH * WHERE True AND True AND True AND True AND True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=166261
+	Query Time=375
+No.134 [Restricted] Query="OPTIONAL MATCH ()-[:ACTED_IN]->() WHERE True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=35910
+	Query Time=41
+No.135 [Restricted] Query="OPTIONAL MATCH (imalwejj:User)-[]->() WHERE True RETURN count(1) ORDER BY -1+1 SKIP 0 LIMIT 5"
+	Query Result=100004
+	Query Time=75
+number of tested base queries: 4
+number of detected inconsistent pair: 0
+=================================
+No.5 Base Query: MATCH (zayhhkge)<-[]-() WHERE zayhhkge IS NOT NULL AND True RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1 
+No.136 [BASE QUERY] Query="MATCH (zayhhkge)<-[]-() WHERE zayhhkge IS NOT NULL AND True RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=44
+No.137 [Equivalent] Query="MATCH (zayhhkge)<-[]-() WHERE zayhhkge IS NOT NULL AND True AND zayhhkge=zayhhkge RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=209
+No.138 [Equivalent] Query="MATCH ()-[]->(zayhhkge) WHERE zayhhkge IS NOT NULL WITH * WHERE True RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=220
+No.139 [Equivalent] Query="MATCH ()-[]->(zayhhkge) WHERE zayhhkge IS NOT NULL WITH * WHERE True AND True RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=226
+No.141 [Equivalent] Query="MATCH ()-[]->(zayhhkge) WHERE zayhhkge IS NOT NULL WITH * WHERE True AND True AND True RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=294
+No.140 [Equivalent] Query="MATCH (zayhhkge)<-[]-() WHERE zayhhkge IS NOT NULL AND True AND id(zayhhkge)>=0.0 RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=261
+No.142 [Equivalent] Query="MATCH ()-[]->(zayhhkge) WHERE zayhhkge IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE zayhhkge=zayhhkge AND True AND id(zayhhkge)>=0.0 AND True AND id(zayhhkge)>=0.0 AND zayhhkge=zayhhkge AND id(zayhhkge)>=0.0 RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=277
+No.143 [Equivalent] Query="MATCH ()-[]->(zayhhkge) WHERE zayhhkge IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE zayhhkge=zayhhkge AND True AND id(zayhhkge)>=0.0 AND True AND id(zayhhkge)>=0.0 AND zayhhkge=zayhhkge RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=316
+No.144 [Equivalent] Query="MATCH ()-[]->(zayhhkge) WHERE zayhhkge IS NOT NULL AND True RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=221
+No.145 [Equivalent] Query="MATCH (zayhhkge)<-[]-() WHERE zayhhkge IS NOT NULL WITH * WHERE True AND True AND True AND zayhhkge=zayhhkge RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=345
+No.146 [Equivalent] Query="MATCH ()-[]->(zayhhkge) WHERE zayhhkge IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE zayhhkge=zayhhkge AND True RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=234
+No.147 [Equivalent] Query="MATCH (zayhhkge)<-[]-() WHERE zayhhkge IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE zayhhkge=zayhhkge AND True RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=356
+No.148 [Equivalent] Query="MATCH (zayhhkge)<-[]-() WHERE zayhhkge IS NOT NULL WITH * WHERE True RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=240
+No.149 [Equivalent] Query="MATCH ()-[]->(zayhhkge) WHERE zayhhkge IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE zayhhkge=zayhhkge AND True AND id(zayhhkge)>=0.0 AND True AND id(zayhhkge)>=0.0 RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=304
+No.151 [Equivalent] Query="MATCH (s0)<-[]-() WHERE s0 IS NOT NULL AND True RETURN DISTINCT count(s0) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=300
+No.150 [Equivalent] Query="MATCH ()-[]->(zayhhkge) WHERE zayhhkge IS NOT NULL AND True RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=278
+No.152 [Equivalent] Query="MATCH ()-[]->(zayhhkge) WHERE zayhhkge IS NOT NULL WITH * WHERE True RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=307
+No.153 [Equivalent] Query="MATCH ()-[]->(zayhhkge) WHERE zayhhkge IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE zayhhkge=zayhhkge AND True AND id(zayhhkge)>=0.0 AND True RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=306
+No.154 [Equivalent] Query="MATCH (zayhhkge)<-[]-() WHERE zayhhkge IS NOT NULL AND True AND True RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=239
+No.156 [Equivalent] Query="MATCH (zayhhkge)<-[]-() WHERE zayhhkge IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE zayhhkge=zayhhkge WITH * WHERE True WITH * WHERE id(zayhhkge)>=0.0 WITH * WHERE True WITH * WHERE id(zayhhkge)>=0.0 WITH * WHERE zayhhkge=zayhhkge WITH * WHERE id(zayhhkge)>=0.0 AND id(zayhhkge)>=0.0 AND zayhhkge=zayhhkge RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=269
+No.157 [Equivalent] Query="MATCH ()-[]->(zayhhkge) WHERE zayhhkge IS NOT NULL WITH * WHERE True AND True AND True AND zayhhkge=zayhhkge RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=273
+No.158 [Equivalent] Query="MATCH (zayhhkge)<-[]-() WHERE zayhhkge IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE zayhhkge=zayhhkge WITH * WHERE True WITH * WHERE id(zayhhkge)>=0.0 WITH * WHERE True WITH * WHERE id(zayhhkge)>=0.0 WITH * WHERE zayhhkge=zayhhkge WITH * WHERE id(zayhhkge)>=0.0 RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=345
+No.160 [Equivalent] Query="MATCH ()-[]->(zayhhkge) WHERE zayhhkge IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE zayhhkge=zayhhkge AND True AND id(zayhhkge)>=0.0 RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=283
+No.159 [Equivalent] Query="MATCH (zayhhkge)<-[]-() WHERE zayhhkge IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE zayhhkge=zayhhkge RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=302
+No.155 [Equivalent] Query="MATCH (zayhhkge)<-[]-() WHERE zayhhkge IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE zayhhkge=zayhhkge WITH * WHERE True WITH * WHERE id(zayhhkge)>=0.0 WITH * WHERE True WITH * WHERE id(zayhhkge)>=0.0 WITH * WHERE zayhhkge=zayhhkge WITH * WHERE id(zayhhkge)>=0.0 AND id(zayhhkge)>=0.0 RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=329
+No.161 [Equivalent] Query="MATCH (zayhhkge)<-[]-() WHERE zayhhkge IS NOT NULL AND True RETURN DISTINCT count(id(zayhhkge)) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=248
+No.162 [Equivalent] Query="MATCH ()-[]->(zayhhkge) WHERE zayhhkge IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE zayhhkge=zayhhkge WITH * WHERE True WITH * WHERE id(zayhhkge)>=0.0 WITH * WHERE True WITH * WHERE id(zayhhkge)>=0.0 WITH * WHERE zayhhkge=zayhhkge WITH * WHERE id(zayhhkge)>=0.0 RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=351
+No.163 [Equivalent] Query="MATCH (mcfltpwezwzavehybdgrwrobnddgafxp)<-[]-() WHERE mcfltpwezwzavehybdgrwrobnddgafxp IS NOT NULL AND True RETURN DISTINCT count(mcfltpwezwzavehybdgrwrobnddgafxp) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=328
+No.164 [Equivalent] Query="CALL { MATCH (zayhhkge)<-[]-() WHERE zayhhkge IS NOT NULL AND True RETURN DISTINCT count(zayhhkge) AS deadbeef SKIP 0 LIMIT 1 } RETURN deadbeef"
+	Query Result=166261
+	Query Time=283
+No.165 [Equivalent] Query="MATCH (zayhhkge),(zayhhkge)<-[]-() WHERE zayhhkge IS NOT NULL AND True RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=199
+No.166 [Equivalent] Query="OPTIONAL MATCH (zayhhkge)<-[]-() WHERE zayhhkge IS NOT NULL AND True RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=166261
+	Query Time=285
+No.167 [Restricted] Query="MATCH (zayhhkge)<-[:DIRECTED]-() WHERE zayhhkge IS NOT NULL AND True RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=10007
+	Query Time=32
+No.168 [Restricted] Query="MATCH (zayhhkge)<-[]-(whbpmnbu:User) WHERE zayhhkge IS NOT NULL AND True RETURN DISTINCT count(zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=100004
+	Query Time=32
+No.169 [Restricted] Query="MATCH (ukflsajq:User)<-[]-(zayhhkge)<-[]-() WHERE zayhhkge IS NOT NULL AND True RETURN DISTINCT count(DISTINCT zayhhkge) SKIP 0 LIMIT 1"
+	Query Result=0
+	Query Time=26
+number of tested base queries: 5
+number of detected inconsistent pair: 0
+=================================
+No.6 Base Query: OPTIONAL MATCH (olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL AND True RETURN count(olvwcpee) SKIP 0 LIMIT 5 
+No.170 [BASE QUERY] Query="OPTIONAL MATCH (olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL AND True RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=54
+No.171 [Equivalent] Query="MATCH (olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL AND True RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=186
+No.172 [Equivalent] Query="OPTIONAL MATCH (cliibddmwrroijppbaubsjrwnhnxwamj)-[]->(lljzptpkkhtbflxpfughslwajwfuruxe:Movie) WHERE cliibddmwrroijppbaubsjrwnhnxwamj IS NOT NULL AND True RETURN count(cliibddmwrroijppbaubsjrwnhnxwamj) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=418
+No.173 [Equivalent] Query="OPTIONAL MATCH (ozivuxzk:Movie)<-[]-(olvwcpee) WHERE olvwcpee IS NOT NULL AND True RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=491
+No.174 [Equivalent] Query="OPTIONAL MATCH (ozivuxzk:Movie)<-[]-(olvwcpee) WHERE olvwcpee IS NOT NULL AND True AND id(olvwcpee)>=0.0 RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=451
+No.175 [Equivalent] Query="OPTIONAL MATCH (olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL AND True RETURN count(id(olvwcpee)) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=420
+No.176 [Equivalent] Query="OPTIONAL MATCH (ozivuxzk:Movie)<-[]-(olvwcpee) WHERE olvwcpee IS NOT NULL AND True AND id(olvwcpee)>=0.0 AND olvwcpee=olvwcpee RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=492
+No.177 [Equivalent] Query="OPTIONAL MATCH (ozivuxzk:Movie)<-[]-(olvwcpee) WHERE olvwcpee IS NOT NULL AND True AND id(olvwcpee)>=0.0 AND olvwcpee=olvwcpee RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=498
+No.178 [Equivalent] Query="OPTIONAL MATCH (ozivuxzk:Movie)<-[]-(olvwcpee) WHERE olvwcpee IS NOT NULL AND True RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=485
+No.179 [Equivalent] Query="OPTIONAL MATCH (s0)-[]->(s1:Movie) WHERE s0 IS NOT NULL AND True RETURN count(s0) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=339
+No.180 [Equivalent] Query="OPTIONAL MATCH (olvwcpee),(olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL AND True RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=515
+No.181 [Equivalent] Query="OPTIONAL MATCH (olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL AND True AND id(ozivuxzk)>=0.0 RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=442
+No.182 [Equivalent] Query="OPTIONAL MATCH (olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL AND True AND True RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=532
+No.183 [Equivalent] Query="OPTIONAL MATCH (olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL AND True AND ozivuxzk=ozivuxzk RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=533
+No.184 [Equivalent] Query="OPTIONAL MATCH (ozivuxzk:Movie)<-[]-(olvwcpee) WHERE olvwcpee IS NOT NULL AND True AND id(olvwcpee)>=0.0 AND olvwcpee=olvwcpee AND True RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=533
+No.185 [Equivalent] Query="OPTIONAL MATCH (olvwcpee)-[]->(ozivuxzk) WHERE olvwcpee IS NOT NULL AND True AND ozivuxzk:Movie RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=450
+No.186 [Equivalent] Query="CALL { OPTIONAL MATCH (olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL AND True RETURN count(olvwcpee) AS deadbeef SKIP 0 LIMIT 5 } RETURN deadbeef"
+	Query Result=145921
+	Query Time=495
+No.187 [Equivalent] Query="OPTIONAL MATCH (olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL WITH * WHERE True RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=493
+No.188 [Equivalent] Query="OPTIONAL MATCH (olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL WITH * WHERE True WITH * WHERE id(olvwcpee)>=0.0 WITH * WHERE olvwcpee=olvwcpee WITH * WHERE True WITH * WHERE ozivuxzk=ozivuxzk AND id(olvwcpee)>=0.0 AND id(ozivuxzk)>=0.0 RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=463
+No.189 [Equivalent] Query="OPTIONAL MATCH (olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL AND True RETURN count(id(ozivuxzk)) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=549
+No.190 [Equivalent] Query="OPTIONAL MATCH (olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL WITH * WHERE True WITH * WHERE id(olvwcpee)>=0.0 WITH * WHERE olvwcpee=olvwcpee WITH * WHERE True WITH * WHERE ozivuxzk=ozivuxzk AND id(olvwcpee)>=0.0 AND id(ozivuxzk)>=0.0 AND True AND True RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=440
+No.191 [Equivalent] Query="OPTIONAL MATCH (olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL WITH * WHERE True WITH * WHERE id(olvwcpee)>=0.0 WITH * WHERE olvwcpee=olvwcpee WITH * WHERE True WITH * WHERE ozivuxzk=ozivuxzk AND id(olvwcpee)>=0.0 AND id(ozivuxzk)>=0.0 AND True RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=461
+No.192 [Equivalent] Query="OPTIONAL MATCH (olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL WITH * WHERE True WITH * WHERE id(olvwcpee)>=0.0 WITH * WHERE olvwcpee=olvwcpee WITH * WHERE True WITH * WHERE ozivuxzk=ozivuxzk RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=545
+No.194 [Equivalent] Query="OPTIONAL MATCH (ozivuxzk:Movie)<-[]-(olvwcpee) WHERE olvwcpee IS NOT NULL WITH * WHERE True WITH * WHERE id(olvwcpee)>=0.0 WITH * WHERE olvwcpee=olvwcpee WITH * WHERE True RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=515
+No.193 [Equivalent] Query="OPTIONAL MATCH (ozivuxzk:Movie)<-[]-(olvwcpee) WHERE olvwcpee IS NOT NULL WITH * WHERE True WITH * WHERE id(olvwcpee)>=0.0 WITH * WHERE olvwcpee=olvwcpee WITH * WHERE True WITH * WHERE ozivuxzk=ozivuxzk AND id(olvwcpee)>=0.0 AND id(ozivuxzk)>=0.0 RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=470
+No.195 [Equivalent] Query="OPTIONAL MATCH (olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL WITH * WHERE True WITH * WHERE id(olvwcpee)>=0.0 WITH * WHERE olvwcpee=olvwcpee WITH * WHERE True AND ozivuxzk=ozivuxzk RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=535
+No.196 [Equivalent] Query="OPTIONAL MATCH (olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL WITH * WHERE True WITH * WHERE id(olvwcpee)>=0.0 WITH * WHERE olvwcpee=olvwcpee WITH * WHERE True WITH * WHERE ozivuxzk=ozivuxzk RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=558
+No.197 [Equivalent] Query="OPTIONAL MATCH (olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL WITH * WHERE True WITH * WHERE id(olvwcpee)>=0.0 WITH * WHERE olvwcpee=olvwcpee WITH * WHERE True WITH * WHERE ozivuxzk=ozivuxzk AND id(olvwcpee)>=0.0 RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=513
+No.198 [Equivalent] Query="OPTIONAL MATCH (ozivuxzk:Movie)<-[]-(olvwcpee) WHERE olvwcpee IS NOT NULL WITH * WHERE True WITH * WHERE id(olvwcpee)>=0.0 WITH * WHERE olvwcpee=olvwcpee WITH * WHERE True AND ozivuxzk=ozivuxzk RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=500
+No.199 [Equivalent] Query="OPTIONAL MATCH (ozivuxzk:Movie)<-[]-(olvwcpee) WHERE olvwcpee IS NOT NULL AND True AND id(olvwcpee)>=0.0 AND olvwcpee=olvwcpee AND True RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=571
+No.200 [Equivalent] Query="OPTIONAL MATCH (olvwcpee)-[]->(ozivuxzk:Movie) WHERE olvwcpee IS NOT NULL WITH * WHERE True WITH * WHERE id(olvwcpee)>=0.0 WITH * WHERE olvwcpee=olvwcpee WITH * WHERE True WITH * WHERE ozivuxzk=ozivuxzk AND id(olvwcpee)>=0.0 AND id(ozivuxzk)>=0.0 RETURN count(olvwcpee) SKIP 0 LIMIT 5"
+	Query Result=145921
+	Query Time=502

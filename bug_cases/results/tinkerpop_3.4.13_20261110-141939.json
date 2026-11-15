@@ -1,0 +1,318 @@
+{
+  "run_at": "2026-11-10T14:17:53",
+  "dbms": "tinkerpop",
+  "server": "ws://127.0.0.1:8182/gremlin",
+  "version": "TinkerPop 3.4.13 + cypher-for-gremlin",
+  "reference": {
+    "server": "bolt://127.0.0.1:7687",
+    "version": "2026.09.0 (enterprise)"
+  },
+  "files": [
+    {
+      "file": "bug_cases/tinkerpop/logic_bugs.json",
+      "kind": "logic",
+      "oracle": "equal",
+      "results": [
+        {
+          "id": "TP-L1",
+          "issue": "cypher-for-gremlin (đồ án)",
+          "affected_version": "TinkerPop 3.4.13 + cypher-for-gremlin 1.0.4",
+          "dataset": "recommendations",
+          "base_query": "MATCH (fowoqizb:Genre)<-[*0..1]-(hiwwpdxf)<-[*1..1]-(lawfiflo:User) WHERE hiwwpdxf IS NOT NULL AND True RETURN count(hiwwpdxf) LIMIT 1",
+          "mutated_query": "MATCH (lawfiflo:User)-[*1..1]->(hiwwpdxf)-[*0..1]->(fowoqizb:Genre) WHERE hiwwpdxf IS NOT NULL AND True RETURN count(hiwwpdxf) LIMIT 1",
+          "verdict": "BUG REPRODUCED",
+          "detail": "kết quả khác nhau: 265517 ≠ 531034",
+          "base": {
+            "result": 265517,
+            "rows": 1,
+            "ms": 742.5,
+            "error": null,
+            "timeout": false,
+            "gremlin": "g.V().hasLabel('Genre').emit(__.loops().is(gte(0))).repeat(__.inE().outV()).times(1).as('hiwwpdxf').times(1).repeat(__.inE().outV()).hasLabel('User').where(__.select('hiwwpdxf').is(neq('  cypher.null'))).select('hiwwpdxf').is(neq('  cypher.null')).count().project('count(hiwwpdxf)').by(__.identity()).limit(1)"
+          },
+          "mutated": {
+            "result": 531034,
+            "rows": 1,
+            "ms": 957.1,
+            "error": null,
+            "timeout": false,
+            "gremlin": "g.V().hasLabel('User').times(1).repeat(__.outE().inV()).as('hiwwpdxf').emit(__.loops().is(gte(0))).repeat(__.outE().inV()).times(1).hasLabel('Genre').where(__.select('hiwwpdxf').is(neq('  cypher.null'))).select('hiwwpdxf').is(neq('  cypher.null')).count().project('count(hiwwpdxf)').by(__.identity()).limit(1)"
+          },
+          "reference": {
+            "base": {
+              "result": 265517,
+              "rows": 1,
+              "ms": 197.3,
+              "error": null,
+              "timeout": false
+            },
+            "mutated": {
+              "result": 265517,
+              "rows": 1,
+              "ms": 166.1,
+              "error": null,
+              "timeout": false
+            }
+          },
+          "paper_match": null
+        },
+        {
+          "id": "TP-L1b",
+          "issue": "cypher-for-gremlin (đồ án)",
+          "affected_version": "TinkerPop 3.4.13 + cypher-for-gremlin 1.0.4",
+          "dataset": "recommendations",
+          "base_query": "MATCH (g:Genre)<-[*0..1]-(h)<-[*1..1]-(u:User) RETURN count(h)",
+          "mutated_query": "MATCH (u:User)-[*1..1]->(h)-[*0..1]->(g:Genre) RETURN count(h)",
+          "verdict": "BUG REPRODUCED",
+          "detail": "kết quả khác nhau: 265517 ≠ 531034",
+          "base": {
+            "result": 265517,
+            "rows": 1,
+            "ms": 468.0,
+            "error": null,
+            "timeout": false,
+            "gremlin": "g.V().hasLabel('Genre').emit(__.loops().is(gte(0))).repeat(__.inE().outV()).times(1).as('h').times(1).repeat(__.inE().outV()).hasLabel('User').select('h').is(neq('  cypher.null')).count().project('count(h)').by(__.identity())"
+          },
+          "mutated": {
+            "result": 531034,
+            "rows": 1,
+            "ms": 387.7,
+            "error": null,
+            "timeout": false,
+            "gremlin": "g.V().hasLabel('User').times(1).repeat(__.outE().inV()).as('h').emit(__.loops().is(gte(0))).repeat(__.outE().inV()).times(1).hasLabel('Genre').select('h').is(neq('  cypher.null')).count().project('count(h)').by(__.identity())"
+          },
+          "reference": {
+            "base": {
+              "result": 265517,
+              "rows": 1,
+              "ms": 206.0,
+              "error": null,
+              "timeout": false
+            },
+            "mutated": {
+              "result": 265517,
+              "rows": 1,
+              "ms": 125.0,
+              "error": null,
+              "timeout": false
+            }
+          },
+          "paper_match": null
+        }
+      ]
+    },
+    {
+      "file": "bug_cases/tinkerpop/internal_errors.json",
+      "kind": "internal_error",
+      "oracle": "no_error",
+      "results": [
+        {
+          "id": "TP-I1",
+          "issue": "cypher-for-gremlin (đồ án)",
+          "affected_version": "TinkerPop 3.4.13 + cypher-for-gremlin 1.0.4",
+          "dataset": "recommendations",
+          "base_query": "OPTIONAL MATCH (a)-[]->(b:Director) WITH a WHERE id(a)>=0 RETURN count(a)",
+          "mutated_query": "OPTIONAL MATCH (a)-[]->(b:Director) WITH * WHERE id(a)>=0.0 RETURN count(a)",
+          "verdict": "BUG REPRODUCED",
+          "detail": "mutated lỗi: 597: java.lang.ClassCastException",
+          "base": {
+            "result": 0,
+            "rows": 1,
+            "ms": 49.7,
+            "error": null,
+            "timeout": false,
+            "gremlin": "g.inject('  cypher.start').choose(__.V().as('a').outE().inV().hasLabel('Director'), __.V().as('a').outE().inV().hasLabel('Director'), __.constant('  cypher.null').as('a')).select('a').as('a').has('~id', gte(0)).is(neq('  cypher.null')).count().project('count(a)').by(__.identity())"
+          },
+          "mutated": {
+            "result": null,
+            "rows": null,
+            "ms": 63.8,
+            "error": "597: java.lang.ClassCastException",
+            "timeout": false,
+            "gremlin": "g.inject('  cypher.start').choose(__.V().as('a').outE().inV().as('b').hasLabel('Director'), __.V().as('a').outE().inV().as('b').hasLabel('Director'), __.constant('  cypher.null').as('a').as('b')).select('a', 'b').project('a', 'b').by(__.select('a')).by(__.select('b')).as('  GENERATED2').select('a').as('a').has('~id', gte(0.0d)).select('  GENERATED2').select('b').as('b').select('a').is(neq('  cypher.null')).count().project('count(a)').by(__.identity())"
+          },
+          "reference": {
+            "base": {
+              "result": 0,
+              "rows": 1,
+              "ms": 16.4,
+              "error": null,
+              "timeout": false
+            },
+            "mutated": {
+              "result": 0,
+              "rows": 1,
+              "ms": 17.7,
+              "error": null,
+              "timeout": false
+            }
+          },
+          "paper_match": null
+        },
+        {
+          "id": "TP-I2",
+          "issue": "cypher-for-gremlin (đồ án)",
+          "affected_version": "TinkerPop 3.4.13 + cypher-for-gremlin 1.0.4",
+          "dataset": "recommendations",
+          "base_query": "OPTIONAL MATCH (a)-[]->(b:Director)-[*0..0]-() WHERE b IS NOT NULL WITH * WHERE True AND id(a)>=0.0 RETURN DISTINCT count(a) ORDER BY -1+1",
+          "mutated_query": null,
+          "verdict": "BUG REPRODUCED",
+          "detail": "base lỗi: 597: java.lang.ClassCastException",
+          "base": {
+            "result": null,
+            "rows": null,
+            "ms": 75.4,
+            "error": "597: java.lang.ClassCastException",
+            "timeout": false,
+            "gremlin": "g.inject('  cypher.start').choose(__.V().as('a').outE().inV().as('b').hasLabel('Director').as('  cypher.path.start.GENERATED2').times(0).repeat(__.bothE().dedup().by(__.path()).otherV()).simplePath().from('  cypher.path.start.GENERATED2').where(__.select('b').is(neq('  cypher.null'))), __.V().as('a').outE().inV().as('b').hasLabel('Director').as('  cypher.path.start.GENERATED2').times(0).repeat(__.bothE().dedup().by(__.path()).otherV()).simplePath().from('  cypher.path.start.GENERATED2').where(__.select('b').is(neq('  cypher.null'))), __.constant('  cypher.null').as('a').as('b')).select('a', 'b').project('a', 'b').by(__.select('a')).by(__.select('b')).as('  GENERATED3').select('a').as('a').has('~id', gte(0.0d)).select('  GENERATED3').select('b').as('b').select('a').is(neq('  cypher.null')).count().project('count(a)').by(__.identity()).dedup().order().by(__.constant(0), asc)"
+          },
+          "mutated": null,
+          "reference": {
+            "base": {
+              "result": 0,
+              "rows": 1,
+              "ms": 11.9,
+              "error": null,
+              "timeout": false
+            },
+            "mutated": null
+          },
+          "paper_match": null
+        }
+      ]
+    },
+    {
+      "file": "bug_cases/tinkerpop/false_positives.json",
+      "kind": "false_positive",
+      "oracle": "equal",
+      "results": [
+        {
+          "id": "TP-F1",
+          "issue": "GraphGenie count(*) rule (đồ án)",
+          "affected_version": "GraphGenie (luật biến đổi), không phải lỗi hệ quản trị",
+          "dataset": "recommendations",
+          "base_query": "OPTIONAL MATCH (a:Actor)<-[]-(g:Genre) WHERE g IS NOT NULL RETURN count(g)",
+          "mutated_query": "OPTIONAL MATCH (a:Actor)<-[]-(g:Genre) WHERE g IS NOT NULL RETURN count(*)",
+          "verdict": "FALSE POSITIVE",
+          "detail": "kết quả khác nhau: 0 ≠ 1 (hệ đối chiếu cũng trả 0 / 1)",
+          "base": {
+            "result": 0,
+            "rows": 1,
+            "ms": 7.7,
+            "error": null,
+            "timeout": false,
+            "gremlin": "g.inject('  cypher.start').choose(__.V().hasLabel('Actor').inE().outV().as('g').hasLabel('Genre').where(__.select('g').is(neq('  cypher.null'))), __.V().hasLabel('Actor').inE().outV().as('g').hasLabel('Genre').where(__.select('g').is(neq('  cypher.null'))), __.constant('  cypher.null').as('g')).select('g').is(neq('  cypher.null')).count().project('count(g)').by(__.identity())"
+          },
+          "mutated": {
+            "result": 1,
+            "rows": 1,
+            "ms": 9.7,
+            "error": null,
+            "timeout": false,
+            "gremlin": "g.inject('  cypher.start').choose(__.V().hasLabel('Actor').inE().outV().as('g').hasLabel('Genre').where(__.select('g').is(neq('  cypher.null'))), __.V().hasLabel('Actor').inE().outV().as('g').hasLabel('Genre').where(__.select('g').is(neq('  cypher.null'))), __.constant('  cypher.null').as('g')).count().project('count(*)').by(__.identity())"
+          },
+          "reference": {
+            "base": {
+              "result": 0,
+              "rows": 1,
+              "ms": 1.6,
+              "error": null,
+              "timeout": false
+            },
+            "mutated": {
+              "result": 1,
+              "rows": 1,
+              "ms": 1.6,
+              "error": null,
+              "timeout": false
+            }
+          },
+          "paper_match": null
+        }
+      ]
+    },
+    {
+      "file": "bug_cases/tinkerpop/performance_issues.json",
+      "kind": "performance",
+      "oracle": "time_ratio",
+      "results": [
+        {
+          "id": "TP-P1",
+          "issue": "cypher-for-gremlin (đồ án)",
+          "affected_version": "TinkerPop 3.4.13 + cypher-for-gremlin 1.0.4",
+          "dataset": "recommendations",
+          "base_query": "MATCH ()<-[]-(idjtuhjq)-[]->(tcksxptm:User) WHERE idjtuhjq IS NOT NULL AND True RETURN count(tcksxptm) LIMIT 5",
+          "mutated_query": "MATCH (tcksxptm:User)<-[]-(idjtuhjq)-[]->() WHERE idjtuhjq IS NOT NULL AND True RETURN count(tcksxptm) LIMIT 5",
+          "verdict": "BUG REPRODUCED",
+          "detail": "base=9592ms mutated=4ms tỉ lệ 2283.9x (ngưỡng 5x)",
+          "base": {
+            "result": 0,
+            "rows": 1,
+            "ms": 9592.2,
+            "error": null,
+            "timeout": false,
+            "gremlin": "g.V().inE().as('  UNNAMED9').outV().as('idjtuhjq').outE().as('  UNNAMED24').inV().as('tcksxptm').hasLabel('User').where(__.and(__.select('idjtuhjq').is(neq('  cypher.null')), __.select('  UNNAMED24').where(neq('  UNNAMED9')))).select('tcksxptm').is(neq('  cypher.null')).count().project('count(tcksxptm)').by(__.identity()).limit(5)",
+            "runs_ms": [
+              10366.3,
+              9592.2,
+              9525.8
+            ]
+          },
+          "mutated": {
+            "result": 0,
+            "rows": 1,
+            "ms": 4.2,
+            "error": null,
+            "timeout": false,
+            "gremlin": "g.V().as('tcksxptm').hasLabel('User').inE().as('  UNNAMED22').outV().as('idjtuhjq').outE().as('  UNNAMED37').inV().where(__.and(__.select('idjtuhjq').is(neq('  cypher.null')), __.select('  UNNAMED22').where(neq('  UNNAMED37')))).select('tcksxptm').is(neq('  cypher.null')).count().project('count(tcksxptm)').by(__.identity()).limit(5)",
+            "runs_ms": [
+              4.2,
+              4.2,
+              7.1
+            ]
+          },
+          "reference": null,
+          "paper_match": null
+        },
+        {
+          "id": "TP-P2",
+          "issue": "cypher-for-gremlin (đồ án)",
+          "affected_version": "TinkerPop 3.4.13 + cypher-for-gremlin 1.0.4",
+          "dataset": "recommendations",
+          "base_query": "MATCH ()-[]-(kxjkbpbk)<-[*1..1]-(lquekwpx:Genre) WHERE lquekwpx IS NOT NULL AND True RETURN count(lquekwpx) ORDER BY -1+1 SKIP 0 LIMIT 2",
+          "mutated_query": "MATCH (lquekwpx:Genre)-[*1..1]->(kxjkbpbk)-[]-() WHERE lquekwpx IS NOT NULL AND True RETURN count(lquekwpx) ORDER BY -1+1 SKIP 0 LIMIT 2",
+          "verdict": "BUG REPRODUCED",
+          "detail": "base=23611ms mutated=4ms tỉ lệ 6213.5x (ngưỡng 5x)",
+          "base": {
+            "result": 0,
+            "rows": 1,
+            "ms": 23611.4,
+            "error": null,
+            "timeout": false,
+            "gremlin": "g.V().bothE().dedup().by(__.path()).otherV().times(1).repeat(__.inE().outV()).as('lquekwpx').hasLabel('Genre').where(__.select('lquekwpx').is(neq('  cypher.null'))).select('lquekwpx').is(neq('  cypher.null')).count().project('count(lquekwpx)').by(__.identity()).order().by(__.constant(0), asc).limit(2)",
+            "runs_ms": [
+              21353.5,
+              27467.8,
+              23611.4
+            ]
+          },
+          "mutated": {
+            "result": 0,
+            "rows": 1,
+            "ms": 3.8,
+            "error": null,
+            "timeout": false,
+            "gremlin": "g.V().as('lquekwpx').hasLabel('Genre').times(1).repeat(__.outE().inV()).bothE().dedup().by(__.path()).otherV().where(__.select('lquekwpx').is(neq('  cypher.null'))).select('lquekwpx').is(neq('  cypher.null')).count().project('count(lquekwpx)').by(__.identity()).order().by(__.constant(0), asc).limit(2)",
+            "runs_ms": [
+              5.7,
+              3.6,
+              3.8
+            ]
+          },
+          "reference": null,
+          "paper_match": null
+        }
+      ]
+    }
+  ]
+}

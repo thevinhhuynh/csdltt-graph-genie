@@ -1,0 +1,3 @@
+data/*.graphml
+logs/*
+!logs/.gitkeep

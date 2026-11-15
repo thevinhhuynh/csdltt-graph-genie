@@ -1,0 +1,114 @@
+BẰNG CHỨNG: L2 (neo4j#12996) VÀ I2 (neo4j#12988) VẪN CÒN TRÊN NEO4J 5.4.0
+Tạo lúc (UTC): 2026-11-13T04:42:29Z    Máy: Darwin arm64
+------------------------------------------------------------------------
+1. PHIÊN BẢN ĐANG KIỂM TRA
+
+Container: neo4j-5-4-0
+Docker image: neo4j:5.4.0-community
+Mã băm image (digest): neo4j@sha256:e625de2c59795afe0d58c81aed32a3771858e069c537123fb55ae958246cd66b
+Ngày build image: 2023-02-09T10:04:25.865882573Z
+
+$ cypher-shell "CALL dbms.components() YIELD name, versions, edition RETURN name, versions[0] AS version, edition"
+[thời điểm UTC: 2026-11-13T04:42:29Z]
+name, version, edition
+"Neo4j Kernel", "5.4.0", "community"
+[mã thoát: 0]
+
+Bộ dữ liệu (recommendations-50: kỳ vọng 28863 nút, 166261 cạnh):
+$ cypher-shell "MATCH (n) WITH count(n) AS nodes MATCH ()-[r]->() RETURN nodes, count(r) AS relationships"
+[thời điểm UTC: 2026-11-13T04:42:30Z]
+nodes, relationships
+28863, 166261
+[mã thoát: 0]
+
+------------------------------------------------------------------------
+2. L2 – neo4j#12996 (lỗi logic)
+Hai câu chỉ khác biến được đếm (a hay b). count() không nhóm chỉ trả 1 dòng; SKIP 1 bỏ dòng đó,
+nên CẢ HAI câu phải trả về rỗng. Nếu một câu trả rỗng còn câu kia trả số => lỗi.
+
+$ cypher-shell "MATCH (a)-[b:RATED]->(c) RETURN count(a) SKIP 1"
+[thời điểm UTC: 2026-11-13T04:42:31Z]
+[mã thoát: 0]
+
+$ cypher-shell "MATCH (a)-[b:RATED]->(c) RETURN count(b) SKIP 1"
+[thời điểm UTC: 2026-11-13T04:42:32Z]
+count(b)
+100004
+[mã thoát: 0]
+
+------------------------------------------------------------------------
+3. I2 – neo4j#12988 (lỗi nội bộ)
+Truy vấn hợp lệ; nếu máy chủ trả Neo.DatabaseError.Statement.ExecutionFailed => lỗi.
+
+$ cypher-shell "OPTIONAL MATCH p=shortestPath((a:User)-[:IN_GENRE*]-(c:Genre)) RETURN DISTINCT p"
+[thời điểm UTC: 2026-11-13T04:42:32Z]
+Expected: 
+RegularSinglePlannerQuery(QueryGraph {Optional Matches: : ['QueryGraph {Shortest paths: ['ShortestPathPattern(Some(p),(a)-[  UNNAMED0:IN_GENRE*]-(c),true)']}']},InterestingOrder(RequiredOrderCandidate(List()),List(InterestingOrderCandidate(List(Asc(Variable(p),Map()))), InterestingOrderCandidate(List(Desc(Variable(p),Map()))))),DistinctQueryProjection(Map(p -> Variable(p)),QueryPagination(None,None),Selections(Set())),None,None) 
+
+Actual: 
+RegularSinglePlannerQuery(QueryGraph {Optional Matches: : ['QueryGraph {}']},InterestingOrder(RequiredOrderCandidate(List()),List()),DistinctQueryProjection(Map(p -> Variable(p)),QueryPagination(None,None),Selections(Set())),None,None)
+
+Plan:
+.produceResults("p")
+.distinct("p AS p")
+.apply(fromSubquery = false)
+.|.optional()
+.|.argument()
+.argument()
+.build()
+
+Verbose plan:
+ProduceResult(List(p))
+Distinct(Map(p -> Variable(p)))
+Apply(false)
+| Optional(Set())
+| Argument(Set())
+Argument(Set())
+
+Differences:
+ - QueryGraph
+    Expected: QueryGraph {Optional Matches: : ['QueryGraph {Shortest paths: ['ShortestPathPattern(Some(p),(a)-[  UNNAMED0:IN_GENRE*]-(c),true)']}']}
+    Actual:   QueryGraph {Optional Matches: : ['QueryGraph {}']}
+
+[mã thoát: 1]
+
+Log của chính máy chủ Neo4j 5.4.0 ghi nhận lỗi (docker logs, từ 2026-11-13T04:42:32 UTC):
+2026-11-13 04:42:03.906+0000 ERROR Client triggered an unexpected error [Neo.DatabaseError.Statement.ExecutionFailed]: Expected: 
+2026-11-13 04:42:33.456+0000 ERROR Client triggered an unexpected error [Neo.DatabaseError.Statement.ExecutionFailed]: Expected: 
+
+------------------------------------------------------------------------
+4. ĐỐI CHỨNG: CÙNG CÁC CÂU TRÊN NEO4J HIỆN TẠI (GraphGenieLab, Neo4j Desktop)
+
+$ cypher-shell "CALL dbms.components() YIELD name, versions, edition RETURN name, versions[0] AS version, edition"
+[thời điểm UTC: 2026-11-13T04:42:33Z]
+name, version, edition
+"Neo4j Kernel", "2026.09.0", "enterprise"
+"Cypher", "5", ""
+[mã thoát: 0]
+
+$ cypher-shell "MATCH (a)-[b:RATED]->(c) RETURN count(a) SKIP 1"
+[thời điểm UTC: 2026-11-13T04:42:35Z]
+[mã thoát: 0]
+
+$ cypher-shell "MATCH (a)-[b:RATED]->(c) RETURN count(b) SKIP 1"
+[thời điểm UTC: 2026-11-13T04:42:37Z]
+[mã thoát: 0]
+
+$ cypher-shell "OPTIONAL MATCH p=shortestPath((a:User)-[:IN_GENRE*]-(c:Genre)) RETURN DISTINCT p"
+[thời điểm UTC: 2026-11-13T04:42:39Z]
+p
+NULL
+[mã thoát: 0]
+
+------------------------------------------------------------------------
+5. TRẠNG THÁI BÁO CÁO LỖI TRÊN GITHUB (lấy trực tiếp từ api.github.com)
+
+  #12996  "Unexpected Result"  trạng thái=closed  mở=2022-12-07  đóng=2023-01-04
+     https://github.com/neo4j/neo4j/issues/12996
+  #12988  "Using `OPTIONAL` and `DISTINCT` together with shortestPath() outputs an error"  trạng thái=closed  mở=2022-11-29  đóng=2023-01-09
+     https://github.com/neo4j/neo4j/issues/12988
+
+Image Neo4j 5.4.0 ở mục 1 được build ngày 2023-02-09, SAU ngày đóng của cả hai báo cáo lỗi (01/2023),
+nhưng hai lỗi vẫn tái hiện ở mục 2 và 3; còn ở mục 4, Neo4j hiện tại cho kết quả đúng.
+=> Đóng báo cáo lỗi không có nghĩa bản 5.4.0 đã chứa bản sửa; bản sửa chỉ có trong các phiên bản sau.
+------------------------------------------------------------------------

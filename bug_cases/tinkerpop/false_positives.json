@@ -1,0 +1,31 @@
+{
+  "dbms": "tinkerpop",
+  "kind": "false_positive",
+  "description": "Báo động giả: GraphGenie báo 'Potential Logic Bug' nhưng hệ quản trị trả đúng, vì chính luật biến đổi không bảo toàn ngữ nghĩa. Chiếm 67/68 cặp trong tinkerpop/logs/bug.log. Kết quả hai câu KHÁC nhau là đúng; dùng --reference-uri (Neo4j) để đối chiếu: nếu Neo4j cũng khác y hệt thì là báo động giả.",
+  "oracle": "equal",
+  "cases": [
+    {
+      "id": "TP-F1",
+      "issue": "GraphGenie count(*) rule (đồ án)",
+      "url": "https://github.com/YuanchengJiang/GraphGenie",
+      "title": "OPTIONAL MATCH không khớp: count(x) = 0 nhưng count(*) = 1",
+      "paper_ref": "Không có trong bài báo; luật count(*) chỉ bật khi graphdb khác neo4j (query_mutator.py)",
+      "cause": "OPTIONAL MATCH không khớp vẫn trả một dòng chứa null. count(x) bỏ qua null (0) còn count(*) đếm dòng (1). Luật count(x) → count(*) không tương đương với OPTIONAL MATCH",
+      "gqt_rule": "count(*) (Property-GQT, nhánh không phải Neo4j)",
+      "affected_version": "GraphGenie (luật biến đổi), không phải lỗi hệ quản trị",
+      "fixed_version": null,
+      "fix_note": "Đề xuất: không áp dụng luật count(*) cho OPTIONAL MATCH.",
+      "reported": null,
+      "closed": null,
+      "dataset": "recommendations",
+      "false_positive": true,
+      "setup": [],
+      "base_query": "OPTIONAL MATCH (a:Actor)<-[]-(g:Genre) WHERE g IS NOT NULL RETURN count(g)",
+      "mutated_query": "OPTIONAL MATCH (a:Actor)<-[]-(g:Genre) WHERE g IS NOT NULL RETURN count(*)",
+      "paper_result": null,
+      "observed_result": {"base": 0, "mutated": 1},
+      "expected_correct": {"base": 0, "mutated": 1},
+      "explanation": "Không có cạnh nào từ Genre tới Actor. Theo ngữ nghĩa Cypher, kết quả 0 và 1 đều đúng; Neo4j cũng trả 0 và 1."
+    }
+  ]
+}

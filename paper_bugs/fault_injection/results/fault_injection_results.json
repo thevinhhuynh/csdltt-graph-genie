@@ -1,0 +1,6534 @@
+{
+  "run_at": "2026-11-06T19:50:03",
+  "base_queries": 25,
+  "executed_queries": 775,
+  "faults": {
+    "F1": {
+      "expected": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "description": "count(id(x)) đếm thừa 1 (giống redisgraph#2744)"
+    },
+    "F2": {
+      "expected": [
+        "LOGIC",
+        "SYMMETRIC_VLE"
+      ],
+      "description": "đường đi độ dài biến bắt đầu bằng cạnh '<-' bị đếm gấp đôi (giống redisgraph#2865, T1)"
+    },
+    "F3": {
+      "expected": [
+        "LOGIC",
+        "EXPAND_INTO"
+      ],
+      "description": "mẫu có chu trình (biến lặp) bị đếm thiếu 1 (giống neo4j#12991)"
+    },
+    "F4": {
+      "expected": [
+        "INTERNAL",
+        null
+      ],
+      "description": "CALL { } lồng OPTIONAL MATCH gây lỗi nội bộ (giống neo4j#12968)"
+    },
+    "F5": {
+      "expected": [
+        "PERF",
+        null
+      ],
+      "description": "OPTIONAL MATCH không có WITH chạy chậm thêm 600ms (giống neo4j#13034)"
+    }
+  },
+  "kinds": {
+    "LOGIC": "Lỗi logic (kết quả sai)",
+    "INTERNAL": "Lỗi nội bộ (internal error / crash)",
+    "PERF": "Vấn đề hiệu năng",
+    "FALSE_POSITIVE": "Báo động giả (truy vấn biến đổi không tương đương)"
+  },
+  "causes": {
+    "OPTIONAL_SEMANTICS": [
+      "Ngữ nghĩa OPTIONAL MATCH + count(*)",
+      "67 cặp trong tinkerpop/logs/bug.log"
+    ],
+    "COUNTING": [
+      "Đếm quan hệ/thuộc tính sai (Incorrect Relationship Counting)",
+      "Bug 1 redisgraph#2744, neo4j#12996"
+    ],
+    "EXPAND_INTO": [
+      "Chu trình / ràng buộc hai đầu (Expand(Into))",
+      "Bug 3 neo4j#12968, Bug 4 neo4j#12991"
+    ],
+    "PARTITION": [
+      "Tách mẫu / parse đường đi độ dài biến (PatternPartition)",
+      "Bug 5 agensgraph#609"
+    ],
+    "SYMMETRIC_VLE": [
+      "Mẫu đối xứng / đường đi độ dài biến",
+      "Bug 2 redisgraph#2865, T1 cypher-for-gremlin"
+    ],
+    "OTHER": [
+      "Khác: cần phân tích tay",
+      "neo4j#12988 (shortestPath), redisgraph#3071 (elementId)"
+    ]
+  },
+  "summary": {
+    "F5": {
+      "total": 177,
+      "correct": 177,
+      "predicted": {
+        "PERF/OTHER": 99,
+        "PERF/SYMMETRIC_VLE": 40,
+        "PERF/EXPAND_INTO": 38
+      }
+    },
+    "F4+F5": {
+      "total": 10,
+      "correct": 10,
+      "predicted": {
+        "INTERNAL/OTHER": 7,
+        "INTERNAL/EXPAND_INTO": 2,
+        "INTERNAL/SYMMETRIC_VLE": 1
+      }
+    },
+    "F3": {
+      "total": 11,
+      "correct": 0,
+      "predicted": {
+        "LOGIC/PARTITION": 11
+      }
+    },
+    "F1": {
+      "total": 18,
+      "correct": 18,
+      "predicted": {
+        "LOGIC/COUNTING": 18
+      }
+    },
+    "F2+F5": {
+      "total": 13,
+      "correct": 13,
+      "predicted": {
+        "PERF/SYMMETRIC_VLE": 13
+      }
+    }
+  },
+  "detections": [
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 52.32119560241699,
+        "fired": []
+      },
+      "ratio": 13.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "CALL { OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) AS deadbeef ORDER BY -1+1 SKIP 0 LIMIT 1 } RETURN deadbeef",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": "Injected internal error (F4)",
+        "timeout": false,
+        "ms": 0.01430511474609375,
+        "fired": [
+          "F4"
+        ]
+      },
+      "ratio": 707.3,
+      "injected": [
+        "F4",
+        "F5"
+      ],
+      "predicted": [
+        "INTERNAL",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 111.79709434509277,
+        "fired": []
+      },
+      "ratio": 6.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 12.87078857421875,
+        "fired": []
+      },
+      "ratio": 55.0,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True WITH * WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 43.602943420410156,
+        "fired": []
+      },
+      "ratio": 16.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True WITH * WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 35.69293022155762,
+        "fired": []
+      },
+      "ratio": 19.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True WITH * WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 9.490966796875,
+        "fired": []
+      },
+      "ratio": 74.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True WITH * WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 7.248163223266602,
+        "fired": []
+      },
+      "ratio": 97.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True WITH * WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 7.487058639526367,
+        "fired": []
+      },
+      "ratio": 94.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True WITH * WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 7.107973098754883,
+        "fired": []
+      },
+      "ratio": 99.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True WITH * WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 7.216930389404297,
+        "fired": []
+      },
+      "ratio": 98.0,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH ()-[]-() WHERE True WITH * WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 50.73213577270508,
+        "fired": []
+      },
+      "ratio": 13.9,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True WITH * WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 7.462024688720703,
+        "fired": []
+      },
+      "ratio": 94.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True WITH * WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 6.613016128540039,
+        "fired": []
+      },
+      "ratio": 107.0,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True WITH * WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 6.484031677246094,
+        "fired": []
+      },
+      "ratio": 109.1,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True WITH * WHERE True WITH * WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 61.07902526855469,
+        "fired": []
+      },
+      "ratio": 11.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True WITH * WHERE True WITH * WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 7.6961517333984375,
+        "fired": []
+      },
+      "ratio": 91.9,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True WITH * WHERE True WITH * WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 33.30683708190918,
+        "fired": []
+      },
+      "ratio": 21.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True WITH * WHERE True WITH * WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 8.601903915405273,
+        "fired": []
+      },
+      "ratio": 82.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 27.91881561279297,
+        "fired": []
+      },
+      "ratio": 25.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 28.55396270751953,
+        "fired": []
+      },
+      "ratio": 24.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]-() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 707.3309421539307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 8.105039596557617,
+        "fired": []
+      },
+      "ratio": 87.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "mutated": "MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 676.1350631713867,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 86.99917793273926,
+        "fired": []
+      },
+      "ratio": 7.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "mutated": "OPTIONAL MATCH ()-[]->(gsvcdfae),(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 676.1350631713867,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166260,
+        "error": null,
+        "ms": 662.5359058380127,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "ratio": 1.0,
+      "injected": [
+        "F3"
+      ],
+      "predicted": [
+        "LOGIC",
+        "PARTITION"
+      ],
+      "correct": false
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "mutated": "OPTIONAL MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True RETURN count(id(gsvcdfae)) ORDER BY NULL SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 676.1350631713867,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166262,
+        "error": null,
+        "ms": 718.8370227813721,
+        "fired": [
+          "F1",
+          "F5"
+        ]
+      },
+      "ratio": 1.1,
+      "injected": [
+        "F1"
+      ],
+      "predicted": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "mutated": "OPTIONAL MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL WITH * WHERE True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 676.1350631713867,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 103.26004028320312,
+        "fired": []
+      },
+      "ratio": 6.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "mutated": "CALL { OPTIONAL MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True RETURN count(gsvcdfae) AS deadbeef ORDER BY NULL SKIP 0 LIMIT 2 } RETURN deadbeef",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 676.1350631713867,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": "Injected internal error (F4)",
+        "timeout": false,
+        "ms": 0.03409385681152344,
+        "fired": [
+          "F4"
+        ]
+      },
+      "ratio": 676.1,
+      "injected": [
+        "F4",
+        "F5"
+      ],
+      "predicted": [
+        "INTERNAL",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "mutated": "MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True AND id(gsvcdfae)>=0.0 AND True AND id(gsvcdfae)>=0.0 AND True AND id(gsvcdfae)>=0.0 AND True AND True AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 676.1350631713867,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 68.45307350158691,
+        "fired": []
+      },
+      "ratio": 9.9,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "mutated": "MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True AND id(gsvcdfae)>=0.0 AND True AND id(gsvcdfae)>=0.0 AND True AND id(gsvcdfae)>=0.0 AND True AND True AND True AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 676.1350631713867,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 57.923078536987305,
+        "fired": []
+      },
+      "ratio": 11.7,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "mutated": "MATCH (gsvcdfae)<-[]-() WHERE gsvcdfae IS NOT NULL AND True AND id(gsvcdfae)>=0.0 AND True AND id(gsvcdfae)>=0.0 AND True AND id(gsvcdfae)>=0.0 AND True AND True AND True AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 676.1350631713867,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 47.41811752319336,
+        "fired": []
+      },
+      "ratio": 14.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "mutated": "MATCH (gsvcdfae)<-[]-() WHERE gsvcdfae IS NOT NULL AND True AND id(gsvcdfae)>=0.0 AND True AND id(gsvcdfae)>=0.0 AND True AND id(gsvcdfae)>=0.0 AND True AND True AND True AND True AND gsvcdfae=gsvcdfae AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 676.1350631713867,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 100.91185569763184,
+        "fired": []
+      },
+      "ratio": 6.7,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "mutated": "MATCH (gsvcdfae)<-[]-() WHERE gsvcdfae IS NOT NULL AND True AND id(gsvcdfae)>=0.0 AND True AND id(gsvcdfae)>=0.0 AND True AND id(gsvcdfae)>=0.0 AND True AND True AND True AND True AND gsvcdfae=gsvcdfae AND True AND id(gsvcdfae)>=0.0 RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 676.1350631713867,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 72.79014587402344,
+        "fired": []
+      },
+      "ratio": 9.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "mutated": "MATCH (gsvcdfae)<-[]-() WHERE gsvcdfae IS NOT NULL AND True AND id(gsvcdfae)>=0.0 AND True AND id(gsvcdfae)>=0.0 AND True AND id(gsvcdfae)>=0.0 AND True AND True AND True AND True AND gsvcdfae=gsvcdfae AND True AND id(gsvcdfae)>=0.0 AND id(gsvcdfae)>=0.0 RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 676.1350631713867,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 67.92020797729492,
+        "fired": []
+      },
+      "ratio": 10.0,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "mutated": "MATCH (gsvcdfae)<-[]-() WHERE gsvcdfae IS NOT NULL AND True AND id(gsvcdfae)>=0.0 AND True AND id(gsvcdfae)>=0.0 AND True AND id(gsvcdfae)>=0.0 AND True AND True AND True AND True AND gsvcdfae=gsvcdfae AND True AND id(gsvcdfae)>=0.0 AND id(gsvcdfae)>=0.0 AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 676.1350631713867,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 75.01816749572754,
+        "fired": []
+      },
+      "ratio": 9.0,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()-[]->(gsvcdfae) WHERE gsvcdfae IS NOT NULL AND True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "mutated": "MATCH (gsvcdfae)<-[]-() WHERE gsvcdfae IS NOT NULL WITH * WHERE True WITH * WHERE id(gsvcdfae)>=0.0 WITH * WHERE True WITH * WHERE id(gsvcdfae)>=0.0 WITH * WHERE True WITH * WHERE id(gsvcdfae)>=0.0 WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE gsvcdfae=gsvcdfae WITH * WHERE True WITH * WHERE id(gsvcdfae)>=0.0 WITH * WHERE id(gsvcdfae)>=0.0 WITH * WHERE True RETURN count(gsvcdfae) ORDER BY NULL SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 676.1350631713867,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 93.3067798614502,
+        "fired": []
+      },
+      "ratio": 7.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "OPTIONAL MATCH ()<-[]-(sontwegf),(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166260,
+        "error": null,
+        "ms": 651.6690254211426,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "ratio": 1.0,
+      "injected": [
+        "F3"
+      ],
+      "predicted": [
+        "LOGIC",
+        "PARTITION"
+      ],
+      "correct": false
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(id(sontwegf)) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166262,
+        "error": null,
+        "ms": 674.8161315917969,
+        "fired": [
+          "F1",
+          "F5"
+        ]
+      },
+      "ratio": 1.0,
+      "injected": [
+        "F1"
+      ],
+      "predicted": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL WITH * WHERE True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 74.37801361083984,
+        "fired": []
+      },
+      "ratio": 9.0,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "CALL { OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) AS deadbeef ORDER BY -1+1 LIMIT 1 } RETURN deadbeef",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": "Injected internal error (F4)",
+        "timeout": false,
+        "ms": 0.027179718017578125,
+        "fired": [
+          "F4"
+        ]
+      },
+      "ratio": 667.9,
+      "injected": [
+        "F4",
+        "F5"
+      ],
+      "predicted": [
+        "INTERNAL",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (sontwegf)-[]->() WHERE sontwegf IS NOT NULL WITH * WHERE True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 50.29487609863281,
+        "fired": []
+      },
+      "ratio": 13.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (sontwegf)-[]->() WHERE sontwegf IS NOT NULL WITH * WHERE True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 19.816160202026367,
+        "fired": []
+      },
+      "ratio": 33.7,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL WITH * WHERE True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 21.154165267944336,
+        "fired": []
+      },
+      "ratio": 31.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL WITH * WHERE True AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 44.2051887512207,
+        "fired": []
+      },
+      "ratio": 15.1,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL WITH * WHERE True AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 80.83105087280273,
+        "fired": []
+      },
+      "ratio": 8.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "MATCH (sontwegf)-[]->() WHERE sontwegf IS NOT NULL WITH * WHERE True AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 40.17305374145508,
+        "fired": []
+      },
+      "ratio": 16.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "MATCH (sontwegf)-[]->() WHERE sontwegf IS NOT NULL WITH * WHERE True AND True AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 49.490928649902344,
+        "fired": []
+      },
+      "ratio": 13.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (sontwegf)-[]->() WHERE sontwegf IS NOT NULL WITH * WHERE True AND True AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 35.96782684326172,
+        "fired": []
+      },
+      "ratio": 18.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "MATCH (sontwegf)-[]->() WHERE sontwegf IS NOT NULL WITH * WHERE True AND True AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 14.863729476928711,
+        "fired": []
+      },
+      "ratio": 44.9,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "MATCH (sontwegf)-[]->() WHERE sontwegf IS NOT NULL WITH * WHERE True AND True AND True AND sontwegf=sontwegf RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 59.062957763671875,
+        "fired": []
+      },
+      "ratio": 11.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL WITH * WHERE True AND True AND True AND sontwegf=sontwegf RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 70.77908515930176,
+        "fired": []
+      },
+      "ratio": 9.4,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL WITH * WHERE True AND True AND True AND sontwegf=sontwegf AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 39.06512260437012,
+        "fired": []
+      },
+      "ratio": 17.1,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL WITH * WHERE True AND True AND True AND sontwegf=sontwegf AND True AND id(sontwegf)>=0.0 RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 56.468963623046875,
+        "fired": []
+      },
+      "ratio": 11.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL WITH * WHERE True AND True AND True AND sontwegf=sontwegf AND True AND id(sontwegf)>=0.0 AND sontwegf=sontwegf RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 65.40179252624512,
+        "fired": []
+      },
+      "ratio": 10.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL WITH * WHERE True AND True AND True AND sontwegf=sontwegf AND True AND id(sontwegf)>=0.0 AND sontwegf=sontwegf AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 48.04086685180664,
+        "fired": []
+      },
+      "ratio": 13.9,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL WITH * WHERE True AND True AND True AND sontwegf=sontwegf AND True AND id(sontwegf)>=0.0 AND sontwegf=sontwegf AND True AND id(sontwegf)>=0.0 RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 86.12179756164551,
+        "fired": []
+      },
+      "ratio": 7.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL WITH * WHERE True AND True AND True AND sontwegf=sontwegf AND True AND id(sontwegf)>=0.0 AND sontwegf=sontwegf AND True AND id(sontwegf)>=0.0 AND id(sontwegf)>=0.0 RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 121.26803398132324,
+        "fired": []
+      },
+      "ratio": 5.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL AND True RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "mutated": "MATCH ()<-[]-(sontwegf) WHERE sontwegf IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE sontwegf=sontwegf WITH * WHERE True WITH * WHERE id(sontwegf)>=0.0 WITH * WHERE sontwegf=sontwegf WITH * WHERE True WITH * WHERE id(sontwegf)>=0.0 WITH * WHERE id(sontwegf)>=0.0 RETURN count(sontwegf) ORDER BY -1+1 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8929328918457,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 87.36515045166016,
+        "fired": []
+      },
+      "ratio": 7.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (ryjislou)-[]->(qqhhyzlh) WHERE ryjislou IS NOT NULL AND True RETURN DISTINCT count(ryjislou) ORDER BY -1+1 SKIP 0 LIMIT 2",
+      "mutated": "OPTIONAL MATCH (ryjislou)-[]->(qqhhyzlh) WHERE ryjislou IS NOT NULL AND True RETURN DISTINCT count(ryjislou) ORDER BY -1+1 SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 56.3969612121582,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 667.8609848022461,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 11.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (ryjislou)-[]->(qqhhyzlh) WHERE ryjislou IS NOT NULL AND True RETURN DISTINCT count(ryjislou) ORDER BY -1+1 SKIP 0 LIMIT 2",
+      "mutated": "MATCH (ryjislou),(ryjislou)-[]->(qqhhyzlh) WHERE ryjislou IS NOT NULL AND True RETURN DISTINCT count(ryjislou) ORDER BY -1+1 SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 56.3969612121582,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 166260,
+        "error": null,
+        "ms": 50.42386054992676,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 1.1,
+      "injected": [
+        "F3"
+      ],
+      "predicted": [
+        "LOGIC",
+        "PARTITION"
+      ],
+      "correct": false
+    },
+    {
+      "base": "MATCH (ryjislou)-[]->(qqhhyzlh) WHERE ryjislou IS NOT NULL AND True RETURN DISTINCT count(ryjislou) ORDER BY -1+1 SKIP 0 LIMIT 2",
+      "mutated": "MATCH (ryjislou)-[]->(qqhhyzlh) WHERE ryjislou IS NOT NULL AND True RETURN DISTINCT count(id(ryjislou)) ORDER BY -1+1 SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 56.3969612121582,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 166262,
+        "error": null,
+        "ms": 83.8010311126709,
+        "fired": [
+          "F1"
+        ]
+      },
+      "ratio": 1.5,
+      "injected": [
+        "F1"
+      ],
+      "predicted": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (ryjislou)-[]->(qqhhyzlh) WHERE ryjislou IS NOT NULL AND True RETURN DISTINCT count(ryjislou) ORDER BY -1+1 SKIP 0 LIMIT 2",
+      "mutated": "MATCH (ryjislou)-[]->(qqhhyzlh) WHERE ryjislou IS NOT NULL AND True RETURN DISTINCT count(id(qqhhyzlh)) ORDER BY -1+1 SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 56.3969612121582,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 166262,
+        "error": null,
+        "ms": 65.69719314575195,
+        "fired": [
+          "F1"
+        ]
+      },
+      "ratio": 1.2,
+      "injected": [
+        "F1"
+      ],
+      "predicted": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (ryjislou)-[]->(qqhhyzlh) WHERE ryjislou IS NOT NULL AND True RETURN DISTINCT count(ryjislou) ORDER BY -1+1 SKIP 0 LIMIT 2",
+      "mutated": "OPTIONAL MATCH (qqhhyzlh)<-[]-(ryjislou) WHERE ryjislou IS NOT NULL AND True AND id(ryjislou)>=0.0 AND ryjislou=ryjislou AND id(ryjislou)>=0.0 AND qqhhyzlh=qqhhyzlh AND True AND ryjislou=ryjislou AND ryjislou=ryjislou AND True AND id(ryjislou)>=0.0 AND True AND id(qqhhyzlh)>=0.0 RETURN DISTINCT count(ryjislou) ORDER BY -1+1 SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 56.3969612121582,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 706.712007522583,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 12.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (ryjislou)-[]->(qqhhyzlh) WHERE ryjislou IS NOT NULL AND True RETURN DISTINCT count(ryjislou) ORDER BY -1+1 SKIP 0 LIMIT 2",
+      "mutated": "OPTIONAL MATCH (qqhhyzlh)<-[]-(ryjislou) WHERE ryjislou IS NOT NULL AND True AND id(ryjislou)>=0.0 AND ryjislou=ryjislou AND id(ryjislou)>=0.0 AND qqhhyzlh=qqhhyzlh AND True AND ryjislou=ryjislou AND ryjislou=ryjislou AND True AND id(ryjislou)>=0.0 AND True AND id(qqhhyzlh)>=0.0 RETURN DISTINCT count(qqhhyzlh) ORDER BY -1+1 SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 56.3969612121582,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 693.6240196228027,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 12.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 96.39406204223633,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 7.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 123.12197685241699,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 5.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "CALL { OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) AS deadbeef ORDER BY -1+1 SKIP 0 } RETURN deadbeef",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": "Injected internal error (F4)",
+        "timeout": false,
+        "ms": 0.031948089599609375,
+        "fired": [
+          "F3",
+          "F4"
+        ]
+      },
+      "ratio": 708.3,
+      "injected": [
+        "F4",
+        "F5"
+      ],
+      "predicted": [
+        "INTERNAL",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 53.08794975280762,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 13.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True AND id(cccccccc)>=0.0 RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 141.16621017456055,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 5.0,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True AND id(cccccccc)>=0.0 RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 34.078121185302734,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 20.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True AND id(cccccccc)>=0.0 AND cccccccc=cccccccc RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 91.06588363647461,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 7.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True AND id(cccccccc)>=0.0 AND cccccccc=cccccccc RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 82.8850269317627,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 8.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True AND id(cccccccc)>=0.0 AND cccccccc=cccccccc AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 92.31710433959961,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 7.7,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True AND id(cccccccc)>=0.0 AND cccccccc=cccccccc AND True AND cccccccc=cccccccc RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 51.23734474182129,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 13.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True AND id(cccccccc)>=0.0 AND cccccccc=cccccccc AND True AND cccccccc=cccccccc RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 43.12920570373535,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 16.4,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True AND id(cccccccc)>=0.0 AND cccccccc=cccccccc AND True AND cccccccc=cccccccc AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 53.02095413208008,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 13.4,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True AND id(cccccccc)>=0.0 AND cccccccc=cccccccc AND True AND cccccccc=cccccccc AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 91.94326400756836,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 7.7,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True AND id(cccccccc)>=0.0 AND cccccccc=cccccccc AND True AND cccccccc=cccccccc AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 26.659250259399414,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 26.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True AND id(cccccccc)>=0.0 AND cccccccc=cccccccc AND True AND cccccccc=cccccccc AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 26.767253875732422,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 26.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True AND id(cccccccc)>=0.0 AND cccccccc=cccccccc AND True AND cccccccc=cccccccc AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 24.8260498046875,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 28.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True AND id(cccccccc)>=0.0 AND cccccccc=cccccccc AND True AND cccccccc=cccccccc AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 33.271074295043945,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 21.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True AND id(cccccccc)>=0.0 AND cccccccc=cccccccc AND True AND cccccccc=cccccccc AND True AND id(cccccccc)>=0.0 AND cccccccc=cccccccc RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 92.2081470489502,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 7.7,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True AND id(cccccccc)>=0.0 AND cccccccc=cccccccc AND True AND cccccccc=cccccccc AND True AND id(cccccccc)>=0.0 AND cccccccc=cccccccc RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 70.83487510681152,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 10.0,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "mutated": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True AND id(cccccccc)>=0.0 AND cccccccc=cccccccc AND True AND cccccccc=cccccccc AND True AND id(cccccccc)>=0.0 AND cccccccc=cccccccc AND True RETURN DISTINCT count(cccccccc) ORDER BY -1+1 SKIP 0",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 708.2769870758057,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 71.69890403747559,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 9.9,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) SKIP 1 LIMIT 3",
+      "mutated": "OPTIONAL MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) SKIP 1 LIMIT 3",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 45.74704170227051,
+        "fired": []
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 862.3709678649902,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 18.9,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) SKIP 1 LIMIT 3",
+      "mutated": "OPTIONAL MATCH ()-[]->() WHERE True RETURN DISTINCT count(1) SKIP 1 LIMIT 3",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 45.74704170227051,
+        "fired": []
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 651.1471271514893,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 14.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) SKIP 1 LIMIT 3",
+      "mutated": "OPTIONAL MATCH ()-[]->() WHERE True RETURN DISTINCT count(1) SKIP 1 LIMIT 3",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 45.74704170227051,
+        "fired": []
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 655.0681591033936,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 14.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) SKIP 1 LIMIT 3",
+      "mutated": "OPTIONAL MATCH ()-[]->() WHERE True AND True RETURN DISTINCT count(1) SKIP 1 LIMIT 3",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 45.74704170227051,
+        "fired": []
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 661.0429286956787,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 14.4,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (iycebilc:Person)-[*0..0]-(zzsqyrno) WHERE zzsqyrno IS NOT NULL AND True RETURN count(iycebilc) ORDER BY -1+1 SKIP 0 LIMIT 3",
+      "mutated": "OPTIONAL MATCH (iycebilc:Person)-[*0..0]-(zzsqyrno) WHERE zzsqyrno IS NOT NULL AND True RETURN count(iycebilc) ORDER BY -1+1 SKIP 0 LIMIT 3",
+      "base_out": {
+        "result": 19047,
+        "error": null,
+        "ms": 72.53384590148926,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 19047,
+        "error": null,
+        "ms": 651.4220237731934,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 9.0,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (iycebilc:Person)-[*0..0]-(zzsqyrno) WHERE zzsqyrno IS NOT NULL AND True RETURN count(iycebilc) ORDER BY -1+1 SKIP 0 LIMIT 3",
+      "mutated": "MATCH (iycebilc:Person),(iycebilc:Person)-[*0..0]-(zzsqyrno) WHERE zzsqyrno IS NOT NULL AND True RETURN count(iycebilc) ORDER BY -1+1 SKIP 0 LIMIT 3",
+      "base_out": {
+        "result": 19047,
+        "error": null,
+        "ms": 72.53384590148926,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 19046,
+        "error": null,
+        "ms": 46.42677307128906,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 1.6,
+      "injected": [
+        "F3"
+      ],
+      "predicted": [
+        "LOGIC",
+        "PARTITION"
+      ],
+      "correct": false
+    },
+    {
+      "base": "MATCH (iycebilc:Person)-[*0..0]-(zzsqyrno) WHERE zzsqyrno IS NOT NULL AND True RETURN count(iycebilc) ORDER BY -1+1 SKIP 0 LIMIT 3",
+      "mutated": "MATCH (iycebilc:Person)-[*0..0]-(zzsqyrno) WHERE zzsqyrno IS NOT NULL AND True RETURN count(id(iycebilc)) ORDER BY -1+1 SKIP 0 LIMIT 3",
+      "base_out": {
+        "result": 19047,
+        "error": null,
+        "ms": 72.53384590148926,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 19048,
+        "error": null,
+        "ms": 47.55401611328125,
+        "fired": [
+          "F1"
+        ]
+      },
+      "ratio": 1.5,
+      "injected": [
+        "F1"
+      ],
+      "predicted": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (iycebilc:Person)-[*0..0]-(zzsqyrno) WHERE zzsqyrno IS NOT NULL AND True RETURN count(iycebilc) ORDER BY -1+1 SKIP 0 LIMIT 3",
+      "mutated": "MATCH (iycebilc:Person)-[*0..0]-(zzsqyrno) WHERE zzsqyrno IS NOT NULL AND True RETURN count(id(zzsqyrno)) ORDER BY -1+1 SKIP 0 LIMIT 3",
+      "base_out": {
+        "result": 19047,
+        "error": null,
+        "ms": 72.53384590148926,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 19048,
+        "error": null,
+        "ms": 41.2900447845459,
+        "fired": [
+          "F1"
+        ]
+      },
+      "ratio": 1.8,
+      "injected": [
+        "F1"
+      ],
+      "predicted": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (aqoxqlbj:User)-[]->(suvsnuzz:Movie) WHERE aqoxqlbj IS NOT NULL AND True RETURN count(aqoxqlbj) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (aqoxqlbj:User)-[]->(suvsnuzz:Movie) WHERE aqoxqlbj IS NOT NULL AND True RETURN count(aqoxqlbj) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 52.59394645690918,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 667.6580905914307,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 12.7,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (aqoxqlbj:User)-[]->(suvsnuzz:Movie) WHERE aqoxqlbj IS NOT NULL AND True RETURN count(aqoxqlbj) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "MATCH (aqoxqlbj:User),(aqoxqlbj:User)-[]->(suvsnuzz:Movie) WHERE aqoxqlbj IS NOT NULL AND True RETURN count(aqoxqlbj) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 52.59394645690918,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 100003,
+        "error": null,
+        "ms": 55.57084083557129,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 1.1,
+      "injected": [
+        "F3"
+      ],
+      "predicted": [
+        "LOGIC",
+        "PARTITION"
+      ],
+      "correct": false
+    },
+    {
+      "base": "MATCH (aqoxqlbj:User)-[]->(suvsnuzz:Movie) WHERE aqoxqlbj IS NOT NULL AND True RETURN count(aqoxqlbj) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "MATCH (aqoxqlbj:User)-[]->(suvsnuzz:Movie) WHERE aqoxqlbj IS NOT NULL AND True RETURN count(id(aqoxqlbj)) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 52.59394645690918,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 100005,
+        "error": null,
+        "ms": 58.87198448181152,
+        "fired": [
+          "F1"
+        ]
+      },
+      "ratio": 1.1,
+      "injected": [
+        "F1"
+      ],
+      "predicted": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (aqoxqlbj:User)-[]->(suvsnuzz:Movie) WHERE aqoxqlbj IS NOT NULL AND True RETURN count(aqoxqlbj) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "MATCH (aqoxqlbj:User)-[]->(suvsnuzz:Movie) WHERE aqoxqlbj IS NOT NULL AND True RETURN count(id(suvsnuzz)) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 52.59394645690918,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 100005,
+        "error": null,
+        "ms": 66.02191925048828,
+        "fired": [
+          "F1"
+        ]
+      },
+      "ratio": 1.3,
+      "injected": [
+        "F1"
+      ],
+      "predicted": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (aqoxqlbj:User)-[]->(suvsnuzz:Movie) WHERE aqoxqlbj IS NOT NULL AND True RETURN count(aqoxqlbj) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (suvsnuzz:Movie)<-[]-(aqoxqlbj:User) WHERE aqoxqlbj IS NOT NULL AND True AND True AND id(aqoxqlbj)>=0.0 AND True RETURN count(aqoxqlbj) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 52.59394645690918,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 687.4063014984131,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 13.1,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (aqoxqlbj:User)-[]->(suvsnuzz:Movie) WHERE aqoxqlbj IS NOT NULL AND True RETURN count(aqoxqlbj) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (suvsnuzz:Movie)<-[]-(aqoxqlbj:User) WHERE aqoxqlbj IS NOT NULL AND True AND True AND id(aqoxqlbj)>=0.0 AND True RETURN count(aqoxqlbj) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 52.59394645690918,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 633.8860988616943,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 12.1,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc)",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) ",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 652.4090766906738,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 59.63397026062012,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 10.9,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc)",
+      "mutated": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True RETURN DISTINCT count(cccccccc)",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 652.4090766906738,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 48.79426956176758,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 13.4,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc)",
+      "mutated": "CALL { OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) AS deadbeef } RETURN deadbeef",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 652.4090766906738,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": "Injected internal error (F4)",
+        "timeout": false,
+        "ms": 0.0209808349609375,
+        "fired": [
+          "F3",
+          "F4"
+        ]
+      },
+      "ratio": 652.4,
+      "injected": [
+        "F4",
+        "F5"
+      ],
+      "predicted": [
+        "INTERNAL",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc)",
+      "mutated": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE cccccccc=cccccccc RETURN DISTINCT count(cccccccc) ",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 652.4090766906738,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 71.32911682128906,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 9.1,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc)",
+      "mutated": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE cccccccc=cccccccc AND id(cccccccc)>=0.0 RETURN DISTINCT count(cccccccc) ",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 652.4090766906738,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 62.25299835205078,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 10.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc)",
+      "mutated": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE cccccccc=cccccccc AND id(cccccccc)>=0.0 AND True RETURN DISTINCT count(cccccccc) ",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 652.4090766906738,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 67.73710250854492,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 9.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc)",
+      "mutated": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE cccccccc=cccccccc AND id(cccccccc)>=0.0 AND True RETURN DISTINCT count(cccccccc) ",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 652.4090766906738,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 52.401065826416016,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 12.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc)",
+      "mutated": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE cccccccc=cccccccc AND id(cccccccc)>=0.0 AND True AND True RETURN DISTINCT count(cccccccc) ",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 652.4090766906738,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 51.88298225402832,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 12.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc)",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE cccccccc=cccccccc AND id(cccccccc)>=0.0 AND True AND True RETURN DISTINCT count(cccccccc) ",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 652.4090766906738,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 61.295270919799805,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 10.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc)",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE cccccccc=cccccccc AND id(cccccccc)>=0.0 AND True AND True AND True RETURN DISTINCT count(cccccccc) ",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 652.4090766906738,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 55.40108680725098,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 11.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc)",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE cccccccc=cccccccc AND id(cccccccc)>=0.0 AND True AND True AND True RETURN DISTINCT count(cccccccc) ",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 652.4090766906738,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 40.72213172912598,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 16.0,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc)",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE cccccccc=cccccccc AND id(cccccccc)>=0.0 AND True AND True AND True RETURN DISTINCT count(cccccccc) ",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 652.4090766906738,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 41.52202606201172,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 15.7,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc)",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE cccccccc=cccccccc AND id(cccccccc)>=0.0 AND True AND True AND True AND id(cccccccc)>=0.0 RETURN DISTINCT count(cccccccc) ",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 652.4090766906738,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 86.60674095153809,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 7.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc)",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE cccccccc=cccccccc AND id(cccccccc)>=0.0 AND True AND True AND True AND id(cccccccc)>=0.0 AND True AND cccccccc=cccccccc RETURN DISTINCT count(cccccccc) ",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 652.4090766906738,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 48.17795753479004,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 13.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc)",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE cccccccc=cccccccc WITH * WHERE id(cccccccc)>=0.0 WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE id(cccccccc)>=0.0 WITH * WHERE True WITH * WHERE cccccccc=cccccccc RETURN DISTINCT count(cccccccc) ",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 652.4090766906738,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 45.3338623046875,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 14.4,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc)",
+      "mutated": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE cccccccc=cccccccc WITH * WHERE id(cccccccc)>=0.0 WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE id(cccccccc)>=0.0 WITH * WHERE True WITH * WHERE cccccccc=cccccccc RETURN DISTINCT count(cccccccc) ",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 652.4090766906738,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 23.695945739746094,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 27.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (tbaibpbg:Person)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL AND True RETURN count(tbaibpbg) ORDER BY NULL LIMIT 0",
+      "mutated": "MATCH (tbaibpbg:Person)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL AND True RETURN count(tbaibpbg) ORDER BY NULL LIMIT 0",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 646.716833114624,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 46.40817642211914,
+        "fired": []
+      },
+      "ratio": 13.9,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (tbaibpbg:Person)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL AND True RETURN count(tbaibpbg) ORDER BY NULL LIMIT 0",
+      "mutated": "OPTIONAL MATCH (tbaibpbg:Person)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL WITH * WHERE True RETURN count(tbaibpbg) ORDER BY NULL LIMIT 0",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 646.716833114624,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 43.80512237548828,
+        "fired": []
+      },
+      "ratio": 14.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (tbaibpbg:Person)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL AND True RETURN count(tbaibpbg) ORDER BY NULL LIMIT 0",
+      "mutated": "CALL { OPTIONAL MATCH (tbaibpbg:Person)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL AND True RETURN count(tbaibpbg) AS deadbeef ORDER BY NULL LIMIT 0 } RETURN deadbeef",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 646.716833114624,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": "Injected internal error (F4)",
+        "timeout": false,
+        "ms": 0.031948089599609375,
+        "fired": [
+          "F4"
+        ]
+      },
+      "ratio": 646.7,
+      "injected": [
+        "F4",
+        "F5"
+      ],
+      "predicted": [
+        "INTERNAL",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (tbaibpbg:Person)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL AND True RETURN count(tbaibpbg) ORDER BY NULL LIMIT 0",
+      "mutated": "MATCH (tbaibpbg)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE tbaibpbg=tbaibpbg WITH * WHERE tbaibpbg:Person WITH * WHERE id(sqaxcdad)>=0.0 WITH * WHERE id(tbaibpbg)>=0.0 RETURN count(tbaibpbg) ORDER BY NULL LIMIT 0",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 646.716833114624,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 111.85503005981445,
+        "fired": []
+      },
+      "ratio": 5.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (tbaibpbg:Person)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL AND True RETURN count(tbaibpbg) ORDER BY NULL LIMIT 0",
+      "mutated": "OPTIONAL MATCH (tbaibpbg)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE tbaibpbg=tbaibpbg WITH * WHERE tbaibpbg:Person WITH * WHERE id(sqaxcdad)>=0.0 WITH * WHERE id(tbaibpbg)>=0.0 RETURN count(tbaibpbg) ORDER BY NULL LIMIT 0",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 646.716833114624,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 52.633047103881836,
+        "fired": []
+      },
+      "ratio": 12.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (tbaibpbg:Person)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL AND True RETURN count(tbaibpbg) ORDER BY NULL LIMIT 0",
+      "mutated": "OPTIONAL MATCH (tbaibpbg)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE tbaibpbg=tbaibpbg WITH * WHERE tbaibpbg:Person WITH * WHERE id(sqaxcdad)>=0.0 WITH * WHERE id(tbaibpbg)>=0.0 RETURN count(sqaxcdad) ORDER BY NULL LIMIT 0",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 646.716833114624,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 115.54789543151855,
+        "fired": []
+      },
+      "ratio": 5.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (tbaibpbg:Person)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL AND True RETURN count(tbaibpbg) ORDER BY NULL LIMIT 0",
+      "mutated": "MATCH (tbaibpbg)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE tbaibpbg=tbaibpbg WITH * WHERE tbaibpbg:Person WITH * WHERE id(sqaxcdad)>=0.0 WITH * WHERE id(tbaibpbg)>=0.0 RETURN count(sqaxcdad) ORDER BY NULL LIMIT 0",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 646.716833114624,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 67.82412528991699,
+        "fired": []
+      },
+      "ratio": 9.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (tbaibpbg:Person)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL AND True RETURN count(tbaibpbg) ORDER BY NULL LIMIT 0",
+      "mutated": "OPTIONAL MATCH (tbaibpbg)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE tbaibpbg=tbaibpbg WITH * WHERE tbaibpbg:Person WITH * WHERE id(sqaxcdad)>=0.0 WITH * WHERE id(tbaibpbg)>=0.0 RETURN count(sqaxcdad) ORDER BY NULL LIMIT 0",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 646.716833114624,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 52.4289608001709,
+        "fired": []
+      },
+      "ratio": 12.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (tbaibpbg:Person)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL AND True RETURN count(tbaibpbg) ORDER BY NULL LIMIT 0",
+      "mutated": "OPTIONAL MATCH (tbaibpbg)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE tbaibpbg=tbaibpbg WITH * WHERE tbaibpbg:Person WITH * WHERE id(sqaxcdad)>=0.0 WITH * WHERE id(tbaibpbg)>=0.0 AND id(tbaibpbg)>=0.0 RETURN count(sqaxcdad) ORDER BY NULL LIMIT 0",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 646.716833114624,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 96.12417221069336,
+        "fired": []
+      },
+      "ratio": 6.7,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (tbaibpbg:Person)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL AND True RETURN count(tbaibpbg) ORDER BY NULL LIMIT 0",
+      "mutated": "OPTIONAL MATCH (tbaibpbg)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE tbaibpbg=tbaibpbg WITH * WHERE tbaibpbg:Person WITH * WHERE id(sqaxcdad)>=0.0 WITH * WHERE id(tbaibpbg)>=0.0 AND id(tbaibpbg)>=0.0 AND sqaxcdad=sqaxcdad RETURN count(sqaxcdad) ORDER BY NULL LIMIT 0",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 646.716833114624,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 98.1130599975586,
+        "fired": []
+      },
+      "ratio": 6.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (tbaibpbg:Person)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL AND True RETURN count(tbaibpbg) ORDER BY NULL LIMIT 0",
+      "mutated": "OPTIONAL MATCH (tbaibpbg)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE tbaibpbg=tbaibpbg WITH * WHERE tbaibpbg:Person WITH * WHERE id(sqaxcdad)>=0.0 WITH * WHERE id(tbaibpbg)>=0.0 WITH * WHERE id(tbaibpbg)>=0.0 WITH * WHERE sqaxcdad=sqaxcdad AND tbaibpbg=tbaibpbg RETURN count(sqaxcdad) ORDER BY NULL LIMIT 0",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 646.716833114624,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 119.95530128479004,
+        "fired": []
+      },
+      "ratio": 5.4,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (tbaibpbg:Person)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL AND True RETURN count(tbaibpbg) ORDER BY NULL LIMIT 0",
+      "mutated": "OPTIONAL MATCH (tbaibpbg)<-[]-(sqaxcdad) WHERE sqaxcdad IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE tbaibpbg=tbaibpbg WITH * WHERE tbaibpbg:Person WITH * WHERE id(sqaxcdad)>=0.0 WITH * WHERE id(tbaibpbg)>=0.0 WITH * WHERE id(tbaibpbg)>=0.0 WITH * WHERE sqaxcdad=sqaxcdad WITH * WHERE tbaibpbg=tbaibpbg RETURN count(sqaxcdad) ORDER BY NULL LIMIT 0",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 646.716833114624,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 69.95201110839844,
+        "fired": []
+      },
+      "ratio": 9.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH ()-[]->(ngyfbxmk:User) WHERE ngyfbxmk IS NOT NULL AND True RETURN DISTINCT count(ngyfbxmk) ORDER BY -1+1 SKIP 1 LIMIT 3",
+      "mutated": "OPTIONAL MATCH ()-[]->(ngyfbxmk:User) WHERE ngyfbxmk IS NOT NULL AND True RETURN DISTINCT count(ngyfbxmk) ORDER BY -1+1 SKIP 1 LIMIT 3",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 24.183988571166992,
+        "fired": []
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 627.1162033081055,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 25.9,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH ()-[]->(ngyfbxmk:User) WHERE ngyfbxmk IS NOT NULL AND True RETURN DISTINCT count(ngyfbxmk) ORDER BY -1+1 SKIP 1 LIMIT 3",
+      "mutated": "OPTIONAL MATCH ()-[]->(ngyfbxmk:User) WHERE ngyfbxmk IS NOT NULL AND True RETURN DISTINCT count(ngyfbxmk) ORDER BY -1+1 SKIP 1 LIMIT 3",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 24.183988571166992,
+        "fired": []
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 604.0332317352295,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 25.0,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH ()-[]->(ngyfbxmk:User) WHERE ngyfbxmk IS NOT NULL AND True RETURN DISTINCT count(ngyfbxmk) ORDER BY -1+1 SKIP 1 LIMIT 3",
+      "mutated": "OPTIONAL MATCH (ngyfbxmk:User)<-[]-() WHERE ngyfbxmk IS NOT NULL AND True RETURN DISTINCT count(ngyfbxmk) ORDER BY -1+1 SKIP 1 LIMIT 3",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 24.183988571166992,
+        "fired": []
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 638.7758255004883,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 26.4,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH ()-[]->(ngyfbxmk:User) WHERE ngyfbxmk IS NOT NULL AND True RETURN DISTINCT count(ngyfbxmk) ORDER BY -1+1 SKIP 1 LIMIT 3",
+      "mutated": "OPTIONAL MATCH (ngyfbxmk:User)<-[]-() WHERE ngyfbxmk IS NOT NULL AND True RETURN DISTINCT count(ngyfbxmk) ORDER BY -1+1 SKIP 1 LIMIT 3",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 24.183988571166992,
+        "fired": []
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 608.5250377655029,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 25.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH ()-[]->(ngyfbxmk:User) WHERE ngyfbxmk IS NOT NULL AND True RETURN DISTINCT count(ngyfbxmk) ORDER BY -1+1 SKIP 1 LIMIT 3",
+      "mutated": "OPTIONAL MATCH (ngyfbxmk:User)<-[]-() WHERE ngyfbxmk IS NOT NULL AND True AND id(ngyfbxmk)>=0.0 RETURN DISTINCT count(ngyfbxmk) ORDER BY -1+1 SKIP 1 LIMIT 3",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 24.183988571166992,
+        "fired": []
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 658.4231853485107,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 27.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH ()-[]->(ngyfbxmk:User) WHERE ngyfbxmk IS NOT NULL AND True RETURN DISTINCT count(ngyfbxmk) ORDER BY -1+1 SKIP 1 LIMIT 3",
+      "mutated": "OPTIONAL MATCH (ngyfbxmk:User)<-[]-() WHERE ngyfbxmk IS NOT NULL AND True AND id(ngyfbxmk)>=0.0 AND ngyfbxmk=ngyfbxmk RETURN DISTINCT count(ngyfbxmk) ORDER BY -1+1 SKIP 1 LIMIT 3",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 24.183988571166992,
+        "fired": []
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 642.352819442749,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 26.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH ()-[]->(ngyfbxmk:User) WHERE ngyfbxmk IS NOT NULL AND True RETURN DISTINCT count(ngyfbxmk) ORDER BY -1+1 SKIP 1 LIMIT 3",
+      "mutated": "OPTIONAL MATCH (ngyfbxmk)<-[]-() WHERE ngyfbxmk IS NOT NULL AND True AND id(ngyfbxmk)>=0.0 AND ngyfbxmk=ngyfbxmk AND ngyfbxmk:User RETURN DISTINCT count(ngyfbxmk) ORDER BY -1+1 SKIP 1 LIMIT 3",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 24.183988571166992,
+        "fired": []
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 693.0620670318604,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 28.7,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (clbhxmax)-[*1..1]-(lnilwgpu) WHERE lnilwgpu IS NOT NULL AND True RETURN DISTINCT count(lnilwgpu) ORDER BY NULL SKIP 0 LIMIT 2",
+      "mutated": "OPTIONAL MATCH (clbhxmax)-[*1..1]-(lnilwgpu) WHERE lnilwgpu IS NOT NULL AND True RETURN DISTINCT count(lnilwgpu) ORDER BY NULL SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 66.35499000549316,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 668.6699390411377,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 10.1,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (clbhxmax)-[*1..1]-(lnilwgpu) WHERE lnilwgpu IS NOT NULL AND True RETURN DISTINCT count(lnilwgpu) ORDER BY NULL SKIP 0 LIMIT 2",
+      "mutated": "MATCH (clbhxmax)-[*1..1]-(lnilwgpu),(lnilwgpu) WHERE lnilwgpu IS NOT NULL AND True RETURN DISTINCT count(lnilwgpu) ORDER BY NULL SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 66.35499000549316,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 332521,
+        "error": null,
+        "ms": 91.78400039672852,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 1.4,
+      "injected": [
+        "F3"
+      ],
+      "predicted": [
+        "LOGIC",
+        "PARTITION"
+      ],
+      "correct": false
+    },
+    {
+      "base": "MATCH (clbhxmax)-[*1..1]-(lnilwgpu) WHERE lnilwgpu IS NOT NULL AND True RETURN DISTINCT count(lnilwgpu) ORDER BY NULL SKIP 0 LIMIT 2",
+      "mutated": "MATCH (clbhxmax)-[*1..1]-(lnilwgpu) WHERE lnilwgpu IS NOT NULL AND True RETURN DISTINCT count(id(lnilwgpu)) ORDER BY NULL SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 66.35499000549316,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 332523,
+        "error": null,
+        "ms": 51.42402648925781,
+        "fired": [
+          "F1"
+        ]
+      },
+      "ratio": 1.3,
+      "injected": [
+        "F1"
+      ],
+      "predicted": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (clbhxmax)-[*1..1]-(lnilwgpu) WHERE lnilwgpu IS NOT NULL AND True RETURN DISTINCT count(lnilwgpu) ORDER BY NULL SKIP 0 LIMIT 2",
+      "mutated": "MATCH (clbhxmax)-[*1..1]-(lnilwgpu) WHERE lnilwgpu IS NOT NULL AND True RETURN DISTINCT count(id(clbhxmax)) ORDER BY NULL SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 332522,
+        "error": null,
+        "ms": 66.35499000549316,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 332523,
+        "error": null,
+        "ms": 52.92797088623047,
+        "fired": [
+          "F1"
+        ]
+      },
+      "ratio": 1.3,
+      "injected": [
+        "F1"
+      ],
+      "predicted": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 641.5119171142578,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 42.71531105041504,
+        "fired": []
+      },
+      "ratio": 15.0,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "CALL { OPTIONAL MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) AS deadbeef ORDER BY NULL SKIP 0 LIMIT 1 } RETURN deadbeef",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 641.5119171142578,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": "Injected internal error (F4)",
+        "timeout": false,
+        "ms": 0.03790855407714844,
+        "fired": [
+          "F4"
+        ]
+      },
+      "ratio": 641.5,
+      "injected": [
+        "F4",
+        "F5"
+      ],
+      "predicted": [
+        "INTERNAL",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 641.5119171142578,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 20.090818405151367,
+        "fired": []
+      },
+      "ratio": 31.9,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]->() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 641.5119171142578,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 18.242835998535156,
+        "fired": []
+      },
+      "ratio": 35.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 641.5119171142578,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 5.924224853515625,
+        "fired": []
+      },
+      "ratio": 108.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 641.5119171142578,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 7.567882537841797,
+        "fired": []
+      },
+      "ratio": 84.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 641.5119171142578,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 5.991935729980469,
+        "fired": []
+      },
+      "ratio": 107.1,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]->() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 641.5119171142578,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 5.637884140014648,
+        "fired": []
+      },
+      "ratio": 113.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]->() WHERE True AND True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 641.5119171142578,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 17.4562931060791,
+        "fired": []
+      },
+      "ratio": 36.7,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]->() WHERE True AND True AND True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 641.5119171142578,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 36.23795509338379,
+        "fired": []
+      },
+      "ratio": 17.7,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]->() WHERE True AND True AND True AND True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 641.5119171142578,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 27.348995208740234,
+        "fired": []
+      },
+      "ratio": 23.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]->() WHERE True AND True AND True AND True AND True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 641.5119171142578,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 21.975994110107422,
+        "fired": []
+      },
+      "ratio": 29.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()<-[]-() WHERE True AND True AND True AND True AND True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 641.5119171142578,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 47.22881317138672,
+        "fired": []
+      },
+      "ratio": 13.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()<-[]-() WHERE True AND True AND True AND True AND True AND True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 641.5119171142578,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 37.50491142272949,
+        "fired": []
+      },
+      "ratio": 17.1,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()<-[]-() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 641.5119171142578,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 36.37409210205078,
+        "fired": []
+      },
+      "ratio": 17.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[]-() WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()<-[]-() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True RETURN DISTINCT count(1) ORDER BY NULL SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 641.5119171142578,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 7.342815399169922,
+        "fired": []
+      },
+      "ratio": 87.4,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (lyahejcd:User)-[]->() WHERE lyahejcd IS NOT NULL AND True RETURN count(lyahejcd) ORDER BY -1+1 SKIP 1 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (lyahejcd:User)-[]->() WHERE lyahejcd IS NOT NULL AND True RETURN count(lyahejcd) ORDER BY -1+1 SKIP 1 LIMIT 1",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 70.30987739562988,
+        "fired": []
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 672.374963760376,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 9.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (wujdupki:Director)<-[]-() WHERE wujdupki IS NOT NULL AND True RETURN count(wujdupki) SKIP 0 LIMIT 0",
+      "mutated": "OPTIONAL MATCH (wujdupki:Director)<-[]-() WHERE wujdupki IS NOT NULL AND True RETURN count(wujdupki) SKIP 0 LIMIT 0",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 19.984960556030273,
+        "fired": []
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 623.878002166748,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 31.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (cccccccc:Director)-[]-(cccccccc:Director) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) SKIP 0 LIMIT 5",
+      "mutated": "OPTIONAL MATCH (cccccccc:Director)-[]-(cccccccc:Director) WHERE cccccccc IS NOT NULL AND True RETURN DISTINCT count(cccccccc) SKIP 0 LIMIT 5",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 26.3979434967041,
+        "fired": [
+          "F3"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 628.1793117523193,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "ratio": 23.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 61.019182205200195,
+        "fired": [
+          "F2"
+        ]
+      },
+      "ratio": 11.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "CALL { OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) AS deadbeef ORDER BY -1+1 SKIP 1 LIMIT 5 } RETURN deadbeef",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": "Injected internal error (F4)",
+        "timeout": false,
+        "ms": 0.02002716064453125,
+        "fired": [
+          "F2",
+          "F4"
+        ]
+      },
+      "ratio": 691.7,
+      "injected": [
+        "F4",
+        "F5"
+      ],
+      "predicted": [
+        "INTERNAL",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "OPTIONAL MATCH ()-[*..1]->() WHERE True WITH * WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 90.64412117004395,
+        "fired": []
+      },
+      "ratio": 7.6,
+      "injected": [
+        "F2",
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "OPTIONAL MATCH ()-[*..1]->() WHERE True WITH * WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 46.45967483520508,
+        "fired": []
+      },
+      "ratio": 14.9,
+      "injected": [
+        "F2",
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "OPTIONAL MATCH ()-[*..1]->() WHERE True WITH * WHERE True AND True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 54.34298515319824,
+        "fired": []
+      },
+      "ratio": 12.7,
+      "injected": [
+        "F2",
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "MATCH ()-[*..1]->() WHERE True WITH * WHERE True AND True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 63.0950927734375,
+        "fired": []
+      },
+      "ratio": 11.0,
+      "injected": [
+        "F2",
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "MATCH ()-[*..1]->() WHERE True WITH * WHERE True AND True AND True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 39.49117660522461,
+        "fired": []
+      },
+      "ratio": 17.5,
+      "injected": [
+        "F2",
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "MATCH ()<-[*..1]-() WHERE True WITH * WHERE True AND True AND True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 39.78228569030762,
+        "fired": [
+          "F2"
+        ]
+      },
+      "ratio": 17.4,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "MATCH ()-[*..1]->() WHERE True WITH * WHERE True AND True AND True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 25.428056716918945,
+        "fired": []
+      },
+      "ratio": 27.2,
+      "injected": [
+        "F2",
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "MATCH ()-[*..1]->() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 36.67879104614258,
+        "fired": []
+      },
+      "ratio": 18.9,
+      "injected": [
+        "F2",
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "OPTIONAL MATCH ()-[*..1]->() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 51.100969314575195,
+        "fired": []
+      },
+      "ratio": 13.5,
+      "injected": [
+        "F2",
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "OPTIONAL MATCH ()-[*..1]->() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 34.954071044921875,
+        "fired": []
+      },
+      "ratio": 19.8,
+      "injected": [
+        "F2",
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "MATCH ()-[*..1]->() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 19.24300193786621,
+        "fired": []
+      },
+      "ratio": 35.9,
+      "injected": [
+        "F2",
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "MATCH ()-[*..1]->() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 23.347139358520508,
+        "fired": []
+      },
+      "ratio": 29.6,
+      "injected": [
+        "F2",
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "OPTIONAL MATCH ()-[*..1]->() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 21.242141723632812,
+        "fired": []
+      },
+      "ratio": 32.6,
+      "injected": [
+        "F2",
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "OPTIONAL MATCH ()-[*..1]->() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 23.157119750976562,
+        "fired": []
+      },
+      "ratio": 29.9,
+      "injected": [
+        "F2",
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "OPTIONAL MATCH ()<-[*..1]-() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 69.78201866149902,
+        "fired": [
+          "F2"
+        ]
+      },
+      "ratio": 9.9,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "OPTIONAL MATCH ()<-[*..1]-() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 53.617000579833984,
+        "fired": [
+          "F2"
+        ]
+      },
+      "ratio": 12.9,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "OPTIONAL MATCH ()<-[*..1]-() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 39.39104080200195,
+        "fired": [
+          "F2"
+        ]
+      },
+      "ratio": 17.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "MATCH ()<-[*..1]-() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 32.215118408203125,
+        "fired": [
+          "F2"
+        ]
+      },
+      "ratio": 21.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH ()<-[*..1]-() WHERE True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "mutated": "MATCH ()<-[*..1]-() WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE True AND True RETURN DISTINCT count(1) ORDER BY -1+1 SKIP 1 LIMIT 5",
+      "base_out": {
+        "result": null,
+        "error": null,
+        "ms": 691.6842460632324,
+        "fired": [
+          "F2",
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": null,
+        "ms": 34.140825271606445,
+        "fired": [
+          "F2"
+        ]
+      },
+      "ratio": 20.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "mutated": "MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 632.2591304779053,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 28.52010726928711,
+        "fired": []
+      },
+      "ratio": 22.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (wavknccn:Genre),(wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 632.2591304779053,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 20339,
+        "error": null,
+        "ms": 622.448205947876,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "ratio": 1.0,
+      "injected": [
+        "F3"
+      ],
+      "predicted": [
+        "LOGIC",
+        "PARTITION"
+      ],
+      "correct": false
+    },
+    {
+      "base": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(id(wavknccn)) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 632.2591304779053,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 20341,
+        "error": null,
+        "ms": 638.0181312561035,
+        "fired": [
+          "F1",
+          "F5"
+        ]
+      },
+      "ratio": 1.0,
+      "injected": [
+        "F1"
+      ],
+      "predicted": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL WITH * WHERE True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 632.2591304779053,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 29.113054275512695,
+        "fired": []
+      },
+      "ratio": 21.7,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "mutated": "CALL { OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) AS deadbeef SKIP 0 LIMIT 1 } RETURN deadbeef",
+      "base_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 632.2591304779053,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": "Injected internal error (F4)",
+        "timeout": false,
+        "ms": 0.017881393432617188,
+        "fired": [
+          "F4"
+        ]
+      },
+      "ratio": 632.3,
+      "injected": [
+        "F4",
+        "F5"
+      ],
+      "predicted": [
+        "INTERNAL",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "mutated": "MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True AND id(wavknccn)>=0.0 AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 632.2591304779053,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 46.994924545288086,
+        "fired": []
+      },
+      "ratio": 13.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "mutated": "MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True AND id(wavknccn)>=0.0 AND True AND id(wavknccn)>=0.0 RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 632.2591304779053,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 29.720067977905273,
+        "fired": []
+      },
+      "ratio": 21.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "mutated": "MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 632.2591304779053,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 29.173851013183594,
+        "fired": []
+      },
+      "ratio": 21.7,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "mutated": "MATCH (wavknccn)<-[]-() WHERE wavknccn IS NOT NULL WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 AND wavknccn:Genre RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 632.2591304779053,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 34.67106819152832,
+        "fired": []
+      },
+      "ratio": 18.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "mutated": "MATCH (wavknccn)<-[]-() WHERE wavknccn IS NOT NULL WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 AND wavknccn:Genre AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 632.2591304779053,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 27.697086334228516,
+        "fired": []
+      },
+      "ratio": 22.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (wavknccn)<-[]-() WHERE wavknccn IS NOT NULL WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 AND wavknccn:Genre AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 632.2591304779053,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 93.89495849609375,
+        "fired": []
+      },
+      "ratio": 6.7,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH ()-[]->(wavknccn) WHERE wavknccn IS NOT NULL WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 AND wavknccn:Genre AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 632.2591304779053,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 86.13300323486328,
+        "fired": []
+      },
+      "ratio": 7.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH ()-[]->(wavknccn) WHERE wavknccn IS NOT NULL WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 AND wavknccn:Genre AND True AND id(wavknccn)>=0.0 RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 632.2591304779053,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 108.21819305419922,
+        "fired": []
+      },
+      "ratio": 5.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (wavknccn)<-[]-() WHERE wavknccn IS NOT NULL WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 AND wavknccn:Genre AND True AND id(wavknccn)>=0.0 RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 632.2591304779053,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 100.32987594604492,
+        "fired": []
+      },
+      "ratio": 6.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (wavknccn)<-[]-() WHERE wavknccn IS NOT NULL WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 WITH * WHERE wavknccn:Genre WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 AND id(wavknccn)>=0.0 RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 632.2591304779053,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 113.14797401428223,
+        "fired": []
+      },
+      "ratio": 5.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (wavknccn)<-[]-() WHERE wavknccn IS NOT NULL WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 WITH * WHERE wavknccn:Genre WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 WITH * WHERE id(wavknccn)>=0.0 RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 632.2591304779053,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 101.57608985900879,
+        "fired": []
+      },
+      "ratio": 6.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "mutated": "MATCH (wavknccn)<-[]-() WHERE wavknccn IS NOT NULL WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 WITH * WHERE wavknccn:Genre WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 WITH * WHERE id(wavknccn)>=0.0 RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 632.2591304779053,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 38.09094429016113,
+        "fired": []
+      },
+      "ratio": 16.6,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (wavknccn:Genre)<-[]-() WHERE wavknccn IS NOT NULL AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "mutated": "MATCH (wavknccn)<-[]-() WHERE wavknccn IS NOT NULL WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 WITH * WHERE wavknccn:Genre WITH * WHERE True WITH * WHERE id(wavknccn)>=0.0 WITH * WHERE id(wavknccn)>=0.0 AND True RETURN DISTINCT count(wavknccn) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 632.2591304779053,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 20340,
+        "error": null,
+        "ms": 28.647184371948242,
+        "fired": []
+      },
+      "ratio": 22.1,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (cccccccc:Movie)-[]-(cccccccc:Movie) WHERE cccccccc IS NOT NULL AND True RETURN count(cccccccc) SKIP 0 LIMIT 2",
+      "mutated": "OPTIONAL MATCH (cccccccc:Movie)-[]-(cccccccc:Movie) WHERE cccccccc IS NOT NULL AND True RETURN count(cccccccc) SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 29.493093490600586,
+        "fired": [
+          "F3"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 632.7688694000244,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "ratio": 21.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 48.072099685668945,
+        "fired": []
+      },
+      "ratio": 13.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie),(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100003,
+        "error": null,
+        "ms": 631.4980983734131,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "ratio": 1.0,
+      "injected": [
+        "F3"
+      ],
+      "predicted": [
+        "LOGIC",
+        "PARTITION"
+      ],
+      "correct": false
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(id(cwoarmdi)) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100005,
+        "error": null,
+        "ms": 661.6392135620117,
+        "fired": [
+          "F1",
+          "F5"
+        ]
+      },
+      "ratio": 1.0,
+      "injected": [
+        "F1"
+      ],
+      "predicted": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(id(yrvquunk)) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100005,
+        "error": null,
+        "ms": 658.7259769439697,
+        "fired": [
+          "F1",
+          "F5"
+        ]
+      },
+      "ratio": 1.0,
+      "injected": [
+        "F1"
+      ],
+      "predicted": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL WITH * WHERE True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 60.804128646850586,
+        "fired": []
+      },
+      "ratio": 10.7,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "CALL { OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) AS deadbeef ORDER BY -1+1 SKIP 0 LIMIT 1 } RETURN deadbeef",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": null,
+        "error": "Injected internal error (F4)",
+        "timeout": false,
+        "ms": 0.018835067749023438,
+        "fired": [
+          "F4"
+        ]
+      },
+      "ratio": 648.1,
+      "injected": [
+        "F4",
+        "F5"
+      ],
+      "predicted": [
+        "INTERNAL",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 20.814895629882812,
+        "fired": []
+      },
+      "ratio": 31.1,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True AND id(cwoarmdi)>=0.0 RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 60.441017150878906,
+        "fired": []
+      },
+      "ratio": 10.7,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True AND id(cwoarmdi)>=0.0 AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 42.50526428222656,
+        "fired": []
+      },
+      "ratio": 15.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True AND id(cwoarmdi)>=0.0 AND True AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 55.1910400390625,
+        "fired": []
+      },
+      "ratio": 11.7,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH (cwoarmdi:Movie)<-[]-(yrvquunk:User) WHERE yrvquunk IS NOT NULL AND True AND id(cwoarmdi)>=0.0 AND True AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 42.76609420776367,
+        "fired": []
+      },
+      "ratio": 15.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True AND id(cwoarmdi)>=0.0 AND True AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 19.151926040649414,
+        "fired": []
+      },
+      "ratio": 33.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True AND id(cwoarmdi)>=0.0 AND True AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 17.978906631469727,
+        "fired": []
+      },
+      "ratio": 36.0,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True AND id(cwoarmdi)>=0.0 AND True AND True AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 45.744895935058594,
+        "fired": []
+      },
+      "ratio": 14.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL WITH * WHERE True WITH * WHERE id(cwoarmdi)>=0.0 WITH * WHERE True WITH * WHERE True WITH * WHERE True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 63.88711929321289,
+        "fired": []
+      },
+      "ratio": 10.1,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (cwoarmdi:Movie)<-[]-(yrvquunk:User) WHERE yrvquunk IS NOT NULL WITH * WHERE True WITH * WHERE id(cwoarmdi)>=0.0 WITH * WHERE True WITH * WHERE True WITH * WHERE True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 44.705867767333984,
+        "fired": []
+      },
+      "ratio": 14.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (cwoarmdi:Movie)<-[]-(yrvquunk:User) WHERE yrvquunk IS NOT NULL WITH * WHERE True WITH * WHERE id(cwoarmdi)>=0.0 WITH * WHERE True WITH * WHERE True WITH * WHERE True AND yrvquunk=yrvquunk RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 67.89493560791016,
+        "fired": []
+      },
+      "ratio": 9.5,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (cwoarmdi:Movie)<-[]-(yrvquunk:User) WHERE yrvquunk IS NOT NULL WITH * WHERE True WITH * WHERE id(cwoarmdi)>=0.0 WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE yrvquunk=yrvquunk RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 42.38080978393555,
+        "fired": []
+      },
+      "ratio": 15.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (cwoarmdi:Movie)<-[]-(yrvquunk:User) WHERE yrvquunk IS NOT NULL WITH * WHERE True WITH * WHERE id(cwoarmdi)>=0.0 WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE yrvquunk=yrvquunk RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 19.126176834106445,
+        "fired": []
+      },
+      "ratio": 33.9,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (cwoarmdi:Movie)<-[]-(yrvquunk) WHERE yrvquunk IS NOT NULL WITH * WHERE True WITH * WHERE id(cwoarmdi)>=0.0 WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE yrvquunk=yrvquunk AND yrvquunk:User RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 125.35476684570312,
+        "fired": []
+      },
+      "ratio": 5.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "OPTIONAL MATCH (yrvquunk:User)-[]->(cwoarmdi:Movie) WHERE yrvquunk IS NOT NULL AND True RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (cwoarmdi:Movie)<-[]-(yrvquunk) WHERE yrvquunk IS NOT NULL WITH * WHERE True WITH * WHERE id(cwoarmdi)>=0.0 WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE yrvquunk=yrvquunk AND yrvquunk:User AND id(cwoarmdi)>=0.0 RETURN count(cwoarmdi) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 648.0708122253418,
+        "fired": [
+          "F5"
+        ]
+      },
+      "mut_out": {
+        "result": 100004,
+        "error": null,
+        "ms": 78.48191261291504,
+        "fired": []
+      },
+      "ratio": 8.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "SYMMETRIC_VLE"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN count(cccccccc) ORDER BY NULL SKIP 0 LIMIT 2",
+      "mutated": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN count(cccccccc) ORDER BY NULL SKIP 0 LIMIT 2",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 74.93090629577637,
+        "fired": [
+          "F3"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 683.3128929138184,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "ratio": 9.1,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (ojgyhoxy)-[]-(lbzekpom:Director) WHERE lbzekpom IS NOT NULL AND True RETURN count(ojgyhoxy) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH (ojgyhoxy)-[]-(lbzekpom:Director) WHERE lbzekpom IS NOT NULL AND True RETURN count(ojgyhoxy) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 12937,
+        "error": null,
+        "ms": 79.06723022460938,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 12937,
+        "error": null,
+        "ms": 638.2448673248291,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 8.1,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (ojgyhoxy)-[]-(lbzekpom:Director) WHERE lbzekpom IS NOT NULL AND True RETURN count(ojgyhoxy) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH (ojgyhoxy),(ojgyhoxy)-[]-(lbzekpom:Director) WHERE lbzekpom IS NOT NULL AND True RETURN count(ojgyhoxy) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 12937,
+        "error": null,
+        "ms": 79.06723022460938,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 12936,
+        "error": null,
+        "ms": 43.717145919799805,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 1.8,
+      "injected": [
+        "F3"
+      ],
+      "predicted": [
+        "LOGIC",
+        "PARTITION"
+      ],
+      "correct": false
+    },
+    {
+      "base": "MATCH (ojgyhoxy)-[]-(lbzekpom:Director) WHERE lbzekpom IS NOT NULL AND True RETURN count(ojgyhoxy) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH (ojgyhoxy)-[]-(lbzekpom:Director) WHERE lbzekpom IS NOT NULL AND True RETURN count(id(ojgyhoxy)) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 12937,
+        "error": null,
+        "ms": 79.06723022460938,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 12938,
+        "error": null,
+        "ms": 26.404857635498047,
+        "fired": [
+          "F1"
+        ]
+      },
+      "ratio": 3.0,
+      "injected": [
+        "F1"
+      ],
+      "predicted": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (ojgyhoxy)-[]-(lbzekpom:Director) WHERE lbzekpom IS NOT NULL AND True RETURN count(ojgyhoxy) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "mutated": "MATCH (ojgyhoxy)-[]-(lbzekpom:Director) WHERE lbzekpom IS NOT NULL AND True RETURN count(id(lbzekpom)) ORDER BY -1+1 SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 12937,
+        "error": null,
+        "ms": 79.06723022460938,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 12938,
+        "error": null,
+        "ms": 23.746252059936523,
+        "fired": [
+          "F1"
+        ]
+      },
+      "ratio": 3.3,
+      "injected": [
+        "F1"
+      ],
+      "predicted": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (tgbahhfa)-[]->(hzkgsdgr) WHERE hzkgsdgr IS NOT NULL AND True RETURN DISTINCT count(hzkgsdgr) SKIP 0",
+      "mutated": "OPTIONAL MATCH (tgbahhfa)-[]->(hzkgsdgr) WHERE hzkgsdgr IS NOT NULL AND True RETURN DISTINCT count(hzkgsdgr) SKIP 0",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 36.339759826660156,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 645.1473236083984,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 17.8,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (tgbahhfa)-[]->(hzkgsdgr) WHERE hzkgsdgr IS NOT NULL AND True RETURN DISTINCT count(hzkgsdgr) SKIP 0",
+      "mutated": "MATCH (tgbahhfa)-[]->(hzkgsdgr),(hzkgsdgr) WHERE hzkgsdgr IS NOT NULL AND True RETURN DISTINCT count(hzkgsdgr) SKIP 0",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 36.339759826660156,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 166260,
+        "error": null,
+        "ms": 56.76698684692383,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 1.6,
+      "injected": [
+        "F3"
+      ],
+      "predicted": [
+        "LOGIC",
+        "PARTITION"
+      ],
+      "correct": false
+    },
+    {
+      "base": "MATCH (tgbahhfa)-[]->(hzkgsdgr) WHERE hzkgsdgr IS NOT NULL AND True RETURN DISTINCT count(hzkgsdgr) SKIP 0",
+      "mutated": "MATCH (tgbahhfa)-[]->(hzkgsdgr) WHERE hzkgsdgr IS NOT NULL AND True RETURN DISTINCT count(id(hzkgsdgr)) SKIP 0",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 36.339759826660156,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 166262,
+        "error": null,
+        "ms": 38.233280181884766,
+        "fired": [
+          "F1"
+        ]
+      },
+      "ratio": 1.1,
+      "injected": [
+        "F1"
+      ],
+      "predicted": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (tgbahhfa)-[]->(hzkgsdgr) WHERE hzkgsdgr IS NOT NULL AND True RETURN DISTINCT count(hzkgsdgr) SKIP 0",
+      "mutated": "MATCH (tgbahhfa)-[]->(hzkgsdgr) WHERE hzkgsdgr IS NOT NULL AND True RETURN DISTINCT count(id(hzkgsdgr)) SKIP 0",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 36.339759826660156,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 166262,
+        "error": null,
+        "ms": 21.1181640625,
+        "fired": [
+          "F1"
+        ]
+      },
+      "ratio": 1.7,
+      "injected": [
+        "F1"
+      ],
+      "predicted": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH ()-[]->(cwltnvhy) WHERE cwltnvhy IS NOT NULL AND True RETURN count(cwltnvhy) SKIP 0 LIMIT 1",
+      "mutated": "OPTIONAL MATCH ()-[]->(cwltnvhy) WHERE cwltnvhy IS NOT NULL AND True RETURN count(cwltnvhy) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 38.74993324279785,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 666.3520336151123,
+        "fired": [
+          "F5"
+        ]
+      },
+      "ratio": 17.2,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "OTHER"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH ()-[]->(cwltnvhy) WHERE cwltnvhy IS NOT NULL AND True RETURN count(cwltnvhy) SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]->(cwltnvhy),(cwltnvhy) WHERE cwltnvhy IS NOT NULL AND True RETURN count(cwltnvhy) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 38.74993324279785,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 166260,
+        "error": null,
+        "ms": 40.99702835083008,
+        "fired": [
+          "F3"
+        ]
+      },
+      "ratio": 1.1,
+      "injected": [
+        "F3"
+      ],
+      "predicted": [
+        "LOGIC",
+        "PARTITION"
+      ],
+      "correct": false
+    },
+    {
+      "base": "MATCH ()-[]->(cwltnvhy) WHERE cwltnvhy IS NOT NULL AND True RETURN count(cwltnvhy) SKIP 0 LIMIT 1",
+      "mutated": "MATCH ()-[]->(cwltnvhy) WHERE cwltnvhy IS NOT NULL AND True RETURN count(id(cwltnvhy)) SKIP 0 LIMIT 1",
+      "base_out": {
+        "result": 166261,
+        "error": null,
+        "ms": 38.74993324279785,
+        "fired": []
+      },
+      "mut_out": {
+        "result": 166262,
+        "error": null,
+        "ms": 62.27302551269531,
+        "fired": [
+          "F1"
+        ]
+      },
+      "ratio": 1.6,
+      "injected": [
+        "F1"
+      ],
+      "predicted": [
+        "LOGIC",
+        "COUNTING"
+      ],
+      "correct": true
+    },
+    {
+      "base": "MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN count(cccccccc) ORDER BY NULL SKIP 0 LIMIT 3",
+      "mutated": "OPTIONAL MATCH (cccccccc)-[]-(cccccccc) WHERE cccccccc IS NOT NULL AND True RETURN count(cccccccc) ORDER BY NULL SKIP 0 LIMIT 3",
+      "base_out": {
+        "result": 0,
+        "error": null,
+        "ms": 50.546884536743164,
+        "fired": [
+          "F3"
+        ]
+      },
+      "mut_out": {
+        "result": 0,
+        "error": null,
+        "ms": 670.9868907928467,
+        "fired": [
+          "F3",
+          "F5"
+        ]
+      },
+      "ratio": 13.3,
+      "injected": [
+        "F5"
+      ],
+      "predicted": [
+        "PERF",
+        "EXPAND_INTO"
+      ],
+      "correct": true
+    }
+  ]
+}

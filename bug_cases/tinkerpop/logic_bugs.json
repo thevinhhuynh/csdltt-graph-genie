@@ -1,0 +1,52 @@
+{
+  "dbms": "tinkerpop",
+  "kind": "logic",
+  "description": "Lỗi logic trên TinkerPop (Gremlin Server 3.4.13 + cypher-for-gremlin 1.0.4, TinkerGraph nạp dataset recommendations). Bài báo (Bảng 3) chỉ ghi 'Gremlin-DBs: 6 lỗi logic chưa xác nhận' mà không công bố câu truy vấn; chú thích 10 nói plugin có thể dịch sai. Các case dưới đây do đồ án tự tìm bằng GraphGenie (tinkerpop/logs/bug.log) rồi rút gọn. Hai truy vấn tương đương phải trả cùng kết quả.",
+  "oracle": "equal",
+  "cases": [
+    {
+      "id": "TP-L1",
+      "issue": "cypher-for-gremlin (đồ án)",
+      "url": "https://github.com/opencypher/cypher-for-gremlin",
+      "title": "Đảo chiều đường đi [*1..1] rồi [*0..1] cho kết quả gấp đôi",
+      "paper_ref": "Bảng 3, dòng Gremlin-DBs (loại lỗi bài báo nêu nhưng không công bố câu truy vấn); câu truy vấn lấy nguyên văn từ tinkerpop/logs/bug.log",
+      "cause": "Bộ dịch sinh '.times(1).repeat(A).as(h).emit(E).repeat(B).times(1)': emit() đứng ngay sau repeat(A) (as() chỉ gắn nhãn, không phải bước) nên Gremlin gắn emit vào repeat(A) thay vì repeat(B), mỗi đường đi bị phát ra 2 lần",
+      "gqt_rule": "SymmetricPattern (Structure-GQT)",
+      "affected_version": "TinkerPop 3.4.13 + cypher-for-gremlin 1.0.4",
+      "fixed_version": null,
+      "fix_note": "Chưa báo cáo lên kho cypher-for-gremlin.",
+      "reported": null,
+      "closed": null,
+      "dataset": "recommendations",
+      "setup": [],
+      "base_query": "MATCH (fowoqizb:Genre)<-[*0..1]-(hiwwpdxf)<-[*1..1]-(lawfiflo:User) WHERE hiwwpdxf IS NOT NULL AND True RETURN count(hiwwpdxf) LIMIT 1",
+      "mutated_query": "MATCH (lawfiflo:User)-[*1..1]->(hiwwpdxf)-[*0..1]->(fowoqizb:Genre) WHERE hiwwpdxf IS NOT NULL AND True RETURN count(hiwwpdxf) LIMIT 1",
+      "paper_result": null,
+      "observed_result": {"base": 265517, "mutated": 531034},
+      "expected_correct": 265517,
+      "explanation": "Câu biến đổi chỉ viết ngược chiều đường đi của câu gốc nên phải trả cùng kết quả. Neo4j trả 265517 cho cả hai; TinkerPop trả 531034 (gấp đôi) cho câu bắt đầu từ User."
+    },
+    {
+      "id": "TP-L1b",
+      "issue": "cypher-for-gremlin (đồ án)",
+      "url": "https://github.com/opencypher/cypher-for-gremlin",
+      "title": "TP-L1 rút gọn: bỏ biến thừa và vị từ luôn đúng",
+      "paper_ref": "Rút gọn từ TP-L1",
+      "cause": "Như TP-L1. Rút gọn cho thấy lỗi chỉ xảy ra khi đoạn độ dài cố định [*1..1] đứng ngay trước [*0..1]; thay một trong hai bằng cạnh thường [] thì kết quả đúng (265517)",
+      "gqt_rule": "SymmetricPattern (Structure-GQT)",
+      "affected_version": "TinkerPop 3.4.13 + cypher-for-gremlin 1.0.4",
+      "fixed_version": null,
+      "fix_note": "Chưa báo cáo lên kho cypher-for-gremlin.",
+      "reported": null,
+      "closed": null,
+      "dataset": "recommendations",
+      "setup": [],
+      "base_query": "MATCH (g:Genre)<-[*0..1]-(h)<-[*1..1]-(u:User) RETURN count(h)",
+      "mutated_query": "MATCH (u:User)-[*1..1]->(h)-[*0..1]->(g:Genre) RETURN count(h)",
+      "paper_result": null,
+      "observed_result": {"base": 265517, "mutated": 531034},
+      "expected_correct": 265517,
+      "explanation": "Đếm số đường User→Movie→Genre theo hai chiều. Kết quả đúng (Neo4j) là 265517 cho cả hai."
+    }
+  ]
+}

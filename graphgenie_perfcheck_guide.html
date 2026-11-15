@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Hướng dẫn chi tiết cải tiến xác minh hiệu năng GraphGenie: What–How–Why, cài đặt, runner, so sánh và kịch bản kiểm thử.">
+<title>GraphGenie — Hướng 3: Xác minh hiệu năng và thực nghiệm</title><style>
+:root{--ink:#192b38;--muted:#506574;--blue:#174d6d;--line:#cedae1;--paper:#fff;--bg:#edf2f5}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 system-ui,-apple-system,"Segoe UI",sans-serif}a{color:var(--blue);text-underline-offset:3px}a:focus-visible,button:focus-visible,summary:focus-visible,.table-wrap:focus-visible{outline:3px solid #c08125;outline-offset:3px}.skip{position:absolute;left:12px;top:-80px;background:white;padding:12px}.skip:focus{top:8px}.hero{background:#173a50;color:#fff;padding:45px max(24px,calc((100vw - 1200px)/2))}.hero h1{max-width:1000px;font-size:clamp(27px,4vw,40px);line-height:1.25;margin:12px 0}.hero p{max-width:940px;color:#d8e8f1;margin:12px 0}.badge{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase}.layout{max-width:1260px;margin:28px auto;display:grid;grid-template-columns:275px minmax(0,1fr);gap:25px;padding:0 22px}nav{position:sticky;top:16px;align-self:start;background:white;border:1px solid var(--line);border-radius:9px;padding:18px;max-height:calc(100vh - 32px);overflow:auto}nav strong{display:block;margin-bottom:12px}nav a{display:block;font-size:13px;margin:9px 0;line-height:1.5}article{background:white;border:1px solid var(--line);border-radius:9px;padding:32px 36px;min-width:0}section{scroll-margin-top:20px;border-bottom:1px solid var(--line);padding:0 0 28px;margin-bottom:32px}section:last-child{border:0;margin-bottom:0}h2{font-size:25px;color:var(--blue);line-height:1.35;margin:0 0 18px}h3{font-size:18px;margin:24px 0 10px}p{margin:12px 0}li{margin:7px 0}.note,blockquote{background:#f1f6f9;border-left:4px solid #47768e;padding:15px 18px;margin:18px 0}blockquote{font-family:Georgia,"Times New Roman",serif}.formula{background:#eef5f9;text-align:center;padding:17px;margin:18px 0;font-weight:600;overflow-wrap:anywhere}.table-wrap{overflow-x:auto;margin:18px 0;border:1px solid var(--line);border-radius:5px}table{border-collapse:collapse;width:100%;font-size:14px;line-height:1.55}th,td{padding:11px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}th{background:#eaf2f7;font-weight:700}tr:last-child td{border-bottom:0}td+td,th+th{border-left:1px solid var(--line)}code{font: .88em/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere}.code{border:1px solid var(--line);border-radius:6px;margin:18px 0;overflow:hidden}.codebar{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#edf3f7;padding:9px 13px;font-size:13px}pre{margin:0;padding:16px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace}pre code{font:inherit}button{background:#174d6d;color:white;border:0;border-radius:4px;padding:8px 11px;cursor:pointer;font:inherit}details{margin:18px 0;border:1px solid var(--line);border-radius:6px;padding:12px}summary{cursor:pointer;color:var(--blue);font-weight:600}details .code{margin-bottom:0}.flow{list-style:none;padding:0;display:flex;gap:8px;flex-wrap:wrap;counter-reset:step}.flow li{counter-increment:step;background:#edf5f9;border:1px solid var(--line);padding:12px;flex:1 1 135px;text-align:center;font-size:14px}.flow li:before{content:counter(step) ". ";font-weight:700}.references{font-size:14px}.references li{margin-bottom:15px}footer{text-align:center;color:var(--muted);font-size:13px;padding:12px 24px 30px}.printnote{font-size:13px;color:var(--muted)}@media(max-width:900px){.layout{grid-template-columns:1fr}.layout nav{position:static;max-height:none;display:grid;grid-template-columns:1fr 1fr;gap:0 15px}.layout nav strong{grid-column:1/-1}article{padding:23px}.hero{padding:30px 24px}}@media(max-width:520px){.layout{padding:0 12px}.layout nav{display:block}article{padding:20px 16px}th,td{padding:8px}h2{font-size:22px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}@page{size:A4;margin:16mm 15mm}@media print{body{background:white;font:11pt/1.45 Georgia,"Times New Roman",serif}.hero{background:white;color:black;padding:0;border-bottom:1px solid #aaa}.hero p{color:black}.hero h1{font-size:23pt}.layout{display:block;margin:16px 0;padding:0}.layout nav,.skip,button,footer{display:none}article{padding:0;border:0}h2{font-size:16pt;break-after:avoid}h3{font-size:12pt;break-after:avoid}section{padding-bottom:18px;margin-bottom:24px}.table-wrap{overflow:visible}table{font-size:9pt}tr{break-inside:avoid}thead{display:table-header-group}pre{font-size:8pt;overflow:visible}details{border:0;padding:0}details:not([open])> :not(summary){display:block!important}.codebar{font-size:9pt}.note,blockquote{break-inside:avoid}a{color:inherit}.printnote{font-size:9pt}}
+</style></head>
+<body><a class="skip" href="#noi-dung">Bỏ qua mục lục đến nội dung</a>
+<header class="hero"><div class="badge">Đồ án cuối kỳ · Hướng phát triển số 3</div><h1>Xác minh cảnh báo hiệu năng trong GraphGenie</h1><p>Tài liệu thực hành: thiết kế, cài đặt, đo lặp, so sánh trước–sau và kiểm thử minh chứng trên Neo4j mới.</p><p>Điểm xuất phát: 6 cảnh báo trong logs/0810 · 10 cặp đầu vào · Runner Python tham khảo · 12 kiểm thử mô phỏng</p></header>
+<div class="layout"><nav aria-label="Mục lục"><strong>Nội dung tài liệu</strong><a href="#muc-1">1. Mục tiêu và phạm vi đóng góp</a><a href="#muc-2">2. What – How – Why của hướng cải tiến</a><a href="#muc-3">3. Điểm xuất phát từ mã nguồn và log của bạn</a><a href="#muc-4">4. Kiến trúc và quy trình xác minh</a><a href="#muc-5">5. Thiết kế phép đo và tiêu chí phân loại</a><a href="#muc-6">6. Cài đặt và chuẩn bị môi trường</a><a href="#muc-7">7. Cài runner tham khảo và bộ đầu vào</a><a href="#muc-8">8. Quy trình thực hiện từng bước</a><a href="#muc-9">9. So sánh bản gốc và bản cải tiến công bằng</a><a href="#muc-10">10. Kịch bản kiểm thử minh chứng</a><a href="#muc-11">11. Phân tích kế hoạch và minh chứng lỗi lịch sử</a><a href="#muc-12">12. Bảng kết quả và cách viết kết luận</a><a href="#muc-13">13. Lộ trình thực hiện và giới hạn</a><a href="#muc-14">14. Nguồn và ghi nhận kiểm chứng</a></nav><article id="noi-dung"><p class="printnote">Đọc ngoại tuyến. Các khối mã có nút tải file; không tải thư viện ngoài. Có thể in A4 hoặc lưu PDF. Bản hướng dẫn này là phụ lục chi tiết, không cố định 5–7 trang.</p><section id="muc-1"><h2>1. Mục tiêu và phạm vi đóng góp</h2>
+<p><strong>Hướng 3 phát triển một bước xác minh cảnh báo hiệu năng cho GraphGenie:</strong> chạy lại cặp truy vấn, kiểm tra kết quả, đo nhiều lần trong điều kiện được ghi nhận và xuất hồ sơ để đánh giá mức độ tái hiện. Sản phẩm đề xuất gọi là <strong>GraphGenie-PerfCheck</strong>.</p>
+<p>Đối tượng cải tiến là <em>quy trình kiểm thử</em>, không phải mã bộ tối ưu Neo4j. Giá trị cần chứng minh là phép đo được tổ chức rõ hơn, các trạng thái lỗi được phân biệt và hồ sơ có thể tính lại. Không cần tìm bug mới để thực hiện các đánh giá này; muốn khẳng định tìm bug tốt hơn vẫn cần bằng chứng khác.</p>
+<div class="note"><strong>Trạng thái của tài liệu.</strong> Số liệu log ở mục 3 là kết quả đã quan sát. Quy trình, ngưỡng và runner là thiết kế tham khảo cho thực hành. Mã nhúng đã được kiểm tra cú pháp và qua 12 kiểm thử mô phỏng; chưa được chạy tích hợp với Neo4j trong lần soạn tài liệu này. Các bảng thực nghiệm còn để “Chưa đo”.</div>
+<p>Miền đầu tiên: một máy chủ Neo4j, dữ liệu ổn định, cặp truy vấn đọc trả một giá trị số nguyên hoặc không có hàng kết quả. Chỉ một truy vấn được chạy tại một thời điểm. Không suy rộng bộ so sánh đơn này sang bảng nhiều dòng, đường đi, node object, truy vấn ghi hay so sánh restricted.</p>
+<p>Đối với bản Neo4j mới, cách viết đúng là “không tái hiện được lỗi lịch sử trên phiên bản và dataset đã thử”. Điều đó khác với khẳng định toàn bộ hệ quản trị không còn lỗi.</p>
+</section><section id="muc-2"><h2>2. What – How – Why của hướng cải tiến</h2><div class="table-wrap" tabindex="0" role="region" aria-label="Bảng thông tin"><table><thead><tr><th scope="col">Trục</th><th scope="col">Nội dung chi tiết</th></tr></thead><tbody><tr><td>What — làm gì?</td><td>Thêm runner nhận Q/Q′, thu kết quả và số đo thô, chạy warm-up và đo theo cặp, tính trung vị/độ biến động, xác minh qua nhiều phiên, xuất JSON.</td></tr><tr><td>How — làm thế nào?</td><td>Kiểm tra loại truy vấn qua EXPLAIN; xét kết quả; đo tuần tự theo thứ tự AB/BA; giữ chính sách cache; tách thời gian server và client; kiểm tra tỷ lệ, chênh lệch tuyệt đối, mức hỗ trợ và IQR; lưu cả lỗi và trường hợp thiếu bằng chứng.</td></tr><tr><td>Why — vì sao cần?</td><td>Một lần đo dễ chịu ảnh hưởng của biên dịch, cache và tải nền. Đo lặp cho biết tín hiệu có xuất hiện đều không; hồ sơ giúp người khác kiểm tra và tái chạy. Đây là cải tiến có thể đánh giá khi không phát hiện bug mới.</td></tr><tr><td>Giả thuyết cần kiểm chứng</td><td>B1 cung cấp phân loại và bằng chứng tái hiện đầy đủ hơn B0, với chi phí xác minh cao hơn. Chưa khẳng định B1 có precision tốt hơn hoặc tìm thêm lỗi.</td></tr><tr><td>Điều kiện hoàn thành</td><td>Có runner, cặp đầu vào được kiểm tra, log thô, cấu hình/phiên bản, bảng trước–sau, kết quả mô phỏng và kết quả tích hợp được ghi riêng.</td></tr></tbody></table></div><p>Theo §6.4 của bài báo, GraphGenie khảo sát hiệu năng bằng quan hệ giữa truy vấn và ngưỡng chênh lệch thời gian; bài báo dùng ngưỡng 5× cho nhóm tương đương. Đây là cơ sở lựa chọn ứng viên, không phải định lý mọi cách viết tương đương phải có cùng tốc độ. <a href="#ref-paper">[1]</a></p></section><section id="muc-3"><h2>3. Điểm xuất phát từ mã nguồn và log của bạn</h2>
+<p>Trong <a href="main.py">main.py</a>, <code>eq_testing()</code> xét hiệu năng khi <code>perf_issue = 1</code> và thời gian gốc lớn hơn <code>minimum_test_ms</code>. Hàm <code>time_checking()</code> cảnh báo khi tỷ lệ vượt <code>threshold</code>, truy vấn biến đổi lâu hơn 50 ms nhưng nhanh hơn truy vấn gốc. Tiêu chí có hướng: Q′ nhanh hơn Q mới được cảnh báo.</p>
+<div class="formula">B0: tQ &gt; minimum_test_ms ∧ tQ′ &gt; 50 ms ∧ tQ′ &lt; tQ ∧ tQ/tQ′ &gt; threshold</div>
+<p>Nhánh Neo4j lấy tổng hai thời gian từ summary; mã hiện gọi <code>db.clearQueryCaches()</code> và có thể chạy nhiều luồng. Vì vậy, log cũ chỉ là dữ liệu tìm ứng viên; không được coi là phép đo có cùng điều kiện với runner mới.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Sáu cảnh báo hiệu năng thực tế"><table><thead><tr><th scope="col">Cặp</th><th scope="col">Dòng cảnh báo</th><th scope="col">Nhóm gốc</th><th scope="col">Equivalent</th><th scope="col">Gốc (ms)</th><th scope="col">Biến đổi (ms)</th><th scope="col">Tỷ lệ log</th></tr></thead><tbody><tr><td>1</td><td>20873</td><td>No.59</td><td>No.1945</td><td>2649</td><td>118</td><td>22.45×</td></tr><tr><td>2</td><td>20877</td><td>No.59</td><td>No.1946</td><td>2649</td><td>469</td><td>5.65×</td></tr><tr><td>3</td><td>33090</td><td>No.174</td><td>No.5879</td><td>2966</td><td>138</td><td>21.49×</td></tr><tr><td>4</td><td>33094</td><td>No.174</td><td>No.5880</td><td>2966</td><td>239</td><td>12.41×</td></tr><tr><td>5</td><td>33098</td><td>No.174</td><td>No.5881</td><td>2966</td><td>268</td><td>11.07×</td></tr><tr><td>6</td><td>33102</td><td>No.174</td><td>No.5882</td><td>2966</td><td>339</td><td>8.75×</td></tr></tbody></table></div>
+<p>Sáu cảnh báo thuộc hai nhóm gốc, đều có <code>LIMIT 0</code>; kết quả ghi là <code>None</code>. Runner sẽ lưu chính xác <code>[]</code> cho không có hàng; khác với một hàng chứa <code>null</code> hoặc số 0. Hai kết quả rỗng bằng nhau chưa chứng minh phép biến đổi đúng cho dữ liệu khác.</p>
+<p>File <a href="logs/0810/exception.log">exception.log</a> có 18 ngoại lệ bộ nhớ. Khi tái chạy, ngoại lệ/timeout phải được ghi riêng; không thay thời gian lỗi bằng −1 rồi đưa vào phép chia. Xem thống kê đầy đủ trong <a href="graphgenie_overview.html#muc-15">mục 15 của overview</a>.</p>
+</section><section id="muc-4"><h2>4. Kiến trúc và quy trình xác minh</h2>
+<ol class="flow"><li>Nhận cặp Q/Q′</li><li>Kiểm tra loại và kết quả</li><li>Warm-up</li><li>Đo theo cặp AB/BA</li><li>Thống kê từng phiên</li><li>Đối chiếu nhiều phiên</li><li>Lưu hồ sơ điều tra</li></ol>
+<h3>4.1. Đầu vào cần có</h3>
+<p>Mỗi case có ID duy nhất, Q, Q′, tham số, nguồn và mô tả lý do kỳ vọng tương đương. Dùng dòng log trong ID vì No. có thể bị đặt lại giữa các lần khởi động. Sáu cặp lịch sử giữ nguyên truy vấn; bỏ LIMIT 0 hay đổi OPTIONAL MATCH tạo case mới với ID và nhận xét ngữ nghĩa riêng.</p>
+<h3>4.2. Kiểm tra ngữ nghĩa trước khi so tốc độ</h3>
+<p>EXPLAIN cho biết kế hoạch/loại truy vấn nhưng không chứng minh tương đương. Người làm đồ án phải kiểm tra phép biến đổi, null, DISTINCT và tổng hợp. Runner chỉ kiểm tra loại đọc và đối chiếu giá trị số nguyên hoặc kết quả rỗng trên snapshot đang dùng. Nếu hai kết quả lệch, dừng đo hiệu năng và xuất RESULT_MISMATCH; chưa tự kết luận Neo4j có lỗi vì case có thể sai.</p>
+<h3>4.3. Điều phối độc lập với bộ sinh</h3>
+<p>Bản đầu là chương trình độc lập đọc cases.json. Không cần sửa main.py để thực hiện thí nghiệm. Sau khi đánh giá, có thể tích hợp theo hai giai đoạn: GraphGenie sinh ứng viên → ghi case → PerfCheck xử lý tuần tự trong ngân sách riêng. Không dùng chung bộ đếm/trạng thái luồng của chiến dịch sinh truy vấn.</p>
+<h3>4.4. Hồ sơ đầu ra</h3>
+<p>report.json chứa cấu hình, phiên bản driver/server, nền tảng Python/OS, hash file case, văn bản truy vấn, preflight, thứ tự và hai loại thời gian từng lượt, kết quả, thống kê và ngoại lệ. Dataset hash, chỉ mục, tài nguyên máy và cấu hình server cần được bổ sung vào hồ sơ môi trường theo mục 6; runner tối thiểu chưa tự thu các mục đó.</p>
+</section><section id="muc-5"><h2>5. Thiết kế phép đo và tiêu chí phân loại</h2>
+<h3>5.1. Hai thước đo, hai bảng riêng</h3>
+<p><code>server_ms</code> lấy <code>result_available_after + result_consumed_after</code>, đơn vị ms. <code>wall_ms</code> dùng <code>perf_counter_ns()</code> từ trước Session.run đến sau khi đọc hết kết quả và consume summary; không gồm EXPLAIN, xóa cache hoặc tạo session. Thời gian client có thêm truyền dữ liệu và xử lý kết quả. Tuyệt đối không lấy server_ms của Q chia cho wall_ms của Q′. <a href="#ref-api">[3]</a></p>
+<h3>5.2. Cache và thứ tự</h3>
+<p><strong>warm:</strong> không xóa query cache, warm-up 3 lần cho mỗi vế rồi đo 20 cặp. <strong>query-cleared:</strong> xóa query cache trước từng truy vấn, ngoài vùng đo client; warm-up vẫn có thể làm nóng dữ liệu. Chế độ thứ hai không phải “toàn bộ cache lạnh”, không xóa page cache/OS cache. Phân tích hai chế độ riêng. <a href="#ref-cache">[4]</a></p>
+<p>Trong 20 lượt có 10 AB và 10 BA, xáo trộn bằng seed cố định. Đo Q và Q′ tuần tự, ghi thứ tự từng lượt. Ba phiên là ba đợt đo mới, có warm-up riêng; trong mã tham khảo chúng chạy liên tiếp trên cùng DBMS, chưa phải các lần khởi động server độc lập.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng thông tin"><table><thead><tr><th scope="col">Tham số đề xuất</th><th scope="col">Mặc định</th><th scope="col">Ý nghĩa</th></tr></thead><tbody><tr><td>warmup</td><td>3/vế/phiên</td><td>Lượt chuẩn bị, không đưa vào thống kê đo chính.</td></tr><tr><td>repeats</td><td>20 cặp/phiên</td><td>Tối thiểu 2 để tính IQR; dùng số chẵn để cân bằng thứ tự.</td></tr><tr><td>sessions</td><td>3</td><td>Chỉ phát nhãn tái hiện qua các phiên khi có ít nhất 3 phiên cùng tín hiệu/hướng.</td></tr><tr><td>ratio</td><td>5</td><td>Tỷ lệ trung vị phải lớn hơn 5×.</td></tr><tr><td>delta</td><td>50 ms</td><td>Chênh lệch tuyệt đối tối thiểu; lựa chọn thực nghiệm, không phải hằng số của Neo4j.</td></tr><tr><td>support</td><td>0,8</td><td>Ít nhất 80% cặp đo ủng hộ cùng chiều, tỷ lệ và chênh lệch.</td></tr><tr><td>max-riqr</td><td>0,5</td><td>IQR/trung vị của mỗi vế không vượt 0,5.</td></tr><tr><td>timeout / case-budget</td><td>30 s / 300 s</td><td>Timeout truy vấn và ngân sách mỗi case mỗi phiên; ngân sách kiểm tra giữa các truy vấn, không là deadline tiến trình tuyệt đối.</td></tr></tbody></table></div>
+<h3>5.3. Công thức tính lại</h3>
+<div class="formula">mQ = median(tQ₁ … tQₙ), mQ′ = median(tQ′₁ … tQ′ₙ)<br>ρ = max(mQ, mQ′) / min(mQ, mQ′); Δ = |mQ − mQ′|<br>rIQR = (P75 − P25) / median</div>
+<p>Chọn vế chậm theo trung vị. Với từng cặp, đếm lượt có cùng vế chậm, tỷ lệ &gt; 5 và chênh lệch ≥ 50 ms; chia cho số cặp để được support_fraction. Runner dùng nội suy tuyến tính P25/P75 trên dãy đã sắp xếp. Chỉ số là thống kê mô tả; 20 lượt và ngưỡng 80% không tự tạo kiểm định có ý nghĩa thống kê.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng thông tin"><table><thead><tr><th scope="col">Trạng thái</th><th scope="col">Cách hiểu và xử lý</th></tr></thead><tbody><tr><td>RESULT_MISMATCH / RESULT_CHANGED</td><td>Kết quả không phù hợp hoặc thay đổi giữa các lượt; dừng và kiểm tra case/dữ liệu.</td></tr><tr><td>UNSUPPORTED_QUERY / UNSUPPORTED_RESULT</td><td>Ngoài miền truy vấn đọc hoặc kết quả số nguyên/rỗng của bản tối thiểu.</td></tr><tr><td>EXECUTION_ERROR / INCOMPLETE</td><td>Có ngoại lệ hoặc chưa đủ lượt trong ngân sách; không phân loại bằng tỷ lệ.</td></tr><tr><td>INVALID_TIMING</td><td>Có thời gian thiếu, không hữu hạn, bằng 0 hoặc âm; không thay bằng epsilon để tạo tỷ lệ.</td></tr><tr><td>BELOW_THRESHOLDS</td><td>Không thỏa tỷ lệ hoặc chênh lệch tuyệt đối theo cấu hình; không tuyên bố không có vấn đề.</td></tr><tr><td>VARIABLE_SIGNAL</td><td>Trung vị vượt ngưỡng nhưng hỗ trợ/độ biến động chưa đạt tiêu chí.</td></tr><tr><td>REPEATABLE_SIGNAL</td><td>Tín hiệu đạt tiêu chí trong một phiên, chưa phải bug xác nhận.</td></tr><tr><td>REPEATABLE_ACROSS_SESSIONS</td><td>Ít nhất 3 phiên đều đạt và cùng vế chậm; còn cần phân tích kế hoạch.</td></tr><tr><td>EMPTY_RESULT_REPEATABLE</td><td>Tín hiệu tái hiện với cả hai kết quả rỗng; giữ thành nhóm riêng để điều tra LIMIT 0.</td></tr><tr><td>REVIEW_SESSIONS</td><td>Các phiên chưa cùng đạt hoặc chưa đủ 3 phiên; đọc từng trạng thái, không gộp thành một kết luận lỗi.</td></tr></tbody></table></div><p>Các ngưỡng hỗ trợ/IQR/độ chênh là lựa chọn đề xuất của đồ án. Hãy thử độ nhạy trên tập riêng (ví dụ Δ=20/50/100 ms, support=0,7/0,8/0,9); không chọn ngưỡng sau khi nhìn kết quả chỉ để tăng số ứng viên.</p></section><section id="muc-6"><h2>6. Cài đặt và chuẩn bị môi trường</h2>
+<p>Dùng máy chủ Neo4j hiện có đã nạp Recommendations. Hướng dẫn shell dưới đây dành cho macOS/Linux; tạo môi trường Python riêng. Driver 6.x yêu cầu Python ≥ 3.10; bản tham khảo ghim <code>neo4j==6.3.0</code> theo requirements.txt của repository. Phiên bản driver không phải phiên bản server. <a href="#ref-install">[2]</a></p>
+<div class="code"><div class="codebar"><span>Cài môi trường trong thư mục dự án</span></div><pre><code>python3 --version
+python3 -m venv .venv-perfcheck
+source .venv-perfcheck/bin/activate
+python -m pip install &#x27;neo4j==6.3.0&#x27;
+python -m pip freeze &gt; perfcheck_requirements.lock.txt
+export NEO4J_URI=&#x27;bolt://localhost:7687&#x27;
+export NEO4J_USER=&#x27;neo4j&#x27;
+export NEO4J_DATABASE=&#x27;neo4j&#x27;</code></pre></div>
+<p>Runner hỏi mật khẩu qua getpass nếu không có NEO4J_PASSWORD. Đổi URI/database theo máy của bạn. Trên máy đơn, dùng kết nối Bolt trực tiếp để giảm thay đổi nút định tuyến; nếu dùng cluster/Aura, ghi lại đặc điểm đó như giới hạn của phép đo.</p>
+<h3>6.1. Kiểm tra dataset và phiên bản trong Neo4j Browser</h3>
+<div class="code"><div class="codebar"><span>Chạy từng truy vấn Cypher riêng</span></div><pre><code>CALL dbms.components() YIELD name, versions, edition RETURN name, versions, edition;
+MATCH (n) RETURN count(n) AS nodes;
+MATCH ()-[r]-&gt;() RETURN count(r) AS relationships;
+MATCH (n) UNWIND labels(n) AS label RETURN label, count(*) AS nodes ORDER BY label;
+MATCH ()-[r]-&gt;() RETURN type(r) AS relationship_type, count(*) AS relationships ORDER BY relationship_type;
+SHOW INDEXES;
+SHOW CONSTRAINTS;</code></pre></div>
+<p>Snapshot Recommendations nguyên bản của file đã khảo sát có 28.863 nút và 166.261 quan hệ. Thống kê nhãn có chồng lặp. Nếu số lượng khác, ghi trạng thái dataset mới và không tự kỳ vọng lại số đếm lịch sử.</p>
+<div class="code"><div class="codebar"><span>Định danh snapshot và nguồn chạy</span></div><pre><code>shasum -a 256 data/recommendations-50.dump
+git rev-parse HEAD
+python -m pip show neo4j</code></pre></div>
+<p>SHA-256 của dump đã khảo sát: <code>c22134f5ef8e8239856003134bf746d77b705bc538e40bd7c1fa034673453734</code>. Hash dump chỉ định danh file đầu vào, không chứng minh database đang chạy chưa bị sửa. Ghi cách nạp và bảo đảm không có hoạt động cập nhật trong phiên đo; số nút/quan hệ cũng chưa chứng minh hai snapshot giống hoàn toàn.</p>
+<h3>6.2. Hồ sơ môi trường cần ghi</h3>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng thông tin"><table><thead><tr><th scope="col">Nhóm</th><th scope="col">Thông tin</th></tr></thead><tbody><tr><td>Phần mềm</td><td>Neo4j server/edition, driver, Python, OS, commit GraphGenie, hash runner và cases.json.</td></tr><tr><td>Tài nguyên</td><td>CPU, RAM, page cache, giới hạn bộ nhớ transaction, Docker memory/CPU nếu có.</td></tr><tr><td>Dữ liệu</td><td>Hash dump, ngày/cách nạp, số nút/cạnh, snapshot sử dụng và việc giữ dữ liệu ổn định.</td></tr><tr><td>Lược đồ</td><td>SHOW INDEXES/CONSTRAINTS và trạng thái index; đợi index ONLINE trước khi đo.</td></tr><tr><td>Điều kiện chạy</td><td>Tải nền, nguồn điện, kết nối, query language/runtime thực tế, cache, timeout, seed và các ngưỡng.</td></tr></tbody></table></div>
+<h3>6.3. Nếu cần database thử nghiệm riêng</h3>
+<p>Tạo DBMS riêng bằng Neo4j Desktop hoặc container, ghim đúng phiên bản/image thay vì latest. Với Neo4j 5+ có thể nạp dump khi DBMS dừng; tên file dùng cho database neo4j là neo4j.dump. Lệnh bên dưới chạy trong môi trường Neo4j riêng đã chuẩn bị thư mục backups, không áp dụng vào database đang hoạt động. Nếu khác phiên bản/format, làm theo đường nâng cấp được hỗ trợ; không mặc định mọi dump nạp được vào mọi server. <a href="#ref-load">[5]</a></p>
+<div class="code"><div class="codebar"><span>Ví dụ thao tác trong môi trường DBMS thử nghiệm riêng</span></div><pre><code># Copy file Recommendations thành backups/neo4j.dump trước khi nạp.
+# DBMS thử nghiệm phải đang dừng; backups là đường dẫn trong môi trường đó.
+neo4j-admin database load neo4j --from-path=/backups</code></pre></div>
+<p>Sau khi nạp, khởi động DBMS và xác nhận bằng các truy vấn ở mục 6.1. Runner có timeout nhưng việc Neo4j hết bộ nhớ vẫn cần phân loại riêng; tăng bộ nhớ giữa hai bản B0/B1 sẽ làm thay đổi điều kiện so sánh.</p>
+</section><section id="muc-7"><h2>7. Cài runner tham khảo và bộ đầu vào</h2>
+<p>Tải ba file ở các khối bên dưới, đặt <code>perfcheck.py</code>, <code>cases.json</code> và <code>simulation_tests.py</code> trong cùng một thư mục thực hành. Nếu trình duyệt không cho tải, sao chép nội dung khối mã vào file đúng tên. Các file nằm trong HTML; chưa được tạo thành module hoạt động trong repository.</p>
+<p>cases.json có <strong>10 cặp</strong>: sáu cặp từ log, ba đối chứng có kết quả không rỗng và một đối chứng cố ý không tương đương. Case “negative-result-mismatch” phải bị chặn ở preflight; không dùng nó để thống kê bug của Neo4j. Sáu cặp rỗng có metadata cảnh báo cũ; ba đối chứng giúp tránh đánh giá chỉ trên nhóm đã được chọn vì vượt ngưỡng.</p>
+<div class="code"><div class="codebar"><span>cases.json — giữ nguyên sáu cặp lịch sử</span><button type="button" data-source="cases-source" data-filename="cases.json">Tải cases.json</button></div><pre><code id="cases-source">[
+  {
+    &quot;id&quot;: &quot;log0810-L20873&quot;,
+    &quot;q&quot;: &quot;MATCH ()&lt;-[]-(hispfnzw)-[]-() WHERE hispfnzw IS NOT NULL AND True RETURN DISTINCT count(hispfnzw) LIMIT 0&quot;,
+    &quot;q_prime&quot;: &quot;OPTIONAL MATCH ()&lt;-[]-(hispfnzw)-[]-() WHERE hispfnzw IS NOT NULL AND True RETURN DISTINCT count(hispfnzw) LIMIT 0&quot;,
+    &quot;params&quot;: {},
+    &quot;semantic_review&quot;: &quot;empty-result historical candidate; review required&quot;,
+    &quot;source&quot;: {
+      &quot;file&quot;: &quot;logs/0810/testing.log&quot;,
+      &quot;warning_line&quot;: 20873,
+      &quot;original_ratio&quot;: 22.45,
+      &quot;q_ms&quot;: 2649.0,
+      &quot;q_prime_ms&quot;: 118.0
+    }
+  },
+  {
+    &quot;id&quot;: &quot;log0810-L20877&quot;,
+    &quot;q&quot;: &quot;MATCH ()&lt;-[]-(hispfnzw)-[]-() WHERE hispfnzw IS NOT NULL AND True RETURN DISTINCT count(hispfnzw) LIMIT 0&quot;,
+    &quot;q_prime&quot;: &quot;OPTIONAL MATCH ()-[]-(hispfnzw)-[]-&gt;() WHERE hispfnzw IS NOT NULL WITH * WHERE True WITH * WHERE True WITH * WHERE True WITH * WHERE hispfnzw=hispfnzw WITH * WHERE True RETURN DISTINCT count(hispfnzw) LIMIT 0&quot;,
+    &quot;params&quot;: {},
+    &quot;semantic_review&quot;: &quot;empty-result historical candidate; review required&quot;,
+    &quot;source&quot;: {
+      &quot;file&quot;: &quot;logs/0810/testing.log&quot;,
+      &quot;warning_line&quot;: 20877,
+      &quot;original_ratio&quot;: 5.65,
+      &quot;q_ms&quot;: 2649.0,
+      &quot;q_prime_ms&quot;: 469.0
+    }
+  },
+  {
+    &quot;id&quot;: &quot;log0810-L33090&quot;,
+    &quot;q&quot;: &quot;MATCH (curlhoph)-[]-&gt;(zapnvlee)&lt;-[]-(ykzavzbi) WHERE zapnvlee IS NOT NULL AND True RETURN count(zapnvlee) SKIP 0 LIMIT 0&quot;,
+    &quot;q_prime&quot;: &quot;OPTIONAL MATCH (curlhoph)-[]-&gt;(zapnvlee)&lt;-[]-(ykzavzbi) WHERE zapnvlee IS NOT NULL AND True RETURN count(zapnvlee) SKIP 0 LIMIT 0&quot;,
+    &quot;params&quot;: {},
+    &quot;semantic_review&quot;: &quot;empty-result historical candidate; review required&quot;,
+    &quot;source&quot;: {
+      &quot;file&quot;: &quot;logs/0810/testing.log&quot;,
+      &quot;warning_line&quot;: 33090,
+      &quot;original_ratio&quot;: 21.49,
+      &quot;q_ms&quot;: 2966.0,
+      &quot;q_prime_ms&quot;: 138.0
+    }
+  },
+  {
+    &quot;id&quot;: &quot;log0810-L33094&quot;,
+    &quot;q&quot;: &quot;MATCH (curlhoph)-[]-&gt;(zapnvlee)&lt;-[]-(ykzavzbi) WHERE zapnvlee IS NOT NULL AND True RETURN count(zapnvlee) SKIP 0 LIMIT 0&quot;,
+    &quot;q_prime&quot;: &quot;OPTIONAL MATCH (curlhoph)-[]-&gt;(zapnvlee)&lt;-[]-(ykzavzbi) WHERE zapnvlee IS NOT NULL AND True AND True AND zapnvlee=zapnvlee AND id(ykzavzbi)&gt;=0.0 AND True AND id(curlhoph)&gt;=0.0 AND ykzavzbi=ykzavzbi RETURN count(ykzavzbi) SKIP 0 LIMIT 0&quot;,
+    &quot;params&quot;: {},
+    &quot;semantic_review&quot;: &quot;empty-result historical candidate; review required&quot;,
+    &quot;source&quot;: {
+      &quot;file&quot;: &quot;logs/0810/testing.log&quot;,
+      &quot;warning_line&quot;: 33094,
+      &quot;original_ratio&quot;: 12.41,
+      &quot;q_ms&quot;: 2966.0,
+      &quot;q_prime_ms&quot;: 239.0
+    }
+  },
+  {
+    &quot;id&quot;: &quot;log0810-L33098&quot;,
+    &quot;q&quot;: &quot;MATCH (curlhoph)-[]-&gt;(zapnvlee)&lt;-[]-(ykzavzbi) WHERE zapnvlee IS NOT NULL AND True RETURN count(zapnvlee) SKIP 0 LIMIT 0&quot;,
+    &quot;q_prime&quot;: &quot;OPTIONAL MATCH (curlhoph)-[]-&gt;(zapnvlee)&lt;-[]-(ykzavzbi) WHERE zapnvlee IS NOT NULL AND True AND True AND zapnvlee=zapnvlee AND id(ykzavzbi)&gt;=0.0 AND True AND id(curlhoph)&gt;=0.0 RETURN count(ykzavzbi) SKIP 0 LIMIT 0&quot;,
+    &quot;params&quot;: {},
+    &quot;semantic_review&quot;: &quot;empty-result historical candidate; review required&quot;,
+    &quot;source&quot;: {
+      &quot;file&quot;: &quot;logs/0810/testing.log&quot;,
+      &quot;warning_line&quot;: 33098,
+      &quot;original_ratio&quot;: 11.07,
+      &quot;q_ms&quot;: 2966.0,
+      &quot;q_prime_ms&quot;: 268.0
+    }
+  },
+  {
+    &quot;id&quot;: &quot;log0810-L33102&quot;,
+    &quot;q&quot;: &quot;MATCH (curlhoph)-[]-&gt;(zapnvlee)&lt;-[]-(ykzavzbi) WHERE zapnvlee IS NOT NULL AND True RETURN count(zapnvlee) SKIP 0 LIMIT 0&quot;,
+    &quot;q_prime&quot;: &quot;OPTIONAL MATCH (ykzavzbi)-[]-&gt;(zapnvlee)&lt;-[]-(curlhoph) WHERE zapnvlee IS NOT NULL AND True AND True AND zapnvlee=zapnvlee AND id(ykzavzbi)&gt;=0.0 AND True AND id(curlhoph)&gt;=0.0 RETURN count(ykzavzbi) SKIP 0 LIMIT 0&quot;,
+    &quot;params&quot;: {},
+    &quot;semantic_review&quot;: &quot;empty-result historical candidate; review required&quot;,
+    &quot;source&quot;: {
+      &quot;file&quot;: &quot;logs/0810/testing.log&quot;,
+      &quot;warning_line&quot;: 33102,
+      &quot;original_ratio&quot;: 8.75,
+      &quot;q_ms&quot;: 2966.0,
+      &quot;q_prime_ms&quot;: 339.0
+    }
+  },
+  {
+    &quot;id&quot;: &quot;control-identical&quot;,
+    &quot;q&quot;: &quot;MATCH (m:Movie) RETURN count(m)&quot;,
+    &quot;q_prime&quot;: &quot;MATCH (m:Movie) RETURN count(m)&quot;,
+    &quot;semantic_review&quot;: &quot;identical query&quot;
+  },
+  {
+    &quot;id&quot;: &quot;control-symmetric&quot;,
+    &quot;q&quot;: &quot;MATCH (m:Movie)-[:IN_GENRE]-&gt;(g:Genre) RETURN count(m)&quot;,
+    &quot;q_prime&quot;: &quot;MATCH (g:Genre)&lt;-[:IN_GENRE]-(m:Movie) RETURN count(m)&quot;,
+    &quot;semantic_review&quot;: &quot;same directed pattern, reversed textual order&quot;
+  },
+  {
+    &quot;id&quot;: &quot;control-rated-count&quot;,
+    &quot;q&quot;: &quot;MATCH (u:User)-[:RATED]-&gt;(m:Movie) RETURN count(u)&quot;,
+    &quot;q_prime&quot;: &quot;MATCH (u:User)-[:RATED]-&gt;(m:Movie) RETURN count(m)&quot;,
+    &quot;semantic_review&quot;: &quot;mandatory MATCH; both bound non-null per matching row&quot;
+  },
+  {
+    &quot;id&quot;: &quot;negative-result-mismatch&quot;,
+    &quot;q&quot;: &quot;MATCH (m:Movie) RETURN count(m)&quot;,
+    &quot;q_prime&quot;: &quot;RETURN 0 AS c&quot;,
+    &quot;semantic_review&quot;: &quot;deliberately non-equivalent negative control; requires nonempty Movie data&quot;
+  }
+]</code></pre></div>
+<p>Đối chứng kỳ vọng trên snapshot nguyên bản: count Movie = 9.125; count mẫu IN_GENRE = 20.340; count mẫu RATED = 100.004. Những con số đó là giá trị kiểm tra chuẩn bị, không phải số đo thời gian và không đảm bảo query cache hay kế hoạch giống phiên cũ.</p>
+<details><summary>Mã runner đầy đủ — tải perfcheck.py</summary><div class="code"><div class="codebar"><span>perfcheck.py — bản tham khảo độc lập</span><button type="button" data-source="runner-source" data-filename="perfcheck.py">Tải perfcheck.py</button></div><pre><code id="runner-source">&quot;&quot;&quot;Runner tham khảo cho hướng 3. Chỉ nhận cặp truy vấn đọc, trả count đơn.&quot;&quot;&quot;
+import argparse
+import getpass
+import hashlib
+import json
+import math
+import os
+import platform
+import random
+import statistics
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+def percentile(values, p):
+    v = sorted(values)
+    k = (len(v) - 1) * p
+    lo, hi = math.floor(k), math.ceil(k)
+    return v[lo] + (v[hi] - v[lo]) * (k - lo)
+
+
+def compare_rows(a, b):
+    valid = lambda rows: rows == [] or (
+        len(rows) == 1 and len(rows[0]) == 1
+        and type(rows[0][0]) is int
+    )
+    if not valid(a) or not valid(b):
+        return &quot;UNSUPPORTED_RESULT&quot;
+    if a != b:
+        return &quot;RESULT_MISMATCH&quot;
+    return &quot;EMPTY_RESULT&quot; if a == [] else &quot;EQUAL_COUNT&quot;
+
+
+def original_flag(q, qp, threshold=5, minimum=50):
+    # Tái tạo điều kiện thời gian trên các số đo dương; sentinel không là mẫu.
+    if q is None or qp is None or q &lt;= 0 or qp &lt;= 0:
+        return None
+    return q &gt; minimum and qp &gt; 50 and qp &lt; q and q / qp &gt; threshold
+
+
+def summarize(q, qp, ratio=5, delta=50, support=0.8, max_riqr=0.5):
+    if len(q) != len(qp) or len(q) &lt; 2:
+        return {&quot;status&quot;: &quot;INCOMPLETE&quot;}
+    if any(x is None or not math.isfinite(x) or x &lt;= 0 for x in q + qp):
+        return {&quot;status&quot;: &quot;INVALID_TIMING&quot;}
+    mq, mp = statistics.median(q), statistics.median(qp)
+    slower = &quot;Q&quot; if mq &gt;= mp else &quot;Q_prime&quot;
+    slow, fast = (q, qp) if slower == &quot;Q&quot; else (qp, q)
+    rho = max(mq, mp) / min(mq, mp)
+    gap = abs(mq - mp)
+    riqr = max((percentile(q, .75) - percentile(q, .25)) / mq,
+               (percentile(qp, .75) - percentile(qp, .25)) / mp)
+    fraction = sum(a &gt; b and a / b &gt; ratio and a - b &gt;= delta
+                   for a, b in zip(slow, fast)) / len(q)
+    status = &quot;BELOW_THRESHOLDS&quot;
+    if rho &gt; ratio and gap &gt;= delta:
+        status = &quot;REPEATABLE_SIGNAL&quot; if fraction &gt;= support and riqr &lt;= max_riqr else &quot;VARIABLE_SIGNAL&quot;
+    return dict(status=status, median_q_ms=mq, median_q_prime_ms=mp,
+                ratio=rho, delta_ms=gap, slower=slower,
+                support_fraction=fraction, max_relative_iqr=riqr)
+
+
+def timed(session, text, params, args):
+    from neo4j import Query
+    if args.cache == &quot;query-cleared&quot;:
+        session.run(Query(&quot;CALL db.clearQueryCaches()&quot;, timeout=args.timeout)).consume()
+    start = time.perf_counter_ns()
+    result = session.run(Query(text, timeout=args.timeout), params)
+    rows = [list(record.values()) for record in result]
+    summary = result.consume()
+    wall = (time.perf_counter_ns() - start) / 1_000_000
+    a, b = summary.result_available_after, summary.result_consumed_after
+    server = a + b if a is not None and b is not None else None
+    return {&quot;rows&quot;: rows, &quot;wall_ms&quot;: wall, &quot;server_ms&quot;: server}
+
+
+def one_session(driver, case, args, rng, session_number):
+    from neo4j import Query, READ_ACCESS
+    report = dict(session=session_number, samples=[], status=&quot;INCOMPLETE&quot;)
+    deadline = time.monotonic() + args.case_budget
+    params = case.get(&quot;params&quot;, {})
+    texts = {&quot;Q&quot;: case[&quot;q&quot;].strip().rstrip(&quot;;&quot;),
+             &quot;Q_prime&quot;: case[&quot;q_prime&quot;].strip().rstrip(&quot;;&quot;)}
+    try:
+        with driver.session(database=args.database, default_access_mode=READ_ACCESS) as session:
+            for text in texts.values():
+                # EXPLAIN kiểm tra loại truy vấn trước khi thực thi, không chứng minh tương đương.
+                plan = session.run(Query(&quot;EXPLAIN &quot; + text, timeout=args.timeout), params).consume()
+                if plan.query_type != &quot;r&quot;:
+                    report[&quot;status&quot;] = &quot;UNSUPPORTED_QUERY&quot;
+                    return report
+            ref = {label: timed(session, text, params, args) for label, text in texts.items()}
+            report[&quot;preflight&quot;] = ref
+            relation = compare_rows(ref[&quot;Q&quot;][&quot;rows&quot;], ref[&quot;Q_prime&quot;][&quot;rows&quot;])
+            report[&quot;result_relation&quot;] = relation
+            if relation not in {&quot;EMPTY_RESULT&quot;, &quot;EQUAL_COUNT&quot;}:
+                report[&quot;status&quot;] = relation
+                return report
+            for _ in range(args.warmup):
+                for label in (&quot;Q&quot;, &quot;Q_prime&quot;):
+                    if time.monotonic() &gt;= deadline:
+                        return report
+                    warm = timed(session, texts[label], params, args)
+                    if warm[&quot;rows&quot;] != ref[label][&quot;rows&quot;]:
+                        report[&quot;status&quot;] = &quot;RESULT_CHANGED&quot;
+                        return report
+            n = 1 if args.method == &quot;one-shot&quot; else args.repeats
+            orders = [(&quot;Q&quot;, &quot;Q_prime&quot;) if i % 2 == 0 else (&quot;Q_prime&quot;, &quot;Q&quot;) for i in range(n)]
+            rng.shuffle(orders)
+            for number, order in enumerate(orders, 1):
+                sample = {&quot;round&quot;: number, &quot;order&quot;: list(order)}
+                report[&quot;samples&quot;].append(sample)
+                for label in order:
+                    if time.monotonic() &gt;= deadline:
+                        return report
+                    value = timed(session, texts[label], params, args)
+                    sample[label] = value
+                    if value[&quot;rows&quot;] != ref[label][&quot;rows&quot;]:
+                        report[&quot;status&quot;] = &quot;RESULT_CHANGED&quot;
+                        return report
+            if args.method == &quot;one-shot&quot;:
+                sample = report[&quot;samples&quot;][0]
+                flag = original_flag(sample[&quot;Q&quot;][&quot;server_ms&quot;], sample[&quot;Q_prime&quot;][&quot;server_ms&quot;], args.ratio, args.minimum)
+                report.update(status=&quot;ONE_SHOT&quot;, original_time_flag=flag)
+            else:
+                key = args.metric + &quot;_ms&quot;
+                stats = summarize([s[&quot;Q&quot;][key] for s in report[&quot;samples&quot;]],
+                                  [s[&quot;Q_prime&quot;][key] for s in report[&quot;samples&quot;]],
+                                  args.ratio, args.delta, args.support, args.max_riqr)
+                report.update(stats)
+    except Exception as exc:
+        report.update(status=&quot;EXECUTION_ERROR&quot;, error_type=type(exc).__name__,
+                      error_code=getattr(exc, &quot;code&quot;, None), error=str(exc))
+    return report
+
+
+def main():
+    from neo4j import GraphDatabase, __version__ as driver_version
+    p = argparse.ArgumentParser()
+    p.add_argument(&quot;cases&quot;)
+    p.add_argument(&quot;--out&quot;, required=True)
+    p.add_argument(&quot;--method&quot;, choices=[&quot;one-shot&quot;, &quot;repeat&quot;], default=&quot;repeat&quot;)
+    p.add_argument(&quot;--cache&quot;, choices=[&quot;warm&quot;, &quot;query-cleared&quot;], default=&quot;warm&quot;)
+    p.add_argument(&quot;--metric&quot;, choices=[&quot;server&quot;, &quot;wall&quot;], default=&quot;server&quot;)
+    p.add_argument(&quot;--database&quot;, default=os.getenv(&quot;NEO4J_DATABASE&quot;, &quot;neo4j&quot;))
+    p.add_argument(&quot;--warmup&quot;, type=int, default=3)
+    p.add_argument(&quot;--repeats&quot;, type=int, default=20)
+    p.add_argument(&quot;--sessions&quot;, type=int, default=3)
+    p.add_argument(&quot;--seed&quot;, type=int, default=2026)
+    p.add_argument(&quot;--timeout&quot;, type=float, default=30)
+    p.add_argument(&quot;--case-budget&quot;, type=float, default=300)
+    p.add_argument(&quot;--ratio&quot;, type=float, default=5)
+    p.add_argument(&quot;--minimum&quot;, type=float, default=50)
+    p.add_argument(&quot;--delta&quot;, type=float, default=50)
+    p.add_argument(&quot;--support&quot;, type=float, default=.8)
+    p.add_argument(&quot;--max-riqr&quot;, type=float, default=.5)
+    args = p.parse_args()
+    if (args.repeats &lt; 2 or args.sessions &lt; 1 or args.warmup &lt; 0
+            or args.timeout &lt;= 0 or args.case_budget &lt;= 0 or args.ratio &lt;= 1
+            or args.minimum &lt; 0 or args.delta &lt; 0 or not 0 &lt; args.support &lt;= 1 or args.max_riqr &lt; 0):
+        p.error(&quot;Tham số đo không hợp lệ&quot;)
+    cases_bytes = Path(args.cases).read_bytes()
+    cases = json.loads(cases_bytes)
+    if not cases or len({c[&quot;id&quot;] for c in cases}) != len(cases):
+        p.error(&quot;Danh sách rỗng hoặc ID bị trùng&quot;)
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=False)
+    uri = os.getenv(&quot;NEO4J_URI&quot;, &quot;bolt://localhost:7687&quot;)
+    password = os.getenv(&quot;NEO4J_PASSWORD&quot;) or getpass.getpass(&quot;Mật khẩu Neo4j: &quot;)
+    rng = random.Random(args.seed)
+    payload = dict(created_utc=datetime.now(timezone.utc).isoformat(),
+                   config=vars(args), driver_version=driver_version,
+                   platform=platform.platform(), python=platform.python_version(),
+                   cases_sha256=hashlib.sha256(cases_bytes).hexdigest(), cases=[])
+    with GraphDatabase.driver(uri, auth=(os.getenv(&quot;NEO4J_USER&quot;, &quot;neo4j&quot;), password),
+                              connection_timeout=args.timeout,
+                              connection_acquisition_timeout=args.timeout) as driver:
+        driver.verify_connectivity()
+        with driver.session(database=args.database) as session:
+            payload[&quot;server&quot;] = session.run(&quot;CALL dbms.components() YIELD name, versions, edition RETURN name, versions, edition&quot;).data()
+        for case in cases:
+            reports = [one_session(driver, case, args, rng, n + 1) for n in range(args.sessions)]
+            states = [r[&quot;status&quot;] for r in reports]
+            positive = all(s == &quot;REPEATABLE_SIGNAL&quot; for s in states)
+            same_direction = len({r.get(&quot;slower&quot;) for r in reports}) == 1
+            empty = all(r.get(&quot;result_relation&quot;) == &quot;EMPTY_RESULT&quot; for r in reports)
+            final = &quot;REVIEW_SESSIONS&quot;
+            if args.method == &quot;one-shot&quot;:
+                final = &quot;ONE_SHOT_READINGS&quot;
+            elif positive and same_direction and args.sessions &gt;= 3:
+                final = &quot;EMPTY_RESULT_REPEATABLE&quot; if empty else &quot;REPEATABLE_ACROSS_SESSIONS&quot;
+            payload[&quot;cases&quot;].append(dict(case=case, sessions=reports, final_status=final))
+            (out / &quot;report.json&quot;).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding=&quot;utf-8&quot;)
+            print(case[&quot;id&quot;], states, final)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()</code></pre></div></details>
+<p>Runner dùng Session.run thay vì managed transaction có tự retry; lỗi được giữ lại theo từng phiên. READ_ACCESS là gợi ý định tuyến; việc nhận miền đọc còn dựa trên EXPLAIN. So sánh bỏ qua tên cột, vì count(u) và count(m) có thể đặt tên khác nhưng cùng giá trị trong miền đã kiểm tra. Không có cơ chế tự chứng minh tương đương hoặc tự tìm root cause.</p>
+<p>Chạy trên bản server có cú pháp không còn hỗ trợ sẽ tạo EXECUTION_ERROR. Ghi đây là lỗi tương thích case; việc sửa cú pháp phải tạo case mới và đánh giá lại ngữ nghĩa.</p>
+</section><section id="muc-8"><h2>8. Quy trình thực hiện từng bước</h2>
+<h3>Bước 1 — kiểm tra mã và mô phỏng</h3>
+<div class="code"><div class="codebar"><span>Không cần Neo4j để chạy mô phỏng</span></div><pre><code>python -m py_compile perfcheck.py simulation_tests.py
+python simulation_tests.py</code></pre></div>
+<p>Bộ mô phỏng dùng số đo chủ động và driver giả; nó kiểm tra logic runner. Nó không phát hiện lỗi trong Neo4j, không thay cho phép đo tích hợp.</p>
+<h3>Bước 2 — chạy thử tích hợp ngắn</h3>
+<div class="code"><div class="codebar"><span>Kiểm tra luồng chạy và hồ sơ đầu ra</span></div><pre><code>python perfcheck.py cases.json --method repeat --sessions 1 --repeats 2   --warmup 1 --cache warm --metric server --out perfcheck_smoke</code></pre></div>
+<p>Đây là smoke test, chưa đủ ba phiên để có nhãn tái hiện qua phiên. Kiểm tra server version, số lượt, kết quả đối chứng và trường hợp âm. Thư mục --out phải chưa tồn tại để tránh ghi đè kết quả trước.</p>
+<h3>Bước 3 — đo B0 và B1 với cache warm</h3>
+<div class="code"><div class="codebar"><span>B0 — một cặp đo mỗi phiên</span></div><pre><code>python perfcheck.py cases.json --method one-shot --sessions 3   --warmup 3 --cache warm --metric server --seed 2026   --out perfcheck_b0_warm</code></pre></div><div class="code"><div class="codebar"><span>B1 — đo lặp, cùng ngưỡng tỷ lệ</span></div><pre><code>python perfcheck.py cases.json --method repeat --sessions 3 --repeats 20   --warmup 3 --cache warm --metric server --seed 2026   --ratio 5 --delta 50 --support 0.8 --max-riqr 0.5   --out perfcheck_b1_warm</code></pre></div>
+<p>Lặp toàn bộ với seed 2027 và 2028, dùng thư mục output mới. Với seed 2027 chạy B1 trước B0 để đối trọng thứ tự chiến dịch; seed điều khiển xáo trộn, không bảo đảm mọi trạng thái máy/cache giống nhau. Có thể chỉ đo 6 case + đối chứng trong một seed để hoàn thành bản tối thiểu, nhưng phải ghi ngân sách và phạm vi nhỏ.</p>
+<h3>Bước 4 — tách thí nghiệm xóa query cache</h3>
+<div class="code"><div class="codebar"><span>B1 query-cleared — cần quyền gọi thủ tục và môi trường riêng</span></div><pre><code>python perfcheck.py cases.json --method repeat --sessions 3 --repeats 20   --warmup 3 --cache query-cleared --metric server --seed 2026   --out perfcheck_b1_query_cleared</code></pre></div>
+<p>Nếu so B0/B1 trong chế độ này, chạy thêm B0 với cùng --cache query-cleared. Không so B0 query-cleared với B1 warm để quy hiệu quả cho việc đo lặp. Bản gốc dùng đa luồng/xóa cache còn khác thí nghiệm B0 có kiểm soát ở đây.</p>
+<h3>Bước 5 — đọc JSON và chẩn đoán ứng viên</h3>
+<div class="code"><div class="codebar"><span>Xem bảng trạng thái nhanh</span></div><pre><code>python - &lt;&lt;&#x27;PY&#x27;
+import json
+from pathlib import Path
+data = json.loads(Path(&#x27;perfcheck_b1_warm/report.json&#x27;).read_text())
+for case in data[&#x27;cases&#x27;]:
+    print(case[&#x27;case&#x27;][&#x27;id&#x27;], case[&#x27;final_status&#x27;])
+    for run in case[&#x27;sessions&#x27;]:
+        print(&#x27; &#x27;, run[&#x27;session&#x27;], run[&#x27;status&#x27;],
+              run.get(&#x27;ratio&#x27;), run.get(&#x27;delta_ms&#x27;), run.get(&#x27;support_fraction&#x27;))
+PY</code></pre></div>
+<p>Nếu server_ms bằng 0 hoặc thiếu, giữ INVALID_TIMING trong bảng server; có thể phân tích wall_ms đã được lưu hoặc chạy thí nghiệm riêng --metric wall. Không đổi metric âm thầm để “cứu” tỷ lệ. Chỉ so các bảng cùng metric.</p>
+</section><section id="muc-9"><h2>9. So sánh bản gốc và bản cải tiến công bằng</h2>
+<p>Phân biệt <strong>A0</strong> là log GraphGenie nguyên bản, <strong>B0</strong> là kiểm tra một lần trong runner có kiểm soát và <strong>B1</strong> là đo lặp. B0 không phải bản sao toàn bộ GraphGenie: nó giữ điều kiện time_checking trên số đo dương, nhưng chạy tuần tự, có preflight và warm-up. Đồ án cần nói rõ sự khác nhau này.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Bảng thông tin"><table><thead><tr><th scope="col">So sánh</th><th scope="col">Giữ cố định</th><th scope="col">Kết luận có thể rút ra</th></tr></thead><tbody><tr><td>A0 → B1: đối chiếu lịch sử</td><td>Giữ nguyên văn bản sáu cặp; ghi mọi khác biệt server/tải/cache.</td><td>Cảnh báo cũ có tái hiện trong điều kiện mới không; không tách riêng tác động của runner khỏi môi trường.</td></tr><tr><td>B0 → B1: cùng case</td><td>Server/snapshot/index/metric/cache/timeout/warm-up/ngưỡng tỷ lệ.</td><td>Đánh đổi giữa một phép đo và bộ bằng chứng đo lặp; báo số lượt/chi phí khác nhau.</td></tr><tr><td>B1 warm → B1 query-cleared</td><td>Giữ phiên bản, dữ liệu và cấu hình khác.</td><td>Ảnh hưởng của chính sách query cache; không gọi đây là hiệu quả do đo lặp.</td></tr><tr><td>Cùng ngân sách thời gian</td><td>Cùng danh sách/quy tắc chọn case, giới hạn thời gian tổng và máy.</td><td>Số case hoàn tất, tín hiệu đủ bằng chứng và chi phí; runner mẫu chỉ có ngân sách theo case, cần đồng hồ/điều phối tổng riêng cho thí nghiệm này.</td></tr></tbody></table></div>
+<h3>9.1. Chỉ số nên báo</h3>
+<ul><li>Case đã thử/hoàn tất, số phép đo hợp lệ, lỗi/timeout/thiếu thời gian.</li><li>Trung vị, IQR, tỷ lệ, chênh lệch tuyệt đối và support_fraction từng phiên.</li><li>Số phiên B0 phát cảnh báo; số phiên B1 đạt tiêu chí; cùng hay khác vế chậm.</li><li>Thời gian thực hành tổng và chi phí mỗi case; số case có kết quả rỗng được báo riêng.</li><li>Mức đầy đủ của hồ sơ: số case có đủ cấu hình, phiên bản, kết quả, số đo và kế hoạch cần thiết.</li></ul>
+<h3>9.2. Những chỉ số chưa được phép suy ra</h3>
+<p>Số cảnh báo giảm không tự chứng minh false positive giảm. Không có nhãn đúng/sai độc lập thì không tính precision/recall. REPEATABLE_SIGNAL không đồng nghĩa bug được Neo4j xác nhận. Hai nhóm gốc hoặc sáu case cũng không phải sáu nguyên nhân lỗi khác nhau. Số trạng thái đạt ngưỡng là kết quả của chính sách đo đã khai báo.</p>
+<p>Để kiểm tra chất lượng phân loại, dùng các tình huống mô phỏng có nhãn thiết kế ở mục 10. Để đánh giá ứng viên Neo4j thật, cần kiểm tra ngữ nghĩa, điều kiện thực thi, kế hoạch và khi có thể phản hồi của nhà phát triển. Hai lớp bằng chứng phải tách riêng.</p>
+</section><section id="muc-10"><h2>10. Kịch bản kiểm thử minh chứng</h2><div class="table-wrap" tabindex="0" role="region" aria-label="Kịch bản thực tế và mô phỏng"><table><thead><tr><th scope="col">Kịch bản</th><th scope="col">Thực hiện</th><th scope="col">Kỳ vọng / tiêu chí đạt</th><th scope="col">Minh chứng</th></tr></thead><tbody><tr><td>K1 — cùng truy vấn</td><td>Chạy control-identical nhiều phiên.</td><td>Hai kết quả bằng nhau; ghi dao động. Không bảo đảm không có cảnh báo nếu môi trường nhiễu.</td><td>JSON từng lượt, thời gian và trạng thái.</td></tr><tr><td>K2 — mẫu đảo thứ tự</td><td>Chạy control-symmetric: cùng cạnh có hướng Movie→Genre, đảo thứ tự văn bản.</td><td>Cả hai count = 20.340 trên snapshot nguyên bản; so kế hoạch nếu chênh lệch.</td><td>Kết quả và EXPLAIN của hai cách viết.</td></tr><tr><td>K3 — đếm hai đầu cạnh</td><td>Chạy control-rated-count với MATCH bắt buộc.</td><td>Hai số đếm = 100.004 trên snapshot nguyên bản; không có null do OPTIONAL.</td><td>Bằng chứng ngữ nghĩa và số đếm.</td></tr><tr><td>K4 — sáu cảnh báo thực tế</td><td>Chạy từng log0810-L… giữ LIMIT 0.</td><td>Có thể rỗng và nhanh/chậm khác log cũ. Mọi kết luận phải từ số đo mới.</td><td>Bảng lịch sử → từng phiên → trạng thái cuối.</td></tr><tr><td>K5 — kết quả cố ý lệch</td><td>Chạy negative-result-mismatch.</td><td>RESULT_MISMATCH nếu Movie không rỗng; không thu mẫu hiệu năng chính.</td><td>Preflight 9.125 vs 0 và samples rỗng.</td></tr><tr><td>K6 — một lần đột biến</td><td>Mô phỏng Q=[900,100,…], Q′=[100,…].</td><td>B0 lượt đầu cảnh báo; B1 BELOW_THRESHOLDS. Đây là nhiễu do thiết kế.</td><td>test_one_spike và dãy số giả lập.</td></tr><tr><td>K7 — chênh lệch đều</td><td>Mô phỏng Q=600 ms, Q′=100 ms trong 20 lượt.</td><td>REPEATABLE_SIGNAL, ρ=6, Δ=500, support=1.</td><td>test_consistent_gap; không là bug Neo4j.</td></tr><tr><td>K8 — chiều ngược</td><td>Mô phỏng Q=100 ms, Q′=600 ms.</td><td>B0 không cảnh báo do một chiều; B1 nhận tín hiệu Q′ chậm.</td><td>test_reverse_direction.</td></tr><tr><td>K9 — rất nhanh / số đo lỗi</td><td>Mô phỏng 2 vs 0,2 ms; thêm 0/−1/None/NaN.</td><td>Δ nhỏ: BELOW_THRESHOLDS; số đo lỗi: INVALID_TIMING.</td><td>Các test tiny/invalid.</td></tr><tr><td>K10 — không ổn định</td><td>15 lượt Q=600 và 5 lượt Q=100; Q′=100.</td><td>Trung vị vượt ngưỡng nhưng support=0,75: VARIABLE_SIGNAL.</td><td>test_unstable_signal.</td></tr><tr><td>K11 — lỗi và ngân sách</td><td>Trong DB thử nghiệm dùng case lỗi cú pháp; thử timeout nhỏ với truy vấn đọc đã chọn; đặt case-budget nhỏ.</td><td>Có EXECUTION_ERROR/error_code hoặc INCOMPLETE. Timeout do giới hạn đo không tự là bug.</td><td>JSON lỗi, số lượt đã hoàn thành; không đổi lỗi thành thời gian.</td></tr><tr><td>K12 — chặn truy vấn ghi</td><td>Mock EXPLAIN trả query_type=w; không chạy truy vấn ghi thật để thử trên dataset.</td><td>UNSUPPORTED_QUERY và chưa gọi thực thi Q/Q′.</td><td>test_write_plan_rejected_before_execution.</td></tr></tbody></table></div>
+<p>Bộ kiểm thử tải bên dưới có 12 test, bao gồm tiêu thụ summary đúng một lần, phân biệt rỗng/null/0, dừng khi preflight lệch và các chính sách thời gian. Một số kịch bản tích hợp như K11 vẫn cần bạn thực hiện; unit test không xác nhận kết nối, cú pháp hoặc timeout trên server cụ thể.</p>
+<details><summary>Mã kiểm thử mô phỏng — tải simulation_tests.py</summary><div class="code"><div class="codebar"><span>simulation_tests.py — số đo có kiểm soát, không cần server</span><button type="button" data-source="tests-source" data-filename="simulation_tests.py">Tải simulation_tests.py</button></div><pre><code id="tests-source">&quot;&quot;&quot;Kiểm thử mô phỏng cho runner, không kết nối Neo4j.&quot;&quot;&quot;
+import types
+import unittest
+from unittest.mock import patch
+from perfcheck import compare_rows, original_flag, summarize, timed, one_session
+
+
+class FakeResult:
+    def __init__(self, rows, query_type=&quot;r&quot;):
+        self.rows, self.query_type, self.consumed = rows, query_type, 0
+    def __iter__(self):
+        return iter([types.SimpleNamespace(values=lambda row=row: row) for row in self.rows])
+    def consume(self):
+        self.consumed += 1
+        return types.SimpleNamespace(result_available_after=10, result_consumed_after=20, query_type=self.query_type)
+
+
+class FakeSession:
+    def __init__(self, different=False, write_plan=False):
+        self.different, self.write_plan, self.calls = different, write_plan, []
+    def __enter__(self): return self
+    def __exit__(self, *args): return False
+    def run(self, text, params=None):
+        self.calls.append(text)
+        if str(text).startswith(&quot;EXPLAIN&quot;):
+            return FakeResult([], &quot;w&quot; if self.write_plan else &quot;r&quot;)
+        return FakeResult([[2 if self.different and str(text) == &quot;QP&quot; else 1]])
+
+
+NEO4J_STUB = types.SimpleNamespace(Query=lambda text, **kwargs: text, READ_ACCESS=&quot;READ&quot;)
+
+
+class Checks(unittest.TestCase):
+    def test_consistent_gap(self):
+        self.assertEqual(summarize([600]*20, [100]*20)[&quot;status&quot;], &quot;REPEATABLE_SIGNAL&quot;)
+    def test_one_spike(self):
+        q = [900]+[100]*19
+        self.assertTrue(original_flag(q[0], 100))
+        self.assertEqual(summarize(q, [100]*20)[&quot;status&quot;], &quot;BELOW_THRESHOLDS&quot;)
+    def test_reverse_direction(self):
+        self.assertFalse(original_flag(100, 600))
+        result = summarize([100]*20, [600]*20)
+        self.assertEqual((result[&quot;status&quot;], result[&quot;slower&quot;]), (&quot;REPEATABLE_SIGNAL&quot;, &quot;Q_prime&quot;))
+    def test_tiny_absolute_gap(self):
+        self.assertEqual(summarize([2]*20, [.2]*20)[&quot;status&quot;], &quot;BELOW_THRESHOLDS&quot;)
+    def test_invalid_times(self):
+        for value in [0, -1, None, float(&quot;nan&quot;), float(&quot;inf&quot;)]:
+            self.assertEqual(summarize([100,value], [20,20])[&quot;status&quot;], &quot;INVALID_TIMING&quot;)
+    def test_missing_pairs(self):
+        self.assertEqual(summarize([100], [20])[&quot;status&quot;], &quot;INCOMPLETE&quot;)
+    def test_unstable_signal(self):
+        q = [600]*15 + [100]*5
+        self.assertEqual(summarize(q, [100]*20)[&quot;status&quot;], &quot;VARIABLE_SIGNAL&quot;)
+    def test_empty_is_not_null_or_zero(self):
+        self.assertEqual(compare_rows([], []), &quot;EMPTY_RESULT&quot;)
+        self.assertEqual(compare_rows([], [[0]]), &quot;RESULT_MISMATCH&quot;)
+        self.assertEqual(compare_rows([], [[None]]), &quot;UNSUPPORTED_RESULT&quot;)
+    def test_result_mismatch(self):
+        self.assertEqual(compare_rows([[43]], [[491]]), &quot;RESULT_MISMATCH&quot;)
+    def test_summary_consumed_once(self):
+        result = FakeResult([[1]])
+        session = types.SimpleNamespace(run=lambda *args: result)
+        args = types.SimpleNamespace(cache=&quot;warm&quot;, timeout=30)
+        with patch.dict(&quot;sys.modules&quot;, {&quot;neo4j&quot;: NEO4J_STUB}):
+            value = timed(session, &quot;Q&quot;, {}, args)
+        self.assertEqual(value[&quot;server_ms&quot;], 30)
+        self.assertEqual(result.consumed, 1)
+    def test_preflight_mismatch_stops_measurement(self):
+        import random
+        session = FakeSession(different=True)
+        driver = types.SimpleNamespace(session=lambda **kwargs: session)
+        args = types.SimpleNamespace(database=&quot;neo4j&quot;, cache=&quot;warm&quot;, timeout=30, case_budget=300)
+        with patch.dict(&quot;sys.modules&quot;, {&quot;neo4j&quot;: NEO4J_STUB}):
+            result = one_session(driver, {&quot;q&quot;:&quot;Q&quot;, &quot;q_prime&quot;:&quot;QP&quot;}, args, random.Random(1), 1)
+        self.assertEqual(result[&quot;status&quot;], &quot;RESULT_MISMATCH&quot;)
+        self.assertEqual(result[&quot;samples&quot;], [])
+    def test_write_plan_rejected_before_execution(self):
+        import random
+        session = FakeSession(write_plan=True)
+        driver = types.SimpleNamespace(session=lambda **kwargs: session)
+        args = types.SimpleNamespace(database=&quot;neo4j&quot;, cache=&quot;warm&quot;, timeout=30, case_budget=300)
+        with patch.dict(&quot;sys.modules&quot;, {&quot;neo4j&quot;: NEO4J_STUB}):
+            result = one_session(driver, {&quot;q&quot;:&quot;Q&quot;, &quot;q_prime&quot;:&quot;QP&quot;}, args, random.Random(1), 1)
+        self.assertEqual(result[&quot;status&quot;], &quot;UNSUPPORTED_QUERY&quot;)
+        self.assertEqual(session.calls, [&quot;EXPLAIN Q&quot;])
+
+
+if __name__ == &quot;__main__&quot;:
+    unittest.main(verbosity=2)</code></pre></div></details>
+<h3>Kịch bản bổ sung: thay đổi LIMIT 0 có kiểm soát</h3>
+<p>Tạo case mới cho một cặp đã kiểm tra ngữ nghĩa rồi bỏ LIMIT 0; giới hạn timeout/bộ nhớ phù hợp vì khối lượng thực thi có thể tăng mạnh. Không gộp số đo mới với case lịch sử. Cặp có OPTIONAL MATCH hoặc đếm biến khác cần rà lại ngữ nghĩa; hai kết quả rỗng trước đó chưa đủ cơ sở. Mục đích là khảo sát đường thực thi khác, không ép hệ quản trị tạo lỗi.</p>
+</section><section id="muc-11"><h2>11. Phân tích kế hoạch và minh chứng lỗi lịch sử</h2>
+<p>Khi một tín hiệu tái hiện, lưu EXPLAIN Q và EXPLAIN Q′, xem operator, estimated rows và runtime. Nếu cần PROFILE, chạy trong đợt chẩn đoán riêng, ghi actual rows, DB hits và bộ nhớ nếu hệ thống cung cấp; không đưa thời gian PROFILE vào bảng benchmark thông thường. EXPLAIN không thực thi truy vấn, còn PROFILE thực thi kèm đo đạc. <a href="#ref-profile">[6]</a></p>
+<div class="code"><div class="codebar"><span>Đối chứng mẫu không rỗng để xem kế hoạch</span></div><pre><code>EXPLAIN MATCH (m:Movie)-[:IN_GENRE]-&gt;(g:Genre) RETURN count(m);
+EXPLAIN MATCH (g:Genre)&lt;-[:IN_GENRE]-(m:Movie) RETURN count(m);
+// PROFILE chỉ chạy riêng khi chẩn đoán, không dùng thay số đo benchmark.
+PROFILE MATCH (m:Movie)-[:IN_GENRE]-&gt;(g:Genre) RETURN count(m);</code></pre></div>
+<p>Không suy root cause chỉ từ thời gian. Chênh lệch có thể do chi phí lập kế hoạch, lựa chọn operator, dữ liệu trung gian, cache, tải hoặc khác khối lượng công việc. Việc chứng minh một case ổn định chỉ củng cố lý do điều tra.</p>
+<p>Để giữ phần bài báo có minh chứng ngay cả khi bản mới không tái hiện lỗi, dẫn <a href="https://github.com/neo4j/neo4j/issues/12991">issue #12991</a>, Listing 6 và phản hồi nhà phát triển xác nhận sửa trong 5.2.0. Đây là lỗi logic lịch sử, không phải một trong sáu cảnh báo thời gian của log 0810. Thí nghiệm trên bản mới ghi riêng và không dùng trạng thái “đã fix một bug” để suy mọi bug đều đã sửa. <a href="#ref-history">[7]</a></p>
+</section><section id="muc-12"><h2>12. Bảng kết quả và cách viết kết luận</h2>
+<p>Bảng sau là mẫu báo cáo, chưa có kết quả thực nghiệm mới. Để tránh quá nhiều cột, dùng một bảng cho từng seed/cache/metric; các phiên còn lại nằm trong phụ lục JSON.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Mẫu kết quả chưa đo"><table><thead><tr><th scope="col">Case lịch sử</th><th scope="col">Tỷ lệ A0</th><th scope="col">B0 cảnh báo / 3 phiên</th><th scope="col">B1 ρ từng phiên</th><th scope="col">B1 support từng phiên</th><th scope="col">Trạng thái cuối</th></tr></thead><tbody><tr><td>L20873</td><td>22.45×</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td></tr><tr><td>L20877</td><td>5.65×</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td></tr><tr><td>L33090</td><td>21.49×</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td></tr><tr><td>L33094</td><td>12.41×</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td></tr><tr><td>L33098</td><td>11.07×</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td></tr><tr><td>L33102</td><td>8.75×</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td></tr></tbody></table></div><div class="table-wrap" tabindex="0" role="region" aria-label="Bảng thông tin"><table><thead><tr><th scope="col">Nhóm</th><th scope="col">Case hoàn tất</th><th scope="col">Số lượt đo</th><th scope="col">Tổng thời gian</th><th scope="col">Case đủ hồ sơ</th></tr></thead><tbody><tr><td>B0 warm</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td></tr><tr><td>B1 warm</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td></tr><tr><td>B0 query-cleared</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td></tr><tr><td>B1 query-cleared</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td><td>Chưa đo</td></tr></tbody></table></div>
+<h3>12.1. Nếu không còn tín hiệu vượt ngưỡng</h3>
+<blockquote>Trong điều kiện thực nghiệm đã ghi nhận, các case được chạy lại chưa đạt tiêu chí chênh lệch hiệu năng của PerfCheck. Kết quả cho thấy các cảnh báo lịch sử chưa được tái hiện trong môi trường này; chưa đủ cơ sở quy nguyên nhân cho việc Neo4j sửa lỗi, do phiên bản và điều kiện đo cũng khác.</blockquote>
+<h3>12.2. Nếu tín hiệu chỉ xuất hiện ở một số phiên</h3>
+<blockquote>Một số case vượt ngưỡng ở từng lượt hoặc từng phiên, nhưng chưa ổn định qua các phiên xác minh. Quy trình đo lặp cung cấp phân bố thời gian và trạng thái để tiếp tục khảo sát tác động của cache, tải và thứ tự thực thi.</blockquote>
+<h3>12.3. Nếu tín hiệu tái hiện</h3>
+<blockquote>Case [ID] đạt tiêu chí tỷ lệ, độ chênh và mức hỗ trợ trong [số phiên] với cùng vế chậm. Đây là ứng viên hiệu năng tái hiện trong phạm vi cấu hình đã thử; cần phân tích kế hoạch và đối chiếu ngữ nghĩa trước khi kết luận hoặc báo lỗi.</blockquote>
+<h3>12.4. Phát biểu đóng góp phù hợp</h3>
+<p>Sau khi thực sự chạy tích hợp, có thể viết “đồ án xây dựng và đánh giá bước xác minh theo cặp, có lưu số liệu và phân biệt ngoại lệ/kết quả rỗng”. Chỉ nói “giảm cảnh báo sai” nếu có nhãn độc lập để xác định cảnh báo sai. Không viết “cải thiện tốc độ Neo4j” khi chỉ cải thiện cách đo.</p>
+<p><strong>Phân bổ báo cáo chính 5–7 trang:</strong> khoảng 1 trang bối cảnh/bài báo; 1 trang mã gốc và log; 1–2 trang What–How–Why và thiết kế; 1–2 trang thực nghiệm/bảng kết quả; 1 trang kết luận/giới hạn/tài liệu tham khảo. Mã runner, cases và kiểm thử nằm ở phụ lục; tài liệu hướng dẫn này dài hơn báo cáo nộp chính.</p>
+</section><section id="muc-13"><h2>13. Lộ trình thực hiện và giới hạn</h2><div class="table-wrap" tabindex="0" role="region" aria-label="Bảng thông tin"><table><thead><tr><th scope="col">Giai đoạn</th><th scope="col">Việc thực hiện</th><th scope="col">Đầu ra để kiểm tra</th></tr></thead><tbody><tr><td>1. Chuẩn bị</td><td>Tải mã/cases, xác nhận phiên bản và dataset, ghi cấu hình/index.</td><td>Manifest môi trường, kiểm tra số đếm, 12 test mô phỏng đạt.</td></tr><tr><td>2. Chạy tích hợp ngắn</td><td>Smoke test, xử lý tương thích, kiểm tra đối chứng và case âm.</td><td>JSON thật; trường hợp sai phải được giải thích trước khi đo chính.</td></tr><tr><td>3. So sánh tối thiểu</td><td>B0/B1 warm, cùng input, 3 phiên; thêm seed nếu ngân sách cho phép.</td><td>Bảng số đo, chi phí, trạng thái; dữ liệu thô có thể tính lại.</td></tr><tr><td>4. Thực nghiệm bổ sung</td><td>Tách query-cleared, đổi thứ tự chiến dịch, phân tích EXPLAIN/PROFILE.</td><td>Bằng chứng ảnh hưởng cache và kế hoạch; không trộn metric.</td></tr><tr><td>5. Viết báo cáo</td><td>Tách lịch sử/mô phỏng/thực nghiệm; chọn kết luận theo bằng chứng.</td><td>Báo cáo 5–7 trang và phụ lục hồ sơ.</td></tr></tbody></table></div>
+<p>Giới hạn bản mẫu: chưa có parser/semantic guard đầy đủ, kiểm tra snapshot tự động, cold page cache, deadline tiến trình cứng, lưu kế hoạch tự động, xuất CSV hoặc quản lý chiến dịch ngân sách tổng. Khi một query timeout, runner có thể chưa lưu phần thời gian của truy vấn lỗi nhưng giữ lỗi và số mẫu trước đó. Hash case không thay cho hash dữ liệu.</p>
+<p>Chiến dịch chỉ chọn sáu cảnh báo cũ dễ có thiên lệch lựa chọn. Có ba đối chứng để kiểm tra luồng, nhưng để khái quát cần thêm cặp đã kiểm tra thuộc các mức nhanh/vừa/chậm và nhiều mẫu khác nhau. Cỡ mẫu nhỏ được nêu như giới hạn, không đổi thành kết luận toàn bộ Neo4j.</p>
+<p>Đọc tiếp: <a href="graphgenie_sota_3_report.html">báo cáo SOTA 3 bản 6 trang</a> · <a href="graphgenie_overview.html#muc-15">phân tích log</a> · <a href="graphgenie_overview.html#muc-16">dataset Recommendations</a>.</p>
+</section><section id="muc-14"><h2>14. Nguồn và ghi nhận kiểm chứng</h2>
+<ol class="references">
+<li id="ref-paper">Jiang và cộng sự. <a href="https://yuanchengjiang.github.io/docs/GraphGenie-ICSE24.pdf">GraphGenie — ICSE 2024</a>, §6.4 và Listing 6. Phương pháp/bằng chứng lịch sử thuộc tác giả; thiết kế PerfCheck là đề xuất đồ án.</li>
+<li id="ref-install">Neo4j. <a href="https://neo4j.com/docs/python-manual/current/install/">Python Driver — Installation</a>. Điều kiện Python và driver/server được đối chiếu ngày 09/10/2026.</li>
+<li id="ref-api">Neo4j. <a href="https://neo4j.com/docs/api/python-driver/current/api.html#neo4j.ResultSummary">ResultSummary</a> và <a href="https://neo4j.com/docs/api/python-driver/current/api.html#neo4j.Query">Query</a>. Định nghĩa thời gian và timeout; bản ví dụ ghim driver 6.3.0.</li>
+<li id="ref-cache">Neo4j. <a href="https://neo4j.com/docs/cypher-manual/current/planning-and-tuning/caching/">Query caches</a>. Phân biệt cache kế hoạch với cache dữ liệu.</li>
+<li id="ref-load">Neo4j. <a href="https://neo4j.com/docs/operations-manual/current/docker/dump-load/">Dump/load offline</a>. Hướng dẫn nạp dump trong môi trường riêng.</li>
+<li id="ref-profile">Neo4j. <a href="https://neo4j.com/docs/cypher-manual/current/planning-and-tuning/query-tuning/">Query tuning</a> và <a href="https://neo4j.com/docs/cypher-manual/current/planning-and-tuning/execution-plans/">Execution plans</a>. Chẩn đoán được tách khỏi benchmark.</li>
+<li id="ref-history">Neo4j. <a href="https://github.com/neo4j/neo4j/issues/12991">Issue #12991</a>, <a href="https://github.com/neo4j/neo4j/issues/12991#issuecomment-1341005591">phản hồi ngày 07/12/2022</a> và <a href="https://github.com/neo4j/neo4j/wiki/Neo4j-5-changelog#550">changelog 5.5.0</a>. Không gộp lỗi logic lịch sử với cảnh báo thời gian của lần chạy hiện tại.</li>
+</ol>
+<p>Nguồn cục bộ: <a href="main.py">main.py</a>, <a href="requirements.txt">requirements.txt</a>, <a href="logs/0810/testing.log">testing.log 0810</a> và <a href="logs/0810/exception.log">exception.log 0810</a>. Toàn bộ sáu cặp trong cases.json giữ nguyên văn bản từ log.</p>
+<div class="note"><strong>Kiểm chứng lúc soạn:</strong> 12/12 kiểm thử mô phỏng đạt; mã Python được kiểm tra cú pháp. Chưa có kết quả kết nối/benchmark Neo4j mới. Các trạng thái và số đo trong phần kịch bản là kỳ vọng thiết kế, trừ các số liệu lịch sử được ghi rõ.</div>
+</section></article></div>
+<footer>GraphGenie · Hướng 3 chi tiết · Soạn ngày 09/10/2026 · Kết quả thực tế, mô phỏng và kế hoạch được ghi riêng.</footer><script>document.querySelectorAll('button[data-source]').forEach(button => {
+  button.addEventListener('click', () => {
+    const source = document.getElementById(button.dataset.source).textContent + '\n';
+    const blob = new Blob([source], {type: 'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url; link.download = button.dataset.filename;
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+});
+window.addEventListener('beforeprint', () => document.querySelectorAll('details').forEach(d => {d.dataset.printOpen = d.open ? '1' : '0'; d.open = true;}));
+window.addEventListener('afterprint', () => document.querySelectorAll('details').forEach(d => {d.open = d.dataset.printOpen === '1';}));</script></body></html>

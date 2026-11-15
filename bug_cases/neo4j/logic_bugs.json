@@ -1,0 +1,50 @@
+{
+  "dbms": "neo4j",
+  "kind": "logic",
+  "description": "Lỗi logic Neo4j do GraphGenie phát hiện (bài báo ICSE'24, Bảng 3: 2 lỗi logic đã sửa). Hai truy vấn tương đương phải trả cùng kết quả; khác nhau = lỗi.",
+  "oracle": "equal",
+  "cases": [
+    {
+      "id": "NEO4J-L1",
+      "issue": "neo4j#12991",
+      "url": "https://github.com/neo4j/neo4j/issues/12991",
+      "title": "Inconsistent results",
+      "paper_ref": "Listing 6, Bug 4 (mục 6.1)",
+      "cause": "Toán tử Expand(Into) không ổn định: bỏ sót đường đi khi hai đầu đã được ràng buộc (chu trình s1...s1)",
+      "gqt_rule": "MoveLabelPredicate (Property-GQT)",
+      "affected_version": "5.1.0",
+      "fixed_version": "5.2.0",
+      "fix_note": "Nhà phát triển, 2022-12-07: \"This bug has been fixed in 5.2.\"",
+      "reported": "2022-12-03",
+      "closed": "2022-12-07",
+      "dataset": "recommendations",
+      "setup": [],
+      "base_query": "OPTIONAL MATCH (s1)-[s0:DIRECTED]-()<-[s2:ACTED_IN]-(s1) RETURN count(s1)",
+      "mutated_query": "OPTIONAL MATCH (s1)-[s0]-()<-[s2:ACTED_IN]-(s1) WHERE s0:DIRECTED RETURN count(s1)",
+      "paper_result": {"base": 43, "mutated": 491},
+      "expected_correct": 491,
+      "explanation": "Hai câu chỉ khác chỗ viết kiểu cạnh DIRECTED: trong mẫu hoặc trong WHERE gắn với OPTIONAL MATCH. Ý nghĩa giữ nguyên nên kết quả phải bằng nhau. Bản 5.1.0 trả 43 cho câu gốc (đếm thiếu)."
+    },
+    {
+      "id": "NEO4J-L2",
+      "issue": "neo4j#12996",
+      "url": "https://github.com/neo4j/neo4j/issues/12996",
+      "title": "Unexpected Result",
+      "paper_ref": "Bảng 3 (lỗi logic đã sửa); câu truy vấn lấy từ artifacts/reproducing_bugs/neo4j-5.1.0",
+      "cause": "Đếm sai khi kết hợp aggregation với SKIP (count trên biến cạnh bỏ qua SKIP)",
+      "gqt_rule": "CountOtherName (Property-GQT)",
+      "affected_version": "5.1.0",
+      "fixed_version": null,
+      "fix_note": "Nhà phát triển, 2023-01-03: \"I have an open PR for fixing this and will close the issue once the fix has been merged.\" Issue đóng 2023-01-04.",
+      "reported": "2022-12-07",
+      "closed": "2023-01-04",
+      "dataset": "recommendations",
+      "setup": [],
+      "base_query": "MATCH (a)-[b:RATED]->(c) RETURN count(a) SKIP 1",
+      "mutated_query": "MATCH (a)-[b:RATED]->(c) RETURN count(b) SKIP 1",
+      "paper_result": null,
+      "expected_correct": null,
+      "explanation": "count() không có GROUP BY chỉ trả về 1 dòng, SKIP 1 bỏ dòng đó nên cả hai câu phải trả về rỗng (None). Bản 5.1.0 trả rỗng cho count(a) nhưng trả 100004 cho count(b)."
+    }
+  ]
+}

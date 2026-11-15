@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Tổng hợp các cặp truy vấn tương ứng với ba nhóm lỗi logic tiêu biểu trong bài báo GraphGenie ICSE 2024.">
+  <title>GraphGenie — Truy vấn của ba nhóm lỗi logic</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1d2b35;
+      --muted: #586975;
+      --accent: #075985;
+      --accent-strong: #0c4a6e;
+      --line: #d9e3e8;
+      --soft: #edf6fa;
+      --warn: #fff7e6;
+      --warn-line: #d97706;
+      --paper: #ffffff;
+      --page: #f3f6f8;
+      --code: #10212b;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font: 17px/1.75 -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    }
+
+    main {
+      width: min(1040px, calc(100% - 32px));
+      margin: 32px auto;
+      padding: 44px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 12px 35px rgba(29, 43, 53, 0.07);
+    }
+
+    h1, h2, h3 { line-height: 1.3; }
+    h1 { margin: 6px 0 18px; font-size: clamp(30px, 5vw, 46px); letter-spacing: -0.035em; }
+    h2 { margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--line); font-size: 27px; }
+    h3 { margin-top: 30px; font-size: 21px; }
+    p { margin: 13px 0; }
+
+    a {
+      color: var(--accent);
+      text-underline-offset: 3px;
+      overflow-wrap: anywhere;
+    }
+
+    a:hover { color: var(--accent-strong); }
+
+    nav {
+      margin: 28px 0;
+      padding: 18px 24px;
+      background: var(--soft);
+      border-radius: 10px;
+    }
+
+    nav ol { margin: 0; padding-left: 24px; }
+    nav li { margin: 6px 0; }
+
+    .eyebrow, .tag {
+      color: var(--accent-strong);
+      font-size: 13px;
+      font-weight: 750;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .lead { font-size: 19px; color: #334a58; }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0 22px;
+    }
+
+    .meta span {
+      padding: 5px 10px;
+      color: var(--accent-strong);
+      background: var(--soft);
+      border: 1px solid #c8e1ec;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .query-pair {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin: 18px 0;
+    }
+
+    .query-card {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f8fafb;
+    }
+
+    .query-card h4 {
+      margin: 0;
+      padding: 10px 14px;
+      background: var(--soft);
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+    }
+
+    pre {
+      margin: 0;
+      padding: 17px;
+      overflow-x: auto;
+      color: #e8f4f8;
+      background: var(--code);
+      font: 14px/1.65 "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    code {
+      padding: 2px 5px;
+      background: var(--soft);
+      border-radius: 4px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.88em;
+    }
+
+    pre code { padding: 0; background: transparent; font-size: inherit; }
+
+    .oracle, .warning {
+      margin: 20px 0;
+      padding: 17px 20px;
+      border-left: 4px solid var(--accent);
+      background: var(--soft);
+    }
+
+    .warning {
+      border-left-color: var(--warn-line);
+      background: var(--warn);
+    }
+
+    .oracle p, .warning p { margin: 4px 0; }
+
+    .formula {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-weight: 700;
+    }
+
+    .table-wrap { margin: 20px 0; overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+    }
+
+    caption {
+      margin-bottom: 8px;
+      text-align: left;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th { background: var(--soft); }
+    td.result { white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+    footer {
+      margin-top: 42px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    :focus-visible { outline: 3px solid #38bdf8; outline-offset: 3px; }
+
+    @media (max-width: 760px) {
+      main { width: min(100% - 20px, 1040px); margin: 10px auto; padding: 25px 17px; }
+      body { font-size: 16px; }
+      .query-pair { grid-template-columns: 1fr; }
+      pre { font-size: 12px; }
+      h2 { font-size: 23px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+
+    @page { size: A4; margin: 17mm; }
+
+    @media print {
+      body { background: white; font-size: 10.5pt; line-height: 1.55; }
+      main { width: auto; margin: 0; padding: 0; border: 0; box-shadow: none; }
+      nav { display: none; }
+      h1 { font-size: 24pt; }
+      h2 { margin-top: 25px; padding-top: 18px; font-size: 16pt; break-after: avoid; }
+      h3, h4 { break-after: avoid; }
+      .query-pair { grid-template-columns: 1fr 1fr; break-inside: avoid; }
+      pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8pt; }
+      table, .oracle, .warning { break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="eyebrow">GraphGenie · ICSE 2024</p>
+    <h1>Các cặp truy vấn của ba nhóm lỗi logic tiêu biểu</h1>
+    <p class="lead">Tài liệu tổng hợp truy vấn gốc <strong>Q</strong>, truy vấn biến đổi <strong>Q′</strong>, quan hệ kết quả kỳ vọng và sai lệch lịch sử được trình bày trong bài báo GraphGenie.</p>
+  </header>
+
+  <nav aria-label="Mục lục">
+    <ol>
+      <li><a href="#dem-quan-he">Đếm quan hệ không chính xác</a></li>
+      <li><a href="#expand-into">Toán tử thực thi Expand(Into)</a></li>
+      <li><a href="#vle">Phân tích biểu thức độ dài biến đổi</a></li>
+      <li><a href="#tong-hop">Bảng tổng hợp</a></li>
+      <li><a href="#tai-hien">Lưu ý khi tái hiện</a></li>
+    </ol>
+  </nav>
+
+  <section id="dem-quan-he">
+    <h2>1. Đếm quan hệ không chính xác</h2>
+    <p>Nhóm này gồm hai trường hợp RedisGraph trả về số đếm khác nhau cho các truy vấn phải tương đương.</p>
+
+    <h3>1.1. Đếm quan hệ trực tiếp và qua định danh</h3>
+    <div class="meta">
+      <span>RedisGraph</span>
+      <span>CountIdProperty</span>
+      <span>Issue #2744</span>
+    </div>
+
+    <div class="query-pair">
+      <article class="query-card">
+        <h4>Truy vấn gốc Q</h4>
+        <pre><code>MATCH ()-[a]-()
+RETURN count((a));</code></pre>
+      </article>
+      <article class="query-card">
+        <h4>Truy vấn biến đổi Q′</h4>
+        <pre><code>MATCH ()-[a]-()
+RETURN count(id(a));</code></pre>
+      </article>
+    </div>
+
+    <div class="oracle">
+      <p><strong>Quan hệ kỳ vọng:</strong> <span class="formula">Result(Q) = Result(Q′)</span></p>
+      <p><strong>Kết quả lịch sử:</strong> <span class="formula">20.000 ≠ 39.993</span></p>
+    </div>
+
+    <p>Hai biểu thức cùng đếm tập quan hệ được gán cho biến <code>a</code>. Theo phản hồi nhà phát triển được bài báo dẫn lại, RedisGraph bỏ sót quan hệ khi biến quan hệ không được tham chiếu ở nơi khác trong truy vấn.</p>
+    <p>Nguồn: <a href="https://github.com/RedisGraph/RedisGraph/issues/2744">RedisGraph #2744</a> · <a href="artifacts/reproducing_bugs/redisgraph/reproduce.py">script tái hiện trong repository</a>.</p>
+
+    <h3>1.2. Đảo thứ tự đường đi đối xứng</h3>
+    <div class="meta">
+      <span>RedisGraph</span>
+      <span>SymmetricPattern</span>
+      <span>Issue #2865</span>
+    </div>
+
+    <div class="query-pair">
+      <article class="query-card">
+        <h4>Truy vấn gốc Q</h4>
+        <pre><code>MATCH (a:A)-[*1..2]-(b:B)
+RETURN count(1);</code></pre>
+      </article>
+      <article class="query-card">
+        <h4>Truy vấn biến đổi Q′</h4>
+        <pre><code>MATCH (b:B)-[*1..2]-(a:A)
+RETURN count(1);</code></pre>
+      </article>
+    </div>
+
+    <div class="oracle">
+      <p><strong>Quan hệ kỳ vọng:</strong> <span class="formula">Result(Q) = Result(Q′)</span></p>
+      <p><strong>Kết quả lịch sử:</strong> <span class="formula">204 ≠ 238</span></p>
+    </div>
+
+    <p>Cạnh không có mũi tên nên việc viết đường đi từ A đến B hoặc theo thứ tự ngược lại phải biểu diễn cùng tập đường đi. Bài báo xác định nguyên nhân ở logic dừng mở rộng đường đi không chính xác khi phát hiện chu trình.</p>
+
+    <p>Biến thể trong script tái hiện của repository:</p>
+    <div class="query-pair">
+      <article class="query-card">
+        <h4>Q trong artifact</h4>
+        <pre><code>MATCH (s1:B)-[*1..2]-(s3:A)
+RETURN count(s1);</code></pre>
+      </article>
+      <article class="query-card">
+        <h4>Q′ trong artifact</h4>
+        <pre><code>MATCH (s3:A)-[*1..2]-(s1:B)
+RETURN count(s1);</code></pre>
+      </article>
+    </div>
+    <p>Nguồn: <a href="https://github.com/RedisGraph/RedisGraph/issues/2865">RedisGraph #2865</a> · <a href="artifacts/reproducing_bugs/redisgraph/reproduce.py">script tái hiện trong repository</a>.</p>
+  </section>
+
+  <section id="expand-into">
+    <h2>2. Lỗi toán tử thực thi Expand(Into)</h2>
+    <div class="meta">
+      <span>Neo4j 5.1.0</span>
+      <span>MoveLabelPredicate</span>
+      <span>Issue #12991</span>
+      <span>Recommendations</span>
+    </div>
+
+    <div class="query-pair">
+      <article class="query-card">
+        <h4>Q — kiểu quan hệ nằm trong mẫu</h4>
+        <pre><code>OPTIONAL MATCH
+  (s1)-[s0:DIRECTED]-()&lt;-[s2:ACTED_IN]-(s1)
+RETURN count(s1);</code></pre>
+      </article>
+      <article class="query-card">
+        <h4>Q′ — kiểu quan hệ chuyển sang WHERE</h4>
+        <pre><code>OPTIONAL MATCH
+  (s1)-[s0]-()&lt;-[s2:ACTED_IN]-(s1)
+WHERE s0:DIRECTED
+RETURN count(s1);</code></pre>
+      </article>
+    </div>
+
+    <div class="oracle">
+      <p><strong>Quan hệ kỳ vọng:</strong> <span class="formula">Result(Q) = Result(Q′)</span></p>
+      <p><strong>Kết quả trên Neo4j 5.1.0:</strong> <span class="formula">43 ≠ 491</span></p>
+      <p><strong>Sau khi sửa:</strong> hai truy vấn cùng trả về <span class="formula">491</span>.</p>
+    </div>
+
+    <p>Cả hai truy vấn cùng yêu cầu <code>s0</code> có kiểu <code>DIRECTED</code>, <code>s2</code> có kiểu <code>ACTED_IN</code> và hai đầu ngoài là cùng nút <code>s1</code>. Việc đổi vị trí biểu diễn điều kiện kiểu quan hệ không được làm thay đổi số lần khớp.</p>
+    <p>Bài báo liên hệ sai lệch với toán tử kế hoạch thực thi <code>Expand(Into)</code>, khiến Neo4j bỏ sót đường đi thỏa mãn điều kiện.</p>
+    <p>Nguồn: <a href="https://github.com/neo4j/neo4j/issues/12991">Neo4j #12991</a> · <a href="artifacts/reproducing_bugs/neo4j-5.1.0/reproduce.py">script tái hiện trong repository</a>.</p>
+  </section>
+
+  <section id="vle">
+    <h2>3. Lỗi phân tích biểu thức độ dài biến đổi</h2>
+    <div class="meta">
+      <span>AgensGraph</span>
+      <span>PatternPartition</span>
+      <span>Issue #609</span>
+    </div>
+
+    <div class="query-pair">
+      <article class="query-card">
+        <h4>Truy vấn gốc Q</h4>
+        <pre><code>MATCH (a)-[*1..1]-&gt;(b)
+RETURN count(a);</code></pre>
+      </article>
+      <article class="query-card">
+        <h4>Truy vấn biến đổi Q′</h4>
+        <pre><code>MATCH (a), (a)-[*1..1]-&gt;(b)
+RETURN count(a);</code></pre>
+      </article>
+    </div>
+
+    <div class="oracle">
+      <p><strong>Quan hệ kỳ vọng:</strong> <span class="formula">Result(Q) = Result(Q′)</span></p>
+      <p><strong>Kết quả lịch sử:</strong> Q trả về <span class="formula">100</span>, còn Q′ báo <span class="formula">column "a" does not exist</span>.</p>
+    </div>
+
+    <p>Phép <code>PatternPartition</code> tách mẫu nhưng không bổ sung ràng buộc dữ liệu mới. Tuy nhiên, khi xử lý biểu thức độ dài biến đổi <code>[*1..1]</code>, AgensGraph làm biến <code>a</code> không còn hiển thị đối với hàm tổng hợp.</p>
+    <p>Nguồn: <a href="https://github.com/bitnine-oss/agensgraph/issues/609">AgensGraph #609</a>.</p>
+  </section>
+
+  <section id="tong-hop">
+    <h2>4. Bảng tổng hợp</h2>
+    <div class="table-wrap">
+      <table>
+        <caption>Các sai lệch lịch sử được trình bày trong bài báo.</caption>
+        <thead>
+          <tr>
+            <th scope="col">Nhóm lỗi</th>
+            <th scope="col">DBMS</th>
+            <th scope="col">Phép biến đổi</th>
+            <th scope="col">Kỳ vọng</th>
+            <th scope="col">Sai lệch quan sát</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Đếm quan hệ qua thuộc tính</td>
+            <td>RedisGraph</td>
+            <td><code>CountIdProperty</code></td>
+            <td>Hai số đếm bằng nhau</td>
+            <td class="result">20.000 ≠ 39.993</td>
+          </tr>
+          <tr>
+            <td>Đếm đường đi đối xứng</td>
+            <td>RedisGraph</td>
+            <td><code>SymmetricPattern</code></td>
+            <td>Đảo đường đi vẫn giữ kết quả</td>
+            <td class="result">204 ≠ 238</td>
+          </tr>
+          <tr>
+            <td>Toán tử <code>Expand(Into)</code></td>
+            <td>Neo4j</td>
+            <td><code>MoveLabelPredicate</code></td>
+            <td>Chuyển kiểu cạnh sang <code>WHERE</code> vẫn giữ kết quả</td>
+            <td class="result">43 ≠ 491</td>
+          </tr>
+          <tr>
+            <td>Phân tích VLE</td>
+            <td>AgensGraph</td>
+            <td><code>PatternPartition</code></td>
+            <td>Hai truy vấn cùng chạy và trả số đếm bằng nhau</td>
+            <td class="result">100 / lỗi thực thi</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="tai-hien">
+    <h2>5. Lưu ý khi tái hiện</h2>
+    <div class="warning">
+      <p><strong>Các con số trên là kết quả lịch sử.</strong> Chúng chỉ tái hiện khi sử dụng đúng phiên bản DBMS, đúng dataset và đúng cấu hình liên quan. Trên phiên bản đã sửa, Q và Q′ phải cho cùng kết quả hoặc cùng thực thi thành công.</p>
+    </div>
+    <ul>
+      <li>Ghi lại phiên bản DBMS trước khi chạy.</li>
+      <li>Dùng đúng dữ liệu hoặc script tạo dữ liệu của issue.</li>
+      <li>Không thay đổi hướng cạnh, tên nhãn, <code>OPTIONAL MATCH</code>, <code>WHERE</code> hoặc hàm <code>count</code>.</li>
+      <li>Chạy Q và Q′ trên cùng trạng thái dữ liệu, không cập nhật dữ liệu ở giữa.</li>
+      <li>Phân biệt “không tái hiện trên bản mới” với “lỗi chưa từng tồn tại”. Một ca đã sửa trở thành kiểm thử hồi quy.</li>
+    </ul>
+  </section>
+
+  <footer>
+    Nguồn chính: <a href="https://yuanchengjiang.github.io/docs/GraphGenie-ICSE24.pdf">Detecting Logic Bugs in Graph Database Management Systems via Injective and Surjective Graph Query Transformation</a>, ICSE 2024, Listings 3, 4, 6 và 7. Tài liệu có thể in hoặc xuất PDF A4 trực tiếp từ trình duyệt.
+  </footer>
+</main>
+</body>
+</html>

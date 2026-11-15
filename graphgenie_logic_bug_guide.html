@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Phân tích lỗi logic GraphGenie: truy vấn tương đương, bằng chứng lịch sử, kiểm thử hồi quy và ba hướng cải tiến cho đồ án.">
+  <title>GraphGenie — Lỗi logic, minh chứng và cải tiến</title>
+  <style>
+    :root{color-scheme:light;--ink:#23343b;--muted:#536771;--accent:#176052;--line:#dce5e0;--soft:#edf5f1}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f5f6f3;color:var(--ink);font:17px/1.8 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}a{color:var(--accent);overflow-wrap:anywhere;text-underline-offset:3px}main{max-width:1000px;margin:32px auto;padding:42px;background:white;border:1px solid var(--line);border-radius:14px}h1{font-size:clamp(28px,4vw,42px);line-height:1.25;letter-spacing:-.03em}h2{font-size:25px;line-height:1.4;margin-top:42px;padding-top:24px;border-top:1px solid var(--line)}h3{font-size:20px;margin-top:25px}p{margin:14px 0}nav{background:var(--soft);border-radius:9px;padding:16px 24px}nav ol{margin:0}li{margin:8px 0}.lead{font-size:19px}.note,blockquote{margin:22px 0;padding:18px 22px;background:var(--soft);border-left:4px solid var(--accent)}.note p,blockquote p{margin:0}.muted{color:var(--muted);font-size:14px}pre{background:#f7f9f8;border:1px solid var(--line);padding:18px;overflow:auto;font:14px/1.65 "SFMono-Regular",Consolas,monospace;border-radius:8px}code{font-family:"SFMono-Regular",Consolas,monospace;font-size:.88em;background:var(--soft);padding:2px 4px}pre code{background:none;padding:0;font-size:inherit}.table-wrap{overflow-x:auto;margin:20px 0}table{border-collapse:collapse;width:100%;font-size:15px}th,td{border:1px solid var(--line);padding:12px;text-align:left;vertical-align:top}th{background:var(--soft)}.tag{font-size:13px;font-weight:700;color:var(--accent)}footer{border-top:1px solid var(--line);margin-top:35px;padding-top:15px;font-size:14px;color:var(--muted)}:focus-visible{outline:3px solid var(--accent);outline-offset:3px}@media(max-width:600px){main{margin:12px;padding:22px 16px}body{font-size:16px}pre{font-size:12px}h2{font-size:22px}th,td{padding:8px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}@page{size:A4;margin:18mm}@media print{body{background:white;font-size:11pt;line-height:1.6}main{max-width:none;border:0;padding:0;margin:0}nav,.screen-link{display:none}h1{font-size:24pt}h2{font-size:17pt;break-after:avoid}h3{break-after:avoid}pre{font-size:9pt;white-space:pre-wrap;overflow-wrap:anywhere}.table-wrap{overflow:visible}tr,.note,blockquote{break-inside:avoid}a{color:inherit}}
+  </style>
+</head>
+<body>
+<main>
+  <p class="tag">TÀI LIỆU ĐỒ ÁN · PHÂN TÍCH VÀ ĐỀ XUẤT</p>
+  <h1>GraphGenie: hiểu lỗi logic, cách minh chứng và cách cải tiến</h1>
+  <p class="lead">Lỗi logic xảy ra khi hệ quản trị thực thi được truy vấn nhưng trả về kết quả sai. GraphGenie tìm dấu hiệu này bằng cách đối chiếu những truy vấn có quan hệ ngữ nghĩa đã biết.</p>
+  <p class="muted">Các con số lịch sử dưới đây được đối chiếu với bài báo và issue gốc. Tài liệu này chưa thực thi lại các bug trên máy của bạn. Ba cải tiến là đề xuất cho đồ án, chưa được triển khai trong mã nguồn.</p>
+  <p class="screen-link"><a href="graphgenie_overview.html">Tổng quan dự án</a> · <a href="graphgenie_perfcheck_guide.html">Hướng cải tiến kiểm chứng hiệu năng</a></p>
+  <nav aria-label="Mục lục"><ol>
+    <li><a href="#khai-niem">Lỗi logic và cơ chế phát hiện</a></li>
+    <li><a href="#neo4j">Bug Neo4j: chuyển điều kiện kiểu quan hệ</a></li>
+    <li><a href="#redisgraph">Bug RedisGraph: đảo mẫu đường đi</a></li>
+    <li><a href="#agensgraph">Bug AgensGraph: mất điều kiện self-loop</a></li>
+    <li><a href="#minh-chung">Minh chứng lịch sử và kiểm chứng trên bản mới</a></li>
+    <li><a href="#han-che">Điểm cải tiến có bằng chứng trong mã hiện tại</a></li>
+    <li><a href="#cai-tien">Ba hướng cải tiến riêng: What — How — Why</a></li>
+    <li><a href="#thuc-nghiem">Kịch bản kiểm thử và so sánh</a></li>
+    <li><a href="#bao-cao">Cách viết kết quả vào báo cáo</a></li>
+  </ol></nav>
+
+  <section id="khai-niem">
+    <h2>1. Lỗi logic và cơ chế phát hiện</h2>
+    <div class="table-wrap"><table><thead><tr><th>Loại vấn đề</th><th>Biểu hiện</th><th>Bằng chứng cần thu thập</th></tr></thead><tbody>
+      <tr><td>Lỗi logic / sai kết quả</td><td>Hai truy vấn hợp lệ cùng ý nghĩa trả về kết quả khác nhau; hoặc kết quả vi phạm một quan hệ bao hàm đã chứng minh.</td><td>Truy vấn, dữ liệu, kết quả đầy đủ và lập luận về quan hệ ngữ nghĩa.</td></tr>
+      <tr><td>Lỗi nội bộ / ngoại lệ</td><td>Hệ quản trị không thực thi được một ca hợp lệ, ném ngoại lệ nội bộ hoặc dừng bất thường.</td><td>Mã lỗi, thông báo, stack trace nếu có và ca tái hiện.</td></tr>
+      <tr><td>Vấn đề hiệu năng</td><td>Kết quả có thể đúng nhưng chạy chậm hoặc tốn tài nguyên bất thường.</td><td>Đo lặp, môi trường, tài nguyên, kế hoạch thực thi và điều kiện cache.</td></tr>
+    </tbody></table></div>
+    <p>Bài báo công bố <strong>25 vấn đề: 16 lỗi logic, 3 lỗi nội bộ và 6 vấn đề hiệu năng</strong>. Không viết “25 logic bugs”. <a href="https://yuanchengjiang.github.io/docs/GraphGenie-ICSE24.pdf">Nguồn: bài báo GraphGenie, Abstract</a>.</p>
+    <h3>1.1. Không cần biết đáp án đúng để thấy mâu thuẫn</h3>
+    <p>Giả sử đã chứng minh <code>Q</code> và <code>Q′</code> diễn tả cùng yêu cầu trên cùng dữ liệu. Khi đó kết quả phải bằng nhau. Nếu chúng cho ra 43 và 491, ít nhất một kết quả sai. Chỉ riêng chênh lệch chưa chỉ ra truy vấn nào đúng; cần thêm đáp án độc lập hoặc xác nhận của nhà phát triển.</p>
+    <pre><code>Điều kiện: cùng dữ liệu + hai truy vấn hợp lệ + phép đổi bảo toàn ngữ nghĩa
+Quan hệ cần giữ: Result(Q) = Result(Q′)
+Quan sát: Result(Q) ≠ Result(Q′)
+Kết luận: ứng viên lỗi logic cần xác minh và lưu ca tái hiện</code></pre>
+    <h3>1.2. Cảnh báo restricted cần hiểu thế nào?</h3>
+    <p>Với phép thu hẹp hợp lệ, số lần khớp của truy vấn bị hạn chế không được lớn hơn số lần khớp gốc. Nhưng phải đếm cùng đối tượng, cùng cách xử lý dòng lặp và null. Không suy rộng thành “thêm mọi điều kiện WHERE đều làm mọi giá trị RETURN nhỏ hơn”: tổng hợp có nhóm, <code>DISTINCT</code>, <code>OPTIONAL MATCH</code> hoặc phân trang có thể làm lập luận không còn đúng.</p>
+    <p><code>count(x)</code> đếm các lần xuất hiện khác null, bao gồm dòng lặp; <code>count(DISTINCT x)</code> đếm các giá trị khác nhau; <code>count(*)</code> đếm dòng kể cả khi có giá trị null. Đây là lý do số đếm trong các bug không mặc định là số nút duy nhất. <a href="https://neo4j.com/docs/cypher-manual/current/functions/aggregating/#functions-count">Nguồn: tài liệu count() của Neo4j</a>.</p>
+  </section>
+
+  <section id="neo4j">
+    <h2>2. Bug Neo4j: cùng điều kiện DIRECTED nhưng đếm thiếu</h2>
+    <p class="tag">Listing 6 · Neo4j #12991 · Neo4j 5.1.0 · Recommendations</p>
+    <pre><code>// Q: kiểu quan hệ đặt ngay trong mẫu
+OPTIONAL MATCH (s1)-[s0:DIRECTED]-()&lt;-[s2:ACTED_IN]-(s1)
+RETURN count(s1);
+
+// Q′: chuyển kiểu quan hệ thành điều kiện của OPTIONAL MATCH
+OPTIONAL MATCH (s1)-[s0]-()&lt;-[s2:ACTED_IN]-(s1)
+WHERE s0:DIRECTED
+RETURN count(s1);</code></pre>
+    <p>Issue ghi nhận hai kết quả <strong>43 và 491</strong> trên Neo4j 5.1.0. Nhà phát triển xác nhận đã sửa trong <strong>5.2.0</strong>, khi đó cả hai trả về <strong>491</strong>. <a href="https://github.com/neo4j/neo4j/issues/12991">Issue #12991</a> · <a href="https://github.com/neo4j/neo4j/issues/12991#issuecomment-1341005591">Xác nhận phiên bản sửa</a>.</p>
+    <h3>Vì sao hai câu phải tương đương?</h3>
+    <p>Cả hai cùng yêu cầu một nút <code>s1</code> tham gia quan hệ <code>DIRECTED</code> với nút ở giữa và đồng thời có quan hệ <code>ACTED_IN</code> trỏ đến nút đó. Hai lần dùng <code>s1</code> buộc hai đầu ngoài là cùng một nút. Vị trí viết điều kiện kiểu của <code>s0</code> thay đổi, còn yêu cầu tìm dữ liệu vẫn giữ nguyên.</p>
+    <p><code>WHERE</code> ở đây gắn trực tiếp với <code>OPTIONAL MATCH</code>. Không tự ý chuyển nó qua <code>WITH</code> rồi lọc sau, vì có thể đổi cách giữ dòng khi không tìm thấy mẫu. <a href="https://neo4j.com/docs/cypher-manual/current/clauses/optional-match/">Nguồn: ngữ nghĩa OPTIONAL MATCH và WHERE</a>.</p>
+    <p>Bài báo liên hệ bug với toán tử <code>Expand(Into)</code> và việc bỏ sót đường đi thỏa điều kiện. <a href="https://yuanchengjiang.github.io/docs/GraphGenie-ICSE24.pdf">Nguồn: §6.1, Bug 4</a>.</p>
+    <h3>Cải tiến rút ra</h3>
+    <p>Ưu tiên các ca có hai đầu đã ràng buộc, lặp lại biến nút và kiểu quan hệ viết ở hai vị trí. Lưu <code>EXPLAIN</code>/<code>PROFILE</code> để hỗ trợ tìm nguyên nhân. Hai kế hoạch khác nhau tự nó không phải bug; tín hiệu quan trọng vẫn là quan hệ kết quả bị vi phạm.</p>
+  </section>
+
+  <section id="redisgraph">
+    <h2>3. Bug RedisGraph: đảo thứ tự mẫu làm thay đổi số đường đi</h2>
+    <p class="tag">Listing 4 · RedisGraph #2865 · Đường đi dài 1–2 quan hệ</p>
+    <pre><code>// Hai câu theo issue gốc
+MATCH (s1:B)-[*1..2]-(s3:A) RETURN count(s1);
+MATCH (s3:A)-[*1..2]-(s1:B) RETURN count(s1);</code></pre>
+    <p>Issue báo các phiên bản <strong>2.4.14, 2.8.24 và 2.10.7</strong>, cung cấp lệnh tạo đồ thị gồm 10 nút và 50 quan hệ, rồi ghi nhận hai kết quả <strong>204 và 238</strong>. <a href="https://github.com/RedisGraph/RedisGraph/issues/2865">Nguồn: issue #2865 và dữ liệu tái hiện</a>.</p>
+    <h3>Vì sao cùng ý nghĩa?</h3>
+    <p>Dấu <code>-</code> không giới hạn chiều quan hệ. Câu đầu tìm đường đi từ nút B đến nút A; câu sau viết cùng đường đi theo thứ tự ngược lại. Với mỗi đường đi hợp lệ, đảo danh sách nút và quan hệ tạo được một đường đi tương ứng duy nhất. Đảo lần nữa thu được đường đi ban đầu. Vì thế số lần khớp phải bằng nhau, miễn cùng quy tắc đường đi của hệ quản trị.</p>
+    <p>Đây là lập luận về <strong>các lần khớp đường đi</strong>, không phải “204 nút B khác nhau”. Không tự đổi thành truy vấn có hướng hoặc <code>count(DISTINCT s1)</code> rồi coi đó là đúng ca lịch sử.</p>
+    <p>Theo phân tích bản sửa trong bài báo, nguyên nhân là logic dừng mở rộng đường đi khi phát hiện chu trình không đúng. <a href="https://yuanchengjiang.github.io/docs/GraphGenie-ICSE24.pdf">Nguồn: §6.1, Bug 2</a>.</p>
+    <h3>Cải tiến rút ra</h3>
+    <p>Chỉ dùng đồ thị phim lớn có thể ít gặp những tổ hợp đặc biệt. Một bộ sinh có chủ đích nên tạo đồ thị nhỏ với self-loop, chu trình, cạnh song song và nhãn A/B, rồi thử các giới hạn độ dài khác nhau. Trên đồ thị nhỏ, có thể viết bộ liệt kê đường đi độc lập cho phạm vi đã hỗ trợ để kiểm tra thêm đáp án.</p>
+  </section>
+
+  <section id="agensgraph">
+    <h2>4. Bug AgensGraph: tối ưu bỏ mất điều kiện hai đầu là cùng nút</h2>
+    <p class="tag">AgensGraph #595 · Ví dụ self-loop được thảo luận trong bài báo</p>
+    <pre><code>// Q: hai đầu dùng cùng biến a
+MATCH (a)-[]-(a) RETURN count(a);
+
+// Q′: viết rõ yêu cầu hai đầu phải bằng nhau
+MATCH (a)-[]-(b) WHERE a=b RETURN count(a);</code></pre>
+    <p>Issue trên AgensGraph <strong>2.13.0</strong> ghi nhận câu dùng cùng biến trả về <strong>4116</strong>, trong khi câu có điều kiện bằng nhau trả về <strong>4</strong>. Kế hoạch sai bỏ điều kiện self-loop. Nhà phát triển xác nhận sửa trong <strong>PR #599</strong>; commit liên quan có tiền tố <code>06c2e4c</code>. Issue không xác định ở đây số phiên bản phát hành đầu tiên chứa bản sửa. <a href="https://github.com/bitnine-oss/agensgraph/issues/595">Nguồn: issue #595, kế hoạch thực thi và xác nhận bản sửa</a>.</p>
+    <h3>Vì sao đây là sai kết quả?</h3>
+    <p>Viết <code>(a)-[]-(a)</code> yêu cầu quan hệ có hai đầu trùng nhau. Viết hai biến rồi thêm <code>a=b</code> biểu đạt lại ràng buộc đó. Nếu bỏ ràng buộc, các quan hệ giữa hai nút khác nhau cũng bị tính vào kết quả. Điều này tương tự biến phép đếm “quan hệ tự nối” thành phép đếm “mọi quan hệ”.</p>
+    <p>Listing 8 dùng số đếm <strong>200/16</strong>, khác ca <strong>4116/4</strong> trong issue; không ghép số liệu hai ca. <a href="https://yuanchengjiang.github.io/docs/GraphGenie-ICSE24.pdf">Nguồn: Listing 8</a>.</p>
+    <h3>Cải tiến rút ra</h3>
+    <p>Bổ sung phép biến đổi tách biến rồi thêm điều kiện bằng nhau, có kiểm tra phạm vi biến. Tạo đồ thị kiểm thử có cả self-loop lẫn cạnh thông thường để việc bỏ sót ràng buộc tạo ra khác biệt rõ. Đây cũng là một ví dụ để giải thích vì sao tối ưu hiệu năng phải đi kèm kiểm thử bảo toàn kết quả.</p>
+  </section>
+
+  <section id="minh-chung">
+    <h2>5. Minh chứng bug khi đang dùng phiên bản mới</h2>
+    <h3>5.1. Ba mức bằng chứng cần ghi riêng</h3>
+    <div class="table-wrap"><table><thead><tr><th>Mức</th><th>Thực hiện</th><th>Có thể kết luận</th></tr></thead><tbody>
+      <tr><td>Đối chiếu tài liệu lịch sử</td><td>Bài báo → issue gốc → xác nhận → commit/PR → phiên bản sửa nếu biết.</td><td>Lỗi đã được báo và xác nhận trong môi trường lịch sử. Chưa phải tự tái hiện.</td></tr>
+      <tr><td>Tự tái hiện trên bản cũ</td><td>Khôi phục đúng dữ liệu, chạy đúng câu truy vấn trên đúng phiên bản và lưu đầu ra.</td><td>Đã quan sát lại lỗi với môi trường cụ thể. Nếu chưa tái hiện được, báo đúng kết quả này.</td></tr>
+      <tr><td>Kiểm thử hồi quy trên bản mới</td><td>Chạy ca đó hoặc ca tương thích được ghi rõ, kiểm tra quan hệ mong đợi.</td><td>Ca kiểm thử đạt trên bản đang dùng. Chưa chứng minh mọi bug được sửa hoặc hệ quản trị không còn lỗi.</td></tr>
+    </tbody></table></div>
+    <p>Một số issue xuất hiện từ 2022–2023 và đã được sửa trước hội nghị ICSE 2024. Vì vậy nên viết “bug được phát hiện trong nghiên cứu của bài báo”, rồi nêu chính xác ngày báo và phiên bản; không khẳng định lỗi vẫn tồn tại đúng ngày công bố.</p>
+    <h3>5.2. Quy trình tạo hồ sơ minh chứng</h3>
+    <ol>
+      <li><strong>Ghi môi trường:</strong> phiên bản DBMS, edition, driver, hệ điều hành, Cypher nếu chọn được, cấu hình và commit GraphGenie. Trên Neo4j có thể chạy <code>CALL dbms.components();</code>.</li>
+      <li><strong>Cố định dữ liệu:</strong> dùng cùng bản dump hoặc cùng script tạo graph; ghi hash, số nút/quan hệ, tránh có tiến trình khác ghi dữ liệu giữa hai truy vấn.</li>
+      <li><strong>Lưu nguyên văn Q và Q′:</strong> thêm tên phép biến đổi và điều kiện áp dụng. Nếu thay cú pháp để tương thích bản mới, lưu cả câu gốc và câu đã đổi.</li>
+      <li><strong>Chạy và lưu toàn bộ kết quả:</strong> số dòng, mọi cột, giá trị null, dòng lặp, mã lỗi; không chỉ ảnh chụp một con số.</li>
+      <li><strong>Chạy lại độc lập:</strong> kiểm tra chênh lệch có ổn định trên dữ liệu cố định. Khi cần, lưu kế hoạch thực thi để điều tra.</li>
+      <li><strong>Đối chiếu đáp án:</strong> quan hệ tương đương chỉ cho thấy mâu thuẫn. Dùng đồ thị nhỏ đếm tay, bộ liệt kê độc lập, ca hồi quy của nhà phát triển hoặc xác nhận của họ để xác định kết quả đúng.</li>
+      <li><strong>Kết luận theo mức bằng chứng:</strong> ứng viên lỗi, bug lịch sử đã xác nhận, tự tái hiện thành công, hoặc ca hồi quy đạt.</li>
+    </ol>
+    <p>Repository có ca #12991 trong <a href="artifacts/reproducing_bugs/neo4j-5.1.0/reproduce.py">artifacts/reproducing_bugs/neo4j-5.1.0/reproduce.py</a>. Trước khi chạy script cần chỉnh kết nối phù hợp; cách trực quan là chạy hai câu trong Neo4j Browser sau khi chuẩn bị dữ liệu. Chỉ lấy tên phiên bản trong thư mục làm đầu mối, vẫn cần xác minh phiên bản server thực sự.</p>
+    <h3>5.3. Đồ thị nhỏ minh họa đáp án biết trước</h3>
+    <p>Chạy lệnh sau trong <strong>database thử nghiệm riêng, đang trống</strong>. Đây là dữ liệu tự thiết kế để minh họa oracle của #12991, không phải bộ dữ liệu bảo đảm kích hoạt bug cũ.</p>
+    <pre><code>CREATE (p1:GGProofPerson {name:'P1'}),
+       (p2:GGProofPerson {name:'P2'}),
+       (m1:GGProofMovie {name:'M1'}),
+       (m2:GGProofMovie {name:'M2'}),
+       (p1)-[:DIRECTED]-&gt;(m1),
+       (p1)-[:ACTED_IN]-&gt;(m1),
+       (p2)-[:ACTED_IN]-&gt;(m1),
+       (p2)-[:DIRECTED]-&gt;(m2),
+       (p2)-[:ACTED_IN]-&gt;(m2);</code></pre>
+    <p>Chạy hai truy vấn nguyên văn ở mục 2. Có hai lần khớp: P1 vừa đạo diễn vừa diễn xuất trong M1; P2 vừa đạo diễn vừa diễn xuất trong M2. P2 diễn xuất trong M1 nhưng không đạo diễn M1 nên không tạo thêm lần khớp. <strong>Kết quả kỳ vọng: cả hai trả về 2.</strong> Đây là suy luận từ dữ liệu tự thiết kế; chưa phải kết quả chạy thực tế trên server.</p>
+    <p>Ca nhỏ có thể đạt ngay cả trên bản cũ nếu planner không đi vào đường thực thi gây lỗi. Để tái hiện con số 43/491 cần môi trường và dữ liệu lịch sử tương ứng. Khi bản mới trả 2/2 hoặc 491/491, ghi nhận ca hồi quy đạt, không tạo chênh lệch giả để trình bày như lỗi của Neo4j.</p>
+  </section>
+
+  <section id="han-che">
+    <h2>6. Điểm cải tiến có bằng chứng trong mã GraphGenie hiện tại</h2>
+    <h3>6.1. Kết quả rỗng, null và lỗi đang bị thu về cùng giá trị</h3>
+    <p>Trong <a href="main.py">main.py</a>, <code>execute_ret_result_time()</code> trả <code>(None, -1)</code> khi có ngoại lệ. <code>_new_execute()</code> trả <code>None</code> khi không có dòng; nếu có dòng thì chỉ lấy cột đầu của dòng đầu, giá trị này cũng có thể là null. Vì vậy một biến <code>query_result</code> không giữ đủ thông tin để phân biệt ba trạng thái.</p>
+    <div class="table-wrap"><table><thead><tr><th>Kết quả thực</th><th>Giá trị hiện tại có thể nhận</th><th>Thông tin cần giữ</th></tr></thead><tbody>
+      <tr><td>Không có dòng: <code>[]</code></td><td><code>None</code></td><td>status=ok, row_count=0</td></tr>
+      <tr><td>Một dòng chứa null: <code>[[null]]</code></td><td><code>None</code></td><td>status=ok, row_count=1, value=null</td></tr>
+      <tr><td>Thực thi lỗi</td><td><code>None</code>, thời gian -1</td><td>status=error, error_code, message</td></tr>
+      <tr><td>Nhiều dòng hoặc nhiều cột</td><td>Cột đầu của dòng đầu</td><td>Mọi dòng/cột và số lần lặp</td></tr>
+    </tbody></table></div>
+    <p><code>result_checking()</code> dòng 87–102 chỉ ghi bug thông thường khi có chữ <code>count</code> trong câu kiểm thử và cả hai kết quả khác <code>None</code>. Nếu một bên là <code>None</code>, nó ghi <code>None Check</code>. Đây là hạn chế của bản mã đang đọc, không phải kết luận về mọi bản GraphGenie hay toàn bộ kết quả bài báo.</p>
+    <h3>6.2. Ví dụ lịch sử cho thấy so sánh số dòng cũng quan trọng</h3>
+    <pre><code>MATCH (a)-[b:RATED]-&gt;(c) RETURN count(a) SKIP 1;
+MATCH (a)-[b:RATED]-&gt;(c) RETURN count(b) SKIP 1;</code></pre>
+    <p>Issue Neo4j <strong>#12996</strong> báo ở bản 4.4/5.2: câu đầu trả <strong>0 dòng</strong>, câu sau vẫn trả <strong>1 dòng chứa 100004</strong>. Đây là ví dụ bổ sung từ issue cùng tác giả, không khẳng định là một listing riêng trong bài báo. <a href="https://github.com/neo4j/neo4j/issues/12996">Nguồn: issue #12996</a>.</p>
+    <p>Với phép tổng hợp không có khóa nhóm, kết quả đếm tạo một dòng; <code>SKIP 1</code> phải bỏ dòng đó. Do đó quan hệ cần kiểm tra ở đây là cả hai cùng trả bảng rỗng. Một bên không có dòng không đồng nghĩa với lỗi thực thi. <a href="https://neo4j.com/docs/cypher-manual/current/functions/aggregating/">Nguồn: tổng hợp</a> · <a href="https://neo4j.com/docs/cypher-manual/current/clauses/skip/">Nguồn: SKIP</a>.</p>
+    <p>Nếu đưa đúng hai đầu ra lịch sử này vào bộ so sánh hiện tại qua cách biểu diễn <code>None</code> và <code>100004</code>, nhánh xử lý sẽ ghi <code>None Check</code> thay vì ghi bug logic thông thường. Đây là kịch bản có thể kiểm chứng trực tiếp mà không cần Neo4j cũ.</p>
+    <h3>6.3. Giữ được từng ca để phân tích</h3>
+    <p>Việc khử trùng hiện dùng giá trị <code>test_result</code> trong một ca gốc. Hai biến đổi khác nhau cùng trả về một số có thể bị gộp, dù nguyên nhân chưa chắc giống nhau. Nhánh restricted cũng không gọi <code>bug_log()</code> như nhánh tương đương. Có thể cải tiến bằng hồ sơ JSON cho mỗi cảnh báo và chữ ký dựa trên cặp truy vấn chuẩn hóa, tên quy tắc, loại sai lệch và phiên bản.</p>
+  </section>
+
+  <section id="cai-tien">
+    <h2>7. Ba hướng cải tiến riêng: What — How — Why</h2>
+    <p class="note"><strong>Phạm vi:</strong> cải tiến công cụ kiểm thử GraphGenie. Việc sửa nội bộ Neo4j/RedisGraph/AgensGraph là công việc khác, cần can thiệp mã nguồn của hệ quản trị. Các đề xuất dưới đây chưa được coi là SOTA mới; cần thực nghiệm và đối chiếu nghiên cứu liên quan để đưa ra tuyên bố đó.</p>
+    <h3>7.1. Cải tiến 1 — Bộ so sánh giữ đầy đủ kết quả</h3>
+    <p><strong>What:</strong> thay so sánh một số đếm bằng so sánh kết quả có cấu trúc, tách thành công, bảng rỗng, null và ngoại lệ. Đây là hướng phù hợp nhất nếu đồ án cần một thay đổi nhỏ nhưng có bằng chứng trực tiếp từ mã.</p>
+    <p><strong>How:</strong> mỗi lần chạy trả về <code>{status, columns, rows, error, elapsed}</code>. Giữ tất cả dòng/cột. Khi truy vấn không có <code>ORDER BY</code>, so sánh đa tập dòng: thứ tự không ảnh hưởng nhưng số lần lặp vẫn quan trọng. Chuẩn hóa cột theo ánh xạ phép biến đổi; ví dụ tên tự sinh <code>count(a)</code> và <code>count(b)</code> không nên tự tạo cảnh báo. Với aggregate được chứng minh là một số đếm, dùng chế độ scalar chuyên biệt. Với restricted, chỉ so sánh số lần khớp khi hợp đồng ngữ nghĩa cho phép.</p>
+    <p>Truy vấn bị đổi lỗi cú pháp hoặc phiên bản không hỗ trợ được đánh dấu riêng để xét điều kiện áp dụng; không tự kết luận là lỗi logic. Nếu một câu hợp lệ ném lỗi nội bộ còn câu tương đương thành công, lưu thành ca nghi lỗi nội bộ để xác minh.</p>
+    <p><strong>Why:</strong> ca #12996 có khác biệt về số dòng; mã hiện tại có thể bỏ qua nó trong nhánh ghi logic bug. Ngoài ra, chỉ đọc dòng đầu dễ bỏ sót khác biệt ở những dòng còn lại.</p>
+    <p><strong>Đo cải tiến:</strong> số ca sai lệch phát hiện đúng, số cảnh báo sai trên ca tương đương, số trạng thái được phân biệt và chi phí thời gian/bộ nhớ của phép so sánh. Tập chuẩn phải có cả ca đúng và ca sai được gắn nhãn trước.</p>
+
+    <h3>7.2. Cải tiến 2 — Sinh ca kiểm thử theo cấu trúc dễ gây lỗi</h3>
+    <p><strong>What:</strong> thêm bộ sinh đồ thị nhỏ và truy vấn theo cấu trúc: self-loop, chu trình, cạnh song song, lặp biến và đường đi nhiều bước.</p>
+    <p><strong>How:</strong> tạo từng họ đồ thị có hạt giống ngẫu nhiên được lưu, ban đầu giới hạn 2–6 nút và đường đi dài 1–2 quan hệ. Ghép từng cấu trúc với các phép biến đổi: đảo đường đi không hướng, chuyển điều kiện kiểu, tách biến kèm điều kiện bằng nhau. Mỗi phép đổi có điều kiện áp dụng về scope, null, hướng và chế độ đường đi. Dùng bộ liệt kê độc lập cho tập con ngữ nghĩa được hỗ trợ; cách đếm self-loop, quan hệ lặp phải khớp hợp đồng của phiên bản đích.</p>
+    <p><strong>Why:</strong> #2865 gợi ý tập trung vào xử lý chu trình; #595 gợi ý kiểm tra ràng buộc cùng nút; #12991 gợi ý thử thay đổi cách biểu diễn điều kiện trên mẫu đã ràng buộc. Bộ sinh có chủ đích giúp đảm bảo những họ ca này được thực thi, thay vì chờ một lần sinh ngẫu nhiên tình cờ gặp.</p>
+    <p><strong>Đo cải tiến:</strong> số tổ hợp cấu trúc/quy tắc được kiểm thử, tỷ lệ truy vấn hợp lệ và số vi phạm được xác minh trong cùng ngân sách thời gian hoặc số truy vấn. “Bao phủ cấu trúc” là chỉ số do đồ án định nghĩa, không được gọi là bao phủ mã nội bộ DBMS nếu không có đo đạc tương ứng.</p>
+
+    <h3>7.3. Cải tiến 3 — Bộ hồi quy và gói bằng chứng tự động</h3>
+    <p><strong>What:</strong> xây thư viện ca lịch sử kèm dữ liệu, truy vấn, điều kiện ngữ nghĩa và thông tin phiên bản; sinh gói bằng chứng cho cảnh báo mới.</p>
+    <p><strong>How:</strong> mỗi ca có ID, issue/PR, phiên bản từng quan sát lỗi, phiên bản sửa nếu được xác nhận, hash dữ liệu, Q/Q′ và quan hệ cần giữ. Runner đánh dấu <code>PASS</code>, <code>VIOLATION</code>, <code>EXECUTION_ERROR</code> hoặc <code>UNSUPPORTED</code>. Lưu JSON kết quả cùng kế hoạch thực thi nếu thu thập được. Với ca vi phạm ổn định, thử bỏ từng phần dữ liệu/truy vấn nhưng chỉ giữ bản rút gọn khi cả tính hợp lệ và quan hệ ngữ nghĩa vẫn được bảo đảm, đồng thời sai lệch còn tái hiện.</p>
+    <p><strong>Why:</strong> bản mới sửa lỗi làm ca lịch sử trở thành kiểm thử hồi quy có giá trị. Gói bằng chứng giúp người khác kiểm tra kết luận mà không phải đọc toàn bộ testing.log hoặc suy đoán môi trường.</p>
+    <p><strong>Đo cải tiến:</strong> tỷ lệ hồ sơ đủ thông tin, tỷ lệ chạy lại được trên môi trường tương ứng, số ca hồi quy đạt/vi phạm/không hỗ trợ, độ giảm kích thước ca và thời gian tạo bằng chứng. Không tính ca không hỗ trợ thành PASS.</p>
+  </section>
+
+  <section id="thuc-nghiem">
+    <h2>8. Kịch bản kiểm thử và so sánh cho đồ án</h2>
+    <p><strong>Baseline B0:</strong> bộ đọc và so sánh hiện tại. <strong>B1:</strong> bộ giữ kết quả đầy đủ của cải tiến 1. Cho B0/B1 cùng tập đầu ra chuẩn để đánh giá oracle; sau đó chạy cùng tập truy vấn thực trên database để đánh giá kết nối và chuẩn hóa. Không trộn hai loại thực nghiệm.</p>
+    <div class="table-wrap"><table><thead><tr><th>Ca</th><th>Đầu ra chuẩn của Q / Q′</th><th>Kết luận mong đợi</th><th>Mục tiêu</th></tr></thead><tbody>
+      <tr><td>T1</td><td><code>[[491]] / [[491]]</code></td><td>Tương đương, không cảnh báo.</td><td>Kiểm tra ca đúng.</td></tr>
+      <tr><td>T2</td><td><code>[[43]] / [[491]]</code></td><td>Vi phạm tương đương.</td><td>Mô phỏng dạng sai lệch #12991.</td></tr>
+      <tr><td>T3</td><td><code>[] / [[100004]]</code></td><td>Vi phạm tương đương, khác số dòng.</td><td>Mô phỏng đầu ra #12996; hạn chế None Check.</td></tr>
+      <tr><td>T4</td><td><code>[] / [[null]]</code></td><td>Vi phạm tương đương.</td><td>Phân biệt không có dòng và dòng null.</td></tr>
+      <tr><td>T5</td><td>Q lỗi thực thi / Q′ trả bảng rỗng</td><td>Phân loại khác trạng thái, cần điều tra lỗi.</td><td>Không gộp lỗi với kết quả rỗng.</td></tr>
+      <tr><td>T6</td><td><code>[[1],[2]] / [[1],[3]]</code></td><td>Vi phạm tương đương.</td><td>Phát hiện sai khác ngoài dòng đầu.</td></tr>
+      <tr><td>T7</td><td><code>[[1],[2]] / [[2],[1]]</code>, không ORDER BY</td><td>Tương đương.</td><td>Không cảnh báo sai do thứ tự.</td></tr>
+      <tr><td>T8</td><td><code>[[1],[1]] / [[1]]</code></td><td>Vi phạm tương đương.</td><td>Giữ số lần lặp; không dùng set thuần.</td></tr>
+      <tr><td>T9</td><td>Hai bảng giá trị như nhau; tiêu đề count(a)/count(b)</td><td>Tương đương nếu phép đổi ánh xạ cột đó.</td><td>Chuẩn hóa cột hợp lệ.</td></tr>
+      <tr><td>T10</td><td>Count gốc 10 / restricted 12, hợp đồng thu hẹp hợp lệ</td><td>Vi phạm quan hệ số đếm.</td><td>Oracle restricted.</td></tr>
+      <tr><td>T11</td><td>Count gốc 10 / restricted 8, cùng hợp đồng</td><td>Đạt quan hệ số đếm.</td><td>Ca restricted đúng.</td></tr>
+      <tr><td>T12</td><td>Truy vấn biến đổi dùng cú pháp không hỗ trợ</td><td>UNSUPPORTED, không kết luận logic bug.</td><td>Kiểm soát khác biệt phiên bản.</td></tr>
+    </tbody></table></div>
+    <p><strong>T1–T12 là kế hoạch ca chuẩn, chưa có số liệu thực nghiệm.</strong> Trong các ca mô phỏng, đầu ra sai do ta cung cấp để kiểm tra công cụ; không ghi “Neo4j mới phát sinh lỗi 43/491”. Đáp án nhãn của ca cần được xác định trước và nên có người khác rà soát.</p>
+    <p>Trên Neo4j thực, dùng đồ thị mục 5.3 với đáp án 2; bổ sung graph rỗng và ca tổng hợp với <code>SKIP 1</code> có kỳ vọng 0 dòng. Nếu triển khai bộ sinh, tạo một số graph nhỏ có đáp án liệt kê độc lập rồi kiểm tra phép đảo mẫu và tách biến. Với dữ liệu lớn không biết trước đáp án, chỉ kết luận theo quan hệ đã chứng minh và mức xác minh đạt được.</p>
+    <p>Có thể báo cáo <strong>Recall = TP/(TP+FN)</strong> và <strong>Precision = TP/(TP+FP)</strong> trên tập gắn nhãn; không tính khi mẫu số bằng 0. Ghi cả số tuyệt đối, loại ca và cách gán nhãn. Kết quả tốt trên bộ mô phỏng chỉ chứng minh khả năng xử lý những tình huống đó, chưa chứng minh tỷ lệ phát hiện bug thật trong thực tế.</p>
+    <p>Nếu giới hạn thời gian đồ án, triển khai cải tiến 1 trước, tích hợp một vài ca hồi quy của cải tiến 3, còn bộ sinh và rút gọn có thể trình bày là hướng phát triển. Đây là đề xuất phạm vi thực hiện, không phải tuyên bố các chức năng đã có.</p>
+  </section>
+
+  <section id="bao-cao">
+    <h2>9. Cách viết kết quả vào báo cáo</h2>
+    <blockquote><p>Đồ án phân tích các lỗi logic được báo cáo trong nghiên cứu GraphGenie thông qua quan hệ tương đương giữa các truy vấn. Bằng chứng lịch sử được đối chiếu với issue và thông tin sửa lỗi của nhà phát triển. Trên phiên bản hiện tại, các ca này được sử dụng để kiểm thử hồi quy. Phần phát triển đề xuất cải thiện bộ so sánh nhằm phân biệt kết quả rỗng, null, ngoại lệ và sai khác trong toàn bộ bảng kết quả.</p></blockquote>
+    <p>Nếu đã triển khai và chạy thực nghiệm, bổ sung bảng số liệu thực và tên phiên bản. Nếu chưa, dùng từ “đề xuất” hoặc “kế hoạch kiểm thử”, không viết “cải tiến làm tăng độ chính xác” khi chưa đo.</p>
+    <div class="table-wrap"><table><thead><tr><th>Câu nên dùng</th><th>Điều kiện</th></tr></thead><tbody>
+      <tr><td>“Issue #12991 xác nhận lỗi ở 5.1.0 và sửa ở 5.2.0.”</td><td>Dẫn issue và bình luận xác nhận.</td></tr>
+      <tr><td>“Ca hồi quy #12991 đạt trên bản X với dữ liệu Y.”</td><td>Đã chạy thật, lưu phiên bản và đầu ra.</td></tr>
+      <tr><td>“B1 phát hiện thêm k/N sai lệch chuẩn so với B0.”</td><td>Có tập chuẩn, nhãn và số đo thực.</td></tr>
+      <tr><td>“Không phát hiện vi phạm trong ngân sách thử nghiệm này.”</td><td>Ghi thời lượng, số ca hợp lệ và phạm vi đã thử; không suy ra mọi bug đã sửa.</td></tr>
+    </tbody></table></div>
+    <p>Thành quả có thể bảo vệ trước hội đồng là: hiểu nguyên nhân sai lệch, chứng minh quan hệ cần giữ, truy vết bằng chứng lịch sử và đánh giá một cải tiến có kết quả đo được. Việc tìm được bug mới sẽ là kết quả bổ sung nếu có bằng chứng xác nhận.</p>
+  </section>
+  <footer>Tài liệu được xây dựng từ nguồn gốc được dẫn tại từng phần và mã của workspace. Có thể dùng chức năng In của trình duyệt để xuất PDF A4.</footer>
+</main>
+</body>
+</html>

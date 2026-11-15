@@ -1,0 +1,53 @@
+{
+  "dbms": "tinkerpop",
+  "kind": "performance",
+  "description": "Vấn đề hiệu năng trên TinkerPop (Gremlin Server 3.4.13 + cypher-for-gremlin 1.0.4). Cặp truy vấn đối xứng (SymmetricPattern) chênh thời gian hàng trăm lần: bộ dịch luôn bắt đầu duyệt từ nút viết đầu tiên trong mẫu, không chọn điểm xuất phát theo chi phí như planner của Neo4j. Lấy từ cảnh báo Performance Bug trong tinkerpop/logs/testing.log, đo lại tuần tự 3 lần (290x-1336x). Ngưỡng 5 lần theo Phương trình 3 của bài báo.",
+  "oracle": "time_ratio",
+  "threshold": 5,
+  "cases": [
+    {
+      "id": "TP-P1",
+      "issue": "cypher-for-gremlin (đồ án)",
+      "url": "https://github.com/opencypher/cypher-for-gremlin",
+      "title": "Mẫu bắt đầu bằng nút không nhãn chậm hơn ~1000 lần so với mẫu đối xứng bắt đầu bằng :User",
+      "paper_ref": "Mục 6.4 (kiểm thử hiệu năng bằng truy vấn tương đương); cặp lấy từ tinkerpop/logs/testing.log (DIFF=256x)",
+      "cause": "Câu gốc dịch thành g.V() rồi duyệt từ mọi đỉnh (28863); câu đối xứng dịch thành g.V().hasLabel('User') chỉ xuất phát từ 671 đỉnh",
+      "gqt_rule": "SymmetricPattern (Structure-GQT)",
+      "affected_version": "TinkerPop 3.4.13 + cypher-for-gremlin 1.0.4",
+      "fixed_version": null,
+      "fix_note": "Giới hạn thiết kế của bộ dịch (không có planner theo chi phí); chưa báo cáo.",
+      "reported": null,
+      "closed": null,
+      "dataset": "recommendations",
+      "setup": [],
+      "base_query": "MATCH ()<-[]-(idjtuhjq)-[]->(tcksxptm:User) WHERE idjtuhjq IS NOT NULL AND True RETURN count(tcksxptm) LIMIT 5",
+      "mutated_query": "MATCH (tcksxptm:User)<-[]-(idjtuhjq)-[]->() WHERE idjtuhjq IS NOT NULL AND True RETURN count(tcksxptm) LIMIT 5",
+      "paper_result": null,
+      "observed_result": {"base_ms": 7553, "mutated_ms": 7, "ratio": 1052},
+      "expected_slow": "base",
+      "explanation": "Hai câu cùng mẫu, chỉ viết theo chiều ngược lại nên kết quả bằng nhau (0) và thời gian phải tương đương. Neo4j chạy cả hai dưới 120ms."
+    },
+    {
+      "id": "TP-P2",
+      "issue": "cypher-for-gremlin (đồ án)",
+      "url": "https://github.com/opencypher/cypher-for-gremlin",
+      "title": "Như TP-P1 với đường đi độ dài biến [*1..1] xuất phát từ :Genre",
+      "paper_ref": "Mục 6.4; cặp lấy từ tinkerpop/logs/testing.log (DIFF=164x)",
+      "cause": "Như TP-P1: câu gốc duyệt từ mọi đỉnh, câu đối xứng chỉ xuất phát từ 20 đỉnh Genre",
+      "gqt_rule": "SymmetricPattern (Structure-GQT)",
+      "affected_version": "TinkerPop 3.4.13 + cypher-for-gremlin 1.0.4",
+      "fixed_version": null,
+      "fix_note": "Giới hạn thiết kế của bộ dịch; chưa báo cáo.",
+      "reported": null,
+      "closed": null,
+      "dataset": "recommendations",
+      "setup": [],
+      "base_query": "MATCH ()-[]-(kxjkbpbk)<-[*1..1]-(lquekwpx:Genre) WHERE lquekwpx IS NOT NULL AND True RETURN count(lquekwpx) ORDER BY -1+1 SKIP 0 LIMIT 2",
+      "mutated_query": "MATCH (lquekwpx:Genre)-[*1..1]->(kxjkbpbk)-[]-() WHERE lquekwpx IS NOT NULL AND True RETURN count(lquekwpx) ORDER BY -1+1 SKIP 0 LIMIT 2",
+      "paper_result": null,
+      "observed_result": {"base_ms": 18987, "mutated_ms": 14, "ratio": 1336},
+      "expected_slow": "base",
+      "explanation": "Cặp đối xứng, kết quả bằng nhau (0). Neo4j chạy cả hai dưới 40ms."
+    }
+  ]
+}

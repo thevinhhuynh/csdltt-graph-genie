@@ -1,0 +1,70 @@
+{
+  "run_at": "2026-11-10T15:02:44",
+  "dbms": "neo4j",
+  "server": "bolt://127.0.0.1:7687",
+  "version": "2026.09.0 (enterprise)",
+  "reference": null,
+  "files": [
+    {
+      "file": "bug_cases/neo4j/logic_bugs.json",
+      "kind": "logic",
+      "oracle": "equal",
+      "results": [
+        {
+          "id": "NEO4J-L1",
+          "issue": "neo4j#12991",
+          "affected_version": "5.1.0",
+          "dataset": "recommendations",
+          "database": null,
+          "base_query": "OPTIONAL MATCH (s1)-[s0:DIRECTED]-()<-[s2:ACTED_IN]-(s1) RETURN count(s1)",
+          "mutated_query": "OPTIONAL MATCH (s1)-[s0]-()<-[s2:ACTED_IN]-(s1) WHERE s0:DIRECTED RETURN count(s1)",
+          "verdict": "NOT REPRODUCED",
+          "detail": "kết quả bằng nhau: 491",
+          "base": {
+            "result": 491,
+            "rows": 1,
+            "ms": 153.7,
+            "error": null,
+            "timeout": false
+          },
+          "mutated": {
+            "result": 491,
+            "rows": 1,
+            "ms": 71.4,
+            "error": null,
+            "timeout": false
+          },
+          "reference": null,
+          "paper_match": false
+        },
+        {
+          "id": "NEO4J-L2",
+          "issue": "neo4j#12996",
+          "affected_version": "5.1.0",
+          "dataset": "recommendations",
+          "database": null,
+          "base_query": "MATCH (a)-[b:RATED]->(c) RETURN count(a) SKIP 1",
+          "mutated_query": "MATCH (a)-[b:RATED]->(c) RETURN count(b) SKIP 1",
+          "verdict": "NOT REPRODUCED",
+          "detail": "kết quả bằng nhau: None",
+          "base": {
+            "result": null,
+            "rows": 0,
+            "ms": 35.3,
+            "error": null,
+            "timeout": false
+          },
+          "mutated": {
+            "result": null,
+            "rows": 0,
+            "ms": 31.4,
+            "error": null,
+            "timeout": false
+          },
+          "reference": null,
+          "paper_match": null
+        }
+      ]
+    }
+  ]
+}

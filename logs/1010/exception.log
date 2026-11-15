@@ -1,0 +1,4 @@
+
+Query:OPTIONAL MATCH (strlzuxc)<-[:ACTED_IN]-(dwpqdluv:User) WHERE dwpqdluv IS NOT NULL AND True RETURN DISTINCT count(dwpqdluv) SKIP 0 LIMIT 2
+Info:Couldn't connect to 127.0.0.1:7687 (resolved to ('127.0.0.1:7687',)):
+Failed to establish connection to ResolvedIPv4Address(('127.0.0.1', 7687)) (reason [WinError 10061] No connection could be made because the target machine actively refused it)

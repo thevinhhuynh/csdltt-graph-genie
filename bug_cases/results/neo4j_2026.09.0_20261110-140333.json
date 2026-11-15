@@ -1,0 +1,156 @@
+{
+  "run_at": "2026-11-10T14:03:32",
+  "server": "bolt://127.0.0.1:7687",
+  "version": "2026.09.0 (enterprise)",
+  "files": [
+    {
+      "file": "bug_cases/neo4j/logic_bugs.json",
+      "kind": "logic",
+      "oracle": "equal",
+      "results": [
+        {
+          "id": "NEO4J-L1",
+          "issue": "neo4j#12991",
+          "affected_version": "5.1.0",
+          "dataset": "recommendations",
+          "base_query": "OPTIONAL MATCH (s1)-[s0:DIRECTED]-()<-[s2:ACTED_IN]-(s1) RETURN count(s1)",
+          "mutated_query": "OPTIONAL MATCH (s1)-[s0]-()<-[s2:ACTED_IN]-(s1) WHERE s0:DIRECTED RETURN count(s1)",
+          "verdict": "NOT REPRODUCED",
+          "detail": "kết quả bằng nhau: 491",
+          "base": {
+            "result": 491,
+            "rows": 1,
+            "ms": 140.2,
+            "error": null,
+            "timeout": false
+          },
+          "mutated": {
+            "result": 491,
+            "rows": 1,
+            "ms": 70.1,
+            "error": null,
+            "timeout": false
+          },
+          "paper_match": false
+        },
+        {
+          "id": "NEO4J-L2",
+          "issue": "neo4j#12996",
+          "affected_version": "5.1.0",
+          "dataset": "recommendations",
+          "base_query": "MATCH (a)-[b:RATED]->(c) RETURN count(a) SKIP 1",
+          "mutated_query": "MATCH (a)-[b:RATED]->(c) RETURN count(b) SKIP 1",
+          "verdict": "NOT REPRODUCED",
+          "detail": "kết quả bằng nhau: None",
+          "base": {
+            "result": null,
+            "rows": 0,
+            "ms": 39.8,
+            "error": null,
+            "timeout": false
+          },
+          "mutated": {
+            "result": null,
+            "rows": 0,
+            "ms": 45.7,
+            "error": null,
+            "timeout": false
+          },
+          "paper_match": null
+        }
+      ]
+    },
+    {
+      "file": "bug_cases/neo4j/internal_errors.json",
+      "kind": "internal_error",
+      "oracle": "no_error",
+      "results": [
+        {
+          "id": "NEO4J-I1",
+          "issue": "neo4j#12968",
+          "affected_version": "4.4.12",
+          "dataset": "pole",
+          "base_query": "OPTIONAL MATCH p=(n)-->()--()-->()--()--()-->()<--(n) RETURN id(n) SKIP 2 LIMIT 1",
+          "mutated_query": "OPTIONAL MATCH p=(a)-->()--()-->()--()--()-->()<--(a) RETURN id(a) SKIP 2 LIMIT 1",
+          "verdict": "SKIPPED",
+          "detail": "server không có dataset 'pole'"
+        },
+        {
+          "id": "NEO4J-I2",
+          "issue": "neo4j#12988",
+          "affected_version": "5.1.0",
+          "dataset": "recommendations",
+          "base_query": "OPTIONAL MATCH p=shortestPath((a:User)-[:IN_GENRE*]-(c:Genre)) RETURN DISTINCT p",
+          "mutated_query": null,
+          "verdict": "NOT REPRODUCED",
+          "detail": "không có lỗi (base=None)",
+          "base": {
+            "result": null,
+            "rows": 1,
+            "ms": 77.5,
+            "error": null,
+            "timeout": false
+          },
+          "mutated": null,
+          "paper_match": null
+        },
+        {
+          "id": "NEO4J-I3",
+          "issue": "neo4j#13041",
+          "affected_version": "5.4.0",
+          "dataset": "cybersecurity",
+          "base_query": "MATCH (a:Domain)-[*1..2]-(b:OU) WHERE id(b)>=0.0 AND id(a)>=0.0 AND id(b)>=0.0 RETURN count(b) ORDER BY 1",
+          "mutated_query": null,
+          "verdict": "SKIPPED",
+          "detail": "server không có dataset 'cybersecurity'"
+        },
+        {
+          "id": "NEO4J-I3b",
+          "issue": "neo4j#13041",
+          "affected_version": "5.4.0",
+          "dataset": "recommendations",
+          "base_query": "MATCH (a:User)-[*1..2]-(b:Genre) WHERE id(b)>=0.0 AND id(a)>=0.0 AND id(b)>=0.0 RETURN count(b) ORDER BY 1",
+          "mutated_query": null,
+          "verdict": "NOT REPRODUCED",
+          "detail": "không có lỗi (base=265517)",
+          "base": {
+            "result": 265517,
+            "rows": 1,
+            "ms": 93.8,
+            "error": null,
+            "timeout": false
+          },
+          "mutated": null,
+          "paper_match": null
+        }
+      ]
+    },
+    {
+      "file": "bug_cases/neo4j/performance_issues.json",
+      "kind": "performance",
+      "oracle": "time_ratio",
+      "results": [
+        {
+          "id": "NEO4J-P1",
+          "issue": "neo4j#12973",
+          "affected_version": "4.4.12",
+          "dataset": "pole",
+          "base_query": "MATCH p=(n1)--()<-[r1]-()--(r2:PostCode)--(n2)<--()-->()-->()<-[r3:POSTCODE_IN_AREA]-(n1) RETURN n2 AS X SKIP 6 LIMIT 2",
+          "mutated_query": "CALL { MATCH p=(n1)--()<-[r1]-()--(r2:PostCode)--(n2)<--()-->()-->()<-[r3:POSTCODE_IN_AREA]-(n1) RETURN n2 AS X SKIP 6 LIMIT 2 } RETURN X",
+          "verdict": "SKIPPED",
+          "detail": "server không có dataset 'pole'"
+        },
+        {
+          "id": "NEO4J-P2",
+          "issue": "neo4j#13034",
+          "affected_version": "5.4.0",
+          "dataset": "cybersecurity",
+          "base_query": "MATCH (s3:Computer)<--(s4:HighValue)-->(s0:Computer)-->(s2:User)--()-->(s1:User)<--() RETURN s3 ORDER BY id(s3) ASC SKIP 4 LIMIT 6",
+          "mutated_query": "OPTIONAL MATCH (s3:Computer)<--(s4:HighValue)-->(s0:Computer)-->(s2:User)--()-->(s1:User)<--() RETURN s3 ORDER BY id(s3) ASC SKIP 4 LIMIT 6",
+          "verdict": "SKIPPED",
+          "detail": "server không có dataset 'cybersecurity'"
+        }
+      ]
+    }
+  ]
+}
